@@ -5,6 +5,7 @@ import './index.css'
 import MyDropdown from './play/play';
 import MyMenu from './play/play';
 import MyPopover from './play/play';
+import MyWins from './play/form';
 
 function Element() {
 
@@ -22,8 +23,9 @@ export default Element
 
 ReactDOM.createRoot(document.getElementById('root') as HTMLElement).render(
   <React.StrictMode>
-    <App />
-    < Element />
+    {/* <App /> */}
+    {/* < Element /> */}
     <MyPopover />
+    <MyWins />
   </React.StrictMode>,
 )
