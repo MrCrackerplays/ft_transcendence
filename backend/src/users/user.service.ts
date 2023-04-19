@@ -1,8 +1,9 @@
 import { Injectable } from "@nestjs/common";
 import { User } from "./user.entity";
 import { InjectRepository } from "@nestjs/typeorm";
-import { DataSource, Repository } from "typeorm";
-import { CreateUserDTO } from "./dto/create-user.dto";
+import { Repository } from "typeorm";
+import { CreateUserDTO } from "../../../shared/dto/create-user.dto";
+import { PublicUser } from "../../../shared/public-user";
 
 @Injectable()
 export class UserService {
@@ -12,34 +13,34 @@ export class UserService {
 		const user = new User();
 		user.userName = createUserDTO.userName
 
-		// const qr = this.dataSource.createQueryRunner();
-
-		// await qr.connect();
-		// await qr.startTransaction();
-
-		// try {
-		// 	await qr.manager.save(user);
-		// 	await qr.commitTransaction();
-		// } catch (err) {
-		// 	console.log(`transaction failed: createOne() with userName [${user.userName}]`);
-		// 	await qr.rollbackTransaction();
-		// } finally {
-		// 	await qr.release();
-		// }
-
 		return this.usersRepository.save(user);
 	}
 
-	async findAll(): Promise<User[]> {
-		return this.usersRepository.find();
+	async findAll(): Promise<PublicUser[]> {
+		const query = {
+			select : {
+				userName: true,
+				score: true,
+				active: true,
+				imageURL: true
+			}
+		};
+		return this.usersRepository.find(query) as Promise<PublicUser[]>;
 	}
 
-	findFromUsername(name: string): Promise<User | null> {
-		return this.usersRepository.findOne({
-			where: {
+	findFromUsername(name: string): Promise<PublicUser | null> {
+		const query = {
+			select : {
+				userName: true,
+				score: true,
+				active: true,
+				imageURL: true
+			},
+			where : {
 				userName: name
 			}
-		});
+		};
+		return this.usersRepository.findOne(query) as Promise<PublicUser | null>;
 	}
 
 	findOne(id: number): Promise<User | null> {

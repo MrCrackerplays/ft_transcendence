@@ -1,7 +1,8 @@
 import { Body, Controller, Delete, Get, Param, ParseIntPipe, Post, Query } from '@nestjs/common';
 import { UserService } from './user.service';
 import { User } from './user.entity';
-import { CreateUserDTO } from './dto/create-user.dto';
+import { CreateUserDTO } from '../../../shared/dto/create-user.dto';
+import { PublicUser } from '../../../shared/public-user';
 
 @Controller('users')
 export class UserController {
@@ -14,10 +15,11 @@ export class UserController {
 
 	@Get()
 	// Promises a list of users
-	async findAll(): Promise<User[]> {
+	async findAll(): Promise<PublicUser[]> {
 		return this.userService.findAll();
 	}
 
+	//? TEMPORARY
 	@Get('id/:idn')
 	// Promises a single user found from id
 	async findOne(@Param('idn', ParseIntPipe) id: number): Promise<User> {
@@ -26,7 +28,7 @@ export class UserController {
 
 	@Get(':name')
 	// Promises a single user found from username
-	async findFromUsername(@Param('name') name: string): Promise<User> {
+	async findFromUsername(@Param('name') name: string): Promise<PublicUser> {
 		return this.userService.findFromUsername(name);
 	}
 
