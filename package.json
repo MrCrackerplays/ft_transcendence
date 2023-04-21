@@ -8,5 +8,15 @@
     "prepare": "husky install",
     "test": "npm run test:backend",
     "test:backend": "cd backend && npm test"
+  },
+  "dependencies": {
+    "@emotion/react": "^11.10.6",
+    "@emotion/styled": "^11.10.6",
+    "@mui/material": "^5.12.1",
+    "@nestjs/common": "^9.4.0",
+    "@nestjs/config": "^2.3.1",
+    "@nestjs/core": "^9.4.0",
+    "react-query": "^3.39.3",
+    "typeorm": "^0.3.15"
   }
 }
