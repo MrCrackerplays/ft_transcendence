@@ -8,6 +8,7 @@ import { PublicUser } from '../../../shared/public-user';
 export class UserController {
 	constructor(private readonly userService: UserService) {}
 
+	// TODO: obviously should be behind some security
 	@Post()
 	async createOne(@Body() createUserDTO: CreateUserDTO) {
 		return this.userService.createOne(createUserDTO);
@@ -26,12 +27,14 @@ export class UserController {
 		return this.userService.findOne(id);
 	}
 
+	//? Should this be behind security?
 	@Get(':name')
 	// Promises a single user found from username
 	async findFromUsername(@Param('name') name: string): Promise<PublicUser> {
 		return this.userService.findFromUsername(name);
 	}
 
+	// TODO: Obviously should be behind some security
 	@Delete(':id')
 	// Delete a single user found from id
 	removeOne(@Param('id', ParseIntPipe) id: number): Promise<void> {
