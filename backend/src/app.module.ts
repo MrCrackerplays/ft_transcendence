@@ -7,6 +7,7 @@ import { AppService } from './app.service';
 import { UserModule } from './users/user.module';
 import { DataSource } from 'typeorm';
 import { DatabaseModule } from './database/database.module';
+import { ChannelModule } from './channel/channel.module';
 
 @Module({
 
@@ -23,8 +24,9 @@ import { DatabaseModule } from './database/database.module';
 			})
 		}),
 
+		DatabaseModule,
 		UserModule,
-		DatabaseModule
+		ChannelModule
 	],
 
 	controllers: [

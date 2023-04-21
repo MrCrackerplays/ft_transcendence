@@ -1,12 +1,14 @@
-import { Entity, Column, PrimaryGeneratedColumn, Unique } from "typeorm";
+import { Entity, Column, PrimaryGeneratedColumn, Unique, OneToMany, ManyToMany, PrimaryColumn, BaseEntity, JoinTable, JoinColumn } from "typeorm";
 import { PublicUser } from "../../../shared/public-user"
+import { Message } from "src/message/message.entity";
+import { Channel } from "src/channel/channel.entity";
 
 @Entity()
-export class User {
+export class User extends BaseEntity {
 	@PrimaryGeneratedColumn()
 	id: number;
 
-	@Column()
+	@PrimaryColumn()
 	userName: string;
 
 	@Column( {default: 0} )
@@ -18,14 +20,16 @@ export class User {
 	@Column( {default: ""} )
 	imageURL: string;
 
-	public getPublic(): PublicUser {
-		const publicUser: PublicUser = {
-			userName: this.userName,
-			score: this.score,
-			imageURL: this.imageURL,
-			active: this.active
-		};
+	@OneToMany(type => Channel, channel => channel.owner)
+	channelsOwned: Channel[];
 
-		return publicUser;
-	}
+	@ManyToMany(type => Channel, channel => channel.members)
+	channelSubscribed: Channel[];
+
+	@OneToMany(type => Message, message => message.author, {
+		cascade: true
+	})
+	@JoinColumn()
+	messages: Message[];
+
 }

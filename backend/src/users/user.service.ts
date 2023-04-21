@@ -1,6 +1,7 @@
 import { Injectable } from "@nestjs/common";
-import { User } from "./user.entity";
 import { InjectRepository } from "@nestjs/typeorm";
+
+import { User } from "./user.entity";
 import { Repository } from "typeorm";
 import { CreateUserDTO } from "../../../shared/dto/create-user.dto";
 import { PublicUser } from "../../../shared/public-user";
@@ -10,15 +11,21 @@ export class UserService {
 	constructor(@InjectRepository(User) private usersRepository: Repository<User>) { }
 
 	async createOne(createUserDTO: CreateUserDTO) {
+		console.log(`UserService: creating new user (${createUserDTO.userName})`);
 		const user = new User();
 		user.userName = createUserDTO.userName
+		user.channelSubscribed = [];
+		user.channelsOwned = [];
+		user.messages = [];
+		return user.save();
 
-		return this.usersRepository.save(user);
+		// return this.usersRepository.save(user);
 	}
 
 	async findAll(): Promise<PublicUser[]> {
 		const query = {
 			select : {
+				id: true,
 				userName: true,
 				score: true,
 				active: true,
@@ -31,6 +38,7 @@ export class UserService {
 	findFromUsername(name: string): Promise<PublicUser | null> {
 		const query = {
 			select : {
+				id: true,
 				userName: true,
 				score: true,
 				active: true,
