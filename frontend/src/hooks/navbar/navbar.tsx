@@ -7,8 +7,8 @@ function MyNavBar()
 {
 	return (
 		<AppBar position="static">
-			<Typography variant="h6" component="div" className='my-navbar' flexGrow="1">
-			To Infinity and Beyond!
+			<Typography variant="h6" component="div" className='my-navbar'>
+			<p className="my-navbar-text">To Infinity and Bepong!</p>
 			</Typography>
 			<MyPopover />
 		</AppBar>

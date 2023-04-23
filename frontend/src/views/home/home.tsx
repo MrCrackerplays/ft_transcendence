@@ -16,7 +16,7 @@
 
 import React from 'react';
 import MyNavBar from "../../hooks/navbar/navbar";
-import QueryTest from "./Nick";
+import QueryTest from "./mainstats";
 import { Router } from 'react-router-dom';
 import { QueryClient, QueryClientProvider, useQuery } from 'react-query'
 
