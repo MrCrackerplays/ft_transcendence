@@ -53,23 +53,24 @@ export class ChannelService {
 		return this.channelRepository.findOne(query) as Promise<PublicChannel | null>;
 	}
 
-	async findAllMessages(channelID: number): Promise<Message[]> {
+	async findAllMessages(channelID: string): Promise<Message[]> {
 		return this.messageService.getWithChannelID(channelID) as Promise<Message[]>;
 	}
 
 	async createMessage(channel: Channel, createMessageDTO: CreateMessageDTO): Promise<Channel> {
-		const user = await this.userService.findOne(createMessageDTO.author);
+		const user = await this.userService.findOne(createMessageDTO.authorID);
 		const msg = await this.messageService.createMessage(channel, user, createMessageDTO.content);
 		await user.save();
+		await msg.save();
 		return channel.save();
 		// return this.messageService.createMessage(channel, user, createMessageDTO.content);
 	}
 
-	findOne(id: number): Promise<Channel | null> {
+	findOne(id: string): Promise<Channel | null> {
 		return this.channelRepository.findOneBy({ id });
 	}
 
-	async removeOne(id: number): Promise<void> {
+	async removeOne(id: string): Promise<void> {
 		await this.channelRepository.delete(id);
 	}
 }

@@ -4,8 +4,8 @@ import { BaseEntity, Column, Entity, JoinColumn, ManyToMany, ManyToOne, OneToMan
 
 @Entity()
 export class Channel extends BaseEntity {
-	@PrimaryGeneratedColumn()
-	id: number;
+	@PrimaryGeneratedColumn("uuid")
+	id: string;
 
 	@Column()
 	name: string;

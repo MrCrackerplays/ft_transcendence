@@ -25,7 +25,7 @@ export class ChannelController {
 
 	//? TEMPORARY
 	@Get('id/:idn')
-	async findOne(@Param('idn', ParseIntPipe) id: number): Promise<Channel> {
+	async findOne(@Param('idn') id: string): Promise<Channel> {
 		return this.channelService.findOne(id);
 	}
 
@@ -36,19 +36,19 @@ export class ChannelController {
 	}
 
 	@Get(':id/messages')
-	async findAllMessages(@Param('id', ParseIntPipe) id: number): Promise<Message[]> {
+	async findAllMessages(@Param('id') id: string): Promise<Message[]> {
 		return this.channelService.findAllMessages(id);
 	}
 
 	@Post(':id/messages')
-	async createMessage(@Param('id', ParseIntPipe) id: number, @Body() createMessageDTO: CreateMessageDTO): Promise<Channel> {
+	async createMessage(@Param('id') id: string, @Body() createMessageDTO: CreateMessageDTO): Promise<Channel> {
 		const channel = await this.channelService.findOne(id);
 		return this.channelService.createMessage(channel, createMessageDTO);
 	}
 
 	// TODO: Obviously should be behind some security
 	@Delete(':id')
-	removeOne(@Param('id', ParseIntPipe) id: number): Promise<void> {
+	removeOne(@Param('id') id: string): Promise<void> {
 		return this.channelService.removeOne(id);
 	}
 }

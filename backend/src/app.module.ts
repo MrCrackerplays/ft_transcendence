@@ -8,6 +8,7 @@ import { UserModule } from './users/user.module';
 import { DataSource } from 'typeorm';
 import { DatabaseModule } from './database/database.module';
 import { ChannelModule } from './channel/channel.module';
+import { MatchModule } from './matches/match.module';
 
 @Module({
 
@@ -26,7 +27,8 @@ import { ChannelModule } from './channel/channel.module';
 
 		DatabaseModule,
 		UserModule,
-		ChannelModule
+		ChannelModule,
+		MatchModule
 	],
 
 	controllers: [

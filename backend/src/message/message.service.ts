@@ -8,13 +8,11 @@ import { User } from "src/users/user.entity";
 
 @Injectable()
 export class MessageService {
-	constructor(
-		@InjectRepository(Message) private messageRepository: Repository<Message>) { }
+	constructor(@InjectRepository(Message) private messageRepository: Repository<Message>) { }
 	
-	async getWithChannelID(channelID: number): Promise<Message[]> {
+	async getWithChannelID(channelID: string): Promise<Message[]> {
 		return await this.messageRepository.createQueryBuilder("message")
 			.innerJoinAndSelect("message.channel", "channel")
-			.innerJoinAndSelect("message.author", "user") // TODO: remove
 			.where("channel.id = :channelID", { channelID })
 			.getMany();
 	}

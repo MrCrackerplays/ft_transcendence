@@ -4,8 +4,8 @@ import { Channel } from "src/channel/channel.entity";
 
 @Entity()
 export class Message extends BaseEntity {
-	@PrimaryGeneratedColumn()
-	id: number;
+	@PrimaryGeneratedColumn("uuid")
+	id: string;
 
 	@ManyToOne(type => User, user => user.messages)
 	author: User;

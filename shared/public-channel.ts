@@ -1,5 +1,5 @@
 export class PublicChannel {
-	id: number;
+	id: string;
 	name: string;
 	visibility: string;
 }

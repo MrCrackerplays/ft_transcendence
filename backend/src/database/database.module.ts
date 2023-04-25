@@ -5,6 +5,7 @@ import { ConfigModule, ConfigService } from "@nestjs/config";
 import { User } from "../users/user.entity";
 import { Channel } from "src/channel/channel.entity";
 import { Message } from "src/message/message.entity";
+import { Match } from "src/matches/match.entity";
 
 @Module({
 	imports: [
@@ -22,7 +23,8 @@ import { Message } from "src/message/message.entity";
 				entities: [
 					User,
 					Channel,
-					Message
+					Message,
+					Match
 				],
 				synchronize: true
 			})			
