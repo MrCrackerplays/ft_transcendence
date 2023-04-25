@@ -6,14 +6,20 @@ import { QueryClient, QueryClientProvider, useQuery } from 'react-query'
 import MyAchievement from '../profile/achievement';
 
 const queryClient = new QueryClient();
+function printToken()
+{
+  const urlParams = new URLSearchParams(window.location.search);
+  const code = urlParams.get('code')
+  console.log(code)
+}
 
 function MyHomePage() {
   return (
     <div>
       <MyNavBar />
-      {/* <QueryClientProvider client={queryClient}>
+      <QueryClientProvider client={queryClient}>
           <QueryTest />
-      </QueryClientProvider> */}
+      </QueryClientProvider>
       <MyAchievement />
     </div>
   );

@@ -7,7 +7,6 @@ function AchievementCard({ user }: { user:UserStats}) {
 	const textcolor = user.win ? "green" : "red";
 	const display = user.win ? "Victory" : "Defeat";
 
-	console.log(`victory-loss${textcolor}`)
 	return (
 		<div className={`achievement-card${textcolor} monospace`}>
 			<div className="left-player">
@@ -61,7 +60,7 @@ function MyAchievement() {
 	user2.userScore = "00";
 	user2.opponentScore = "10";
 	return (
-		<div>
+		<div className="all-achievements">
 			<AchievementCard user={user} />
 			<AchievementCard user={user2} />
 			<AchievementCard user={user} />
