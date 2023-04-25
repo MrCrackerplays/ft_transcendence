@@ -1,8 +1,9 @@
 .my-navbar {
 	top: 0;
+	left: 0;
 	position: fixed;
 	width: 100%;
-	height: 55px;
+	height: 9%;
 	background: linear-gradient(to right,black 50%, black, white);
 }
 
