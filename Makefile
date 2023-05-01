@@ -6,6 +6,16 @@
 all:
 
 run: all
-	docker-compose up --build
+	cd backend/ && docker-compose up --build
 
-.PHONY: all run
+down:
+	cd backend/ && docker-compose down
+
+dev:
+	-cd backend/ && docker-compose up -d
+	cd backend/ && npm run start:dev
+
+exec:
+	docker exec -it postgres psql -U admin -h localhost -d transcendence
+
+.PHONY: all run dev down exec
