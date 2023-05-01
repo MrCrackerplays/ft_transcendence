@@ -15,4 +15,7 @@ dev:
 	-cd backend/ && docker-compose up -d
 	cd backend/ && npm run start:dev
 
-.PHONY: all run dev down
+exec:
+	docker exec -it postgres psql -U admin -h localhost -d transcendence
+
+.PHONY: all run dev down exec

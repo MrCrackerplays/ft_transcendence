@@ -3,6 +3,10 @@ import { TypeOrmModule } from "@nestjs/typeorm";
 import { ConfigModule, ConfigService } from "@nestjs/config";
 
 import { User } from "../users/user.entity";
+import { Channel } from "src/channel/channel.entity";
+import { Message } from "src/message/message.entity";
+import { Match } from "src/matches/match.entity";
+import { Connection } from "src/auth/connection.entity";
 
 @Module({
 	imports: [
@@ -18,7 +22,11 @@ import { User } from "../users/user.entity";
 				password: configService.get('POSTGRES_PASSWORD'),
 				database: configService.get('POSTGRES_DB'),
 				entities: [
-					User
+					User,
+					Channel,
+					Message,
+					Match,
+					Connection
 				],
 				synchronize: true
 			})			

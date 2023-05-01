@@ -1,12 +1,16 @@
-import { Entity, Column, PrimaryGeneratedColumn, Unique } from "typeorm";
-import { PublicUser } from "../../../shared/public-user"
+import { Entity, Column, PrimaryGeneratedColumn, OneToMany, ManyToMany, BaseEntity, JoinColumn, ManyToOne, JoinTable, OneToOne } from "typeorm";
+
+import { Message } from "src/message/message.entity";
+import { Channel } from "src/channel/channel.entity";
+import { Match } from "src/matches/match.entity";
+import { Connection } from "src/auth/connection.entity";
 
 @Entity()
-export class User {
-	@PrimaryGeneratedColumn()
-	id: number;
+export class User extends BaseEntity {
+	@PrimaryGeneratedColumn("uuid")
+	id: string;
 
-	@Column()
+	@Column( { unique: true, nullable: true } )
 	userName: string;
 
 	@Column( {default: 0} )
@@ -18,14 +22,38 @@ export class User {
 	@Column( {default: ""} )
 	imageURL: string;
 
-	public getPublic(): PublicUser {
-		const publicUser: PublicUser = {
-			userName: this.userName,
-			score: this.score,
-			imageURL: this.imageURL,
-			active: this.active
-		};
+	@Column( {default: 0})
+	gamesPlayed: number;
 
-		return publicUser;
-	}
+	@Column( {default: 0})
+	gamesWon: number;
+
+	// Every user can own mutliple channels, every channel only has one owner
+	// ONE user has MANY channels
+	@OneToMany(type => Channel, channel => channel.owner)
+	channelsOwned: Channel[];
+
+	// Every user can be subscribed to multiple channels, and every channel can have multiple subscribers
+	// MANY users subscribe to MANY channels
+	@ManyToMany(type => Channel, channel => channel.members)
+	channelSubscribed: Channel[];
+
+	// Every user can have multiple friends
+	// ONE user, MANY friends
+	@ManyToMany(type => User)
+	@JoinTable({ joinColumn: { name: 'users_id_1' } })
+	friends: User[];
+
+	@ManyToMany(type => Match, match => match.players)
+	matches: Match[];
+
+	@OneToOne( type => Connection, connection => connection.user )
+	connection: Connection;
+
+	// Every user can write multiple messages, every message only has a single author
+	// ONE user has MANY messages
+	@OneToMany(type => Message, message => message.author, { cascade: true })
+	@JoinColumn()
+	messages: Message[];
+
 }
