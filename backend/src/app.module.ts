@@ -5,7 +5,6 @@ import * as Joi from '@hapi/joi';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { UserModule } from './users/user.module';
-import { DataSource } from 'typeorm';
 import { DatabaseModule } from './database/database.module';
 import { ChannelModule } from './channel/channel.module';
 import { MatchModule } from './matches/match.module';
