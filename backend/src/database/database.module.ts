@@ -6,6 +6,7 @@ import { User } from "../users/user.entity";
 import { Channel } from "src/channel/channel.entity";
 import { Message } from "src/message/message.entity";
 import { Match } from "src/matches/match.entity";
+import { Connection } from "src/auth/connection.entity";
 
 @Module({
 	imports: [
@@ -24,7 +25,8 @@ import { Match } from "src/matches/match.entity";
 					User,
 					Channel,
 					Message,
-					Match
+					Match,
+					Connection
 				],
 				synchronize: true
 			})			

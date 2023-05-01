@@ -1,7 +1,8 @@
-import { Body, Controller, Delete, Get, Param, ParseIntPipe, Post, Query } from '@nestjs/common';
+import { Body, Controller, Delete, Get, Param, Post, Req } from '@nestjs/common';
 import { UserService } from './user.service';
 import { User } from './user.entity';
 
+import { Request } from './interfaces/request.interface';
 import { CreateUserDTO } from '../../../shared/dto/create-user.dto';
 import { AddFriendDTO } from '../../../shared/dto/add-friend.dto';
 import { PublicUser } from '../../../shared/public-user';
@@ -10,6 +11,12 @@ import { PublicMatch } from '../../../shared/public-match';
 @Controller('users')
 export class UserController {
 	constructor(private readonly userService: UserService) {}
+
+	@Get('self')
+	async getSelf(@Req() req: Request): Promise<User> {
+		console.log(`UserController getSelf for userID: ${req.userID}`);
+		return this.userService.get(req.userID);
+	}
 
 	// TODO: obviously should be behind some security
 	@Post()

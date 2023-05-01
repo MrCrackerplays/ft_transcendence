@@ -1,4 +1,4 @@
-import { Injectable } from "@nestjs/common";
+import { HttpException, HttpStatus, Injectable } from "@nestjs/common";
 import { InjectRepository } from "@nestjs/typeorm";
 
 import { User } from "./user.entity";
@@ -14,15 +14,27 @@ export class UserService {
 
 	async createOne(createUserDTO: CreateUserDTO) {
 		console.log(`UserService: creating new user (${createUserDTO.userName})`);
-		const user = new User();
-		user.userName = createUserDTO.userName
-		user.channelSubscribed = [];
-		user.channelsOwned = [];
-		user.messages = [];
-		user.friends = [];
-		return user.save();
+		const user = this.usersRepository.create();
+		user.userName = createUserDTO.userName;
+		try { await this.usersRepository.save(user); }
+		catch (error) { throw new HttpException(error.message, HttpStatus.BAD_REQUEST); }
+		return user;
+	}
 
-		// return this.usersRepository.save(user);
+	async get(userID: string): Promise<User> {
+		const user = await this.usersRepository.findOneBy({id: userID});
+
+		if (!userID || !user)
+			throw new HttpException('User not found', HttpStatus.NOT_FOUND);
+		return user;
+	}
+
+	async create() {
+		const user = this.usersRepository.create();
+		try { await this.usersRepository.save(user); }
+		catch (error) { throw new HttpException(error.message, HttpStatus.BAD_REQUEST); }
+		console.log(`UserService: created new user (${user.id})`);
+		return user;
 	}
 
 	async findAll(): Promise<PublicUser[]> {
