@@ -1,5 +1,5 @@
 import { Card, Container } from "@mui/material"
-import './achivement.css'
+import './matchhistory.css'
 import pfp from './Tateru.png'
 import pfp2 from './Tortenite.png'
 
@@ -8,7 +8,7 @@ function MatchCard({ user }: { user:UserStats}) {
 	const display = user.win ? "Victory" : "Defeat";
 
 	return (
-		<div className={`achievement-card ${textcolor}border monospace`}>
+		<div className={`match-card ${textcolor}border monospace`}>
 			<div className="left-player">
 				<img src={user.userPFP} alt="pfp not found"/>
 				<p>{user.userName}</p>
@@ -60,7 +60,7 @@ function MyMatchHistory() {
 	user2.userScore = "00";
 	user2.opponentScore = "10";
 	return (
-		<div className="all-achievements">
+		<div className="all-matchs">
 			<MatchCard user={user} />
 			<MatchCard user={user2} />
 			<MatchCard user={user} />

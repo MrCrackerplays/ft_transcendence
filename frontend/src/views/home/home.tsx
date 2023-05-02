@@ -3,7 +3,8 @@ import MyNavBar from "../../hooks/navbar/navbar";
 import QueryTest from "./mainstats";
 import { Router } from 'react-router-dom';
 import { QueryClient, QueryClientProvider, useQuery } from 'react-query'
-import MyAchievement from '../profile/achievement';
+import MyAchievement from '../profile/matchhistory';
+import MyMatchHistory from '../profile/matchhistory';
 
 const queryClient = new QueryClient();
 function printToken()
@@ -20,7 +21,7 @@ function MyHomePage() {
       <QueryClientProvider client={queryClient}>
           <QueryTest />
       </QueryClientProvider>
-      <MyAchievement />
+      <MyMatchHistory />
     </div>
   );
 }
