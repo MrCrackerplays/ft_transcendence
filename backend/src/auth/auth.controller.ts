@@ -24,6 +24,9 @@ export class AuthController {
 		url.port = '5173';
 		// url.searchParams.set('code', token);
 		
+		// const token = this.authService.signConnection(connection);
+		// res.setHeader('Authorization', `Bearer ${token}`);
+
 		res.setHeader('Set-Cookie', cookie);
 		res.status(302).redirect(url.href);
 	}

@@ -5,6 +5,7 @@ import { Router } from 'react-router-dom';
 import { QueryClient, QueryClientProvider, useQuery } from 'react-query'
 import MyAchievement from '../profile/matchhistory';
 import MyMatchHistory from '../profile/matchhistory';
+import isLoggedIn from '../../hooks/isLoggedIn/isLoggedIn';
 
 const queryClient = new QueryClient();
 function printToken()
@@ -15,15 +16,17 @@ function printToken()
 }
 
 function MyHomePage() {
-  return (
-    <div>
-      <MyNavBar />
-      <QueryClientProvider client={queryClient}>
-          <QueryTest />
-      </QueryClientProvider>
-      <MyMatchHistory />
-    </div>
-  );
+  if (isLoggedIn() == false)
+  { return  (<div></div>);}
+   return (
+      <div>
+        <MyNavBar />
+        <QueryClientProvider client={queryClient}>
+            <QueryTest />
+        </QueryClientProvider>
+        <MyMatchHistory />
+      </div>
+    );
 }
 
 export default MyHomePage;

@@ -34,9 +34,13 @@ export class AuthService {
 		return con;
 	}
 
+	signConnection(connection: Connection) : string {
+		return this.jwtService.sign({ sub: connection.id });
+	}
+
 	buildCookie(connection: Connection) : string {
-		const token = this.jwtService.sign({ sub: connection.id });
+		const token = this.signConnection(connection);
 		console.log(`Building cookie with signed-token: ${token}`);
-		return `Authentication=${token}; HttpOnly; Path=/; Max-Age=7d`;
+		return `Authentication=${token}; HttpOnly; Path=/; Max-Age=100000`;
 	}
 }
