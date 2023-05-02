@@ -11,6 +11,9 @@ import { User } from "src/users/user.entity";
 import { Connection } from "./connection.entity";
 import { PassportModule } from "@nestjs/passport";
 import { Strategy42 } from "./strategies/strat42.strategy";
+import { JwtStrategy } from "./strategies/jwt.strategy";
+import { APP_GUARD } from "@nestjs/core";
+import { JwtAuthGuard } from "./guards/jwt.guard";
 
 @Module({
 	imports: [
@@ -25,7 +28,17 @@ import { Strategy42 } from "./strategies/strat42.strategy";
 			signOptions: { expiresIn: '7d' }
 		})
 	],
-	providers: [AuthService, UserService, ConnectionService, Strategy42],
+	providers: [
+		AuthService,
+		UserService,
+		ConnectionService,
+		Strategy42,
+		JwtStrategy,
+		{
+			provide: APP_GUARD,
+			useClass: JwtAuthGuard
+		}
+	],
 	controllers: [AuthController]
 })
 export class AuthModule {}

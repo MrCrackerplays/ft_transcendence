@@ -13,7 +13,9 @@ import './home.css'
   function QueryTest() {
 	// Fetcher function
 	async function getData() {
-		const res = await fetch('http://localhost:3000/users/Zach');
+		const res = await fetch('http://localhost:3000/users/Zach', {
+			credentials: 'include'
+		  });
 		if (!res.ok)
 			console.log("something wrong")
 		const jsonData = await res.json();

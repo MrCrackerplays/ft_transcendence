@@ -1,11 +1,24 @@
 import React from 'react';
-import { Router } from 'react-router-dom';
+import { Router, redirect } from 'react-router-dom';
 import { QueryClient, QueryClientProvider, useQuery } from 'react-query'
 
-function PrintToken() {
+async function PrintToken() {
   const urlParams = new URLSearchParams(window.location.search);
   const code = urlParams.get('code')
-//   https://api.intra.42.fr/apidoc/guides/web_application_flow
+
+  
+
+	if (!code)
+	{
+		window.location.replace('http://localhost:3000/login');
+		return (
+			<div>
+				<p>redirecting to login</p>
+			</div>
+		);
+	}
+
+	//   https://api.intra.42.fr/apidoc/guides/web_application_flow
   return (
 	<div>
 		<p>{code}</p>
