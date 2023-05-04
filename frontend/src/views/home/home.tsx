@@ -20,8 +20,11 @@ function MyHomePage()
   const [loginChecked, setLoginChecked] = useState(false);
 
   useEffect(() => {
-    if (isLoggedIn() == true)
-      setLoginChecked(true)
+    async function checkLogin() {
+      const loggedIn = await isLoggedIn();
+      setLoginChecked(true);
+    }
+    checkLogin();
   }, []);
   
   return(

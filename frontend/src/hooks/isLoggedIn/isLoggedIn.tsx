@@ -1,20 +1,24 @@
 import Cookies from 'js-cookie'
 import { useEffect } from "react";
 
-function isLoggedIn()
+async function isLoggedIn()
 {
-	const cookieName = "Authentication=";
-	const cookieValue = Cookies.get(cookieName);
+	const res = await fetch('http://localhost:3000/', {
+		credentials: 'include'
+	});
 
-	if (cookieValue)
+	console.log(res.status);
+
+	if (res.status == 200)
 	{
-		console.log(cookieValue);
-		return (true);
+		console.log("We got a request")
+		return (true)
 	}
 	else
 	{
+		console.log("couldn't get cookie value, redirecting");
 		window.location.replace("http://localhost:5173/login");
-		return (false);
+		return (false)
 	}
 }
 
