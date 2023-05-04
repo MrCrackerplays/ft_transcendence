@@ -64,7 +64,7 @@ function MyMatchHistory() {
 			<MatchCard user={user} />
 			<MatchCard user={user2} />
 			<MatchCard user={user} />
-			<MatchCard user={user2} />
+			<MatchCard user={user} />
 			<MatchCard user={user2} />
 		</div>
 	)

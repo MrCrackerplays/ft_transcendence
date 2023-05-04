@@ -1,4 +1,4 @@
-import React from 'react';
+import React, {useEffect, useState} from 'react';
 import MyNavBar from "../../hooks/navbar/navbar";
 import QueryTest from "./mainstats";
 import { Router } from 'react-router-dom';
@@ -11,22 +11,36 @@ const queryClient = new QueryClient();
 function printToken()
 {
   const urlParams = new URLSearchParams(window.location.search);
-  const code = urlParams.get('code')
-  console.log(code)
+  const code = urlParams.get('code');
+  console.log(code);
 }
 
-function MyHomePage() {
-  if (isLoggedIn() == false)
-  { return  (<div></div>);}
-   return (
-      <div>
+function MyHomePage()
+{
+  const [loginChecked, setLoginChecked] = useState(false);
+
+  useEffect(() => {
+    if (isLoggedIn() == true)
+      setLoginChecked(true)
+  }, []);
+  
+  return(
+    <>
+    {
+      loginChecked ? (
+        <div>
         <MyNavBar />
         <QueryClientProvider client={queryClient}>
             <QueryTest />
         </QueryClientProvider>
         <MyMatchHistory />
       </div>
-    );
+      ) : (
+        <></>
+      )
+    } 
+    </>
+  )
 }
 
 export default MyHomePage;

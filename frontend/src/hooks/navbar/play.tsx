@@ -4,7 +4,8 @@ import React, {useState} from 'react'
 import pfp from './Tateru.png'
 import './home.css'
 
-function MyLink({ label, link }: { label: string, link: string }) {
+function MyLink({ label, link }: { label: string, link: string })
+{
 	const [hovered, setHovered] = useState(false);
   
 	const handleMouseOver = () => {
@@ -22,9 +23,10 @@ function MyLink({ label, link }: { label: string, link: string }) {
 		{label}
 	  </a>
 	);
-  }
+}
   
-  function MyLinks() {
+function MyLinks()
+{
 	return (
 	  <div className='pfp-popover-content a'>
 		<MyLink label="Play" link="/Play"/>
@@ -33,10 +35,10 @@ function MyLink({ label, link }: { label: string, link: string }) {
 		<MyLink label="Logout" link="/Logout" />
 	  </div>
 	);
-  }
+}
 
-function MyPopover() {
-
+function MyPopover()
+{
 	return (
 	  <Popover className="pfp-popover">
 		<Popover.Button className="pfp-button">
@@ -47,6 +49,6 @@ function MyPopover() {
 		</Popover.Panel>
 	  </Popover>
 	)
-  }
+}
 
 export default MyPopover

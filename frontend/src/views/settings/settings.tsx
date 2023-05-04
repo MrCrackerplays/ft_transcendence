@@ -1,6 +1,7 @@
 import MyNavBar from "../../hooks/navbar/navbar";
 
-function MySettingsPage() {
+function MySettingsPage()
+{
   return (
     <div>
       <MyNavBar />

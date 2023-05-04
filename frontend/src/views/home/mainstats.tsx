@@ -4,16 +4,20 @@ import { useState, useEffect } from 'react';
 import { useQuery } from 'react-query';
 import './home.css'
   
-  type UserData = {
+type UserData = 
+{
 	userName: string;
 	score: number;
 	active: boolean;
 	imageURL: string;
-  }
-  function QueryTest() {
+}
+function QueryTest()
+{
 	// Fetcher function
-	async function getData() {
-		const res = await fetch('http://localhost:3000/users', {
+	async function getData()
+	{
+		const res = await fetch('http://localhost:3000/users',
+		{
 			credentials: 'include'
 		});
 		if (!res.ok)
