@@ -10,9 +10,12 @@
   },
   "dependencies": {
     "@headlessui/react": "^1.7.14",
+    "@types/js-cookie": "^3.0.3",
     "http-proxy-middleware": "^2.0.6",
+    "js-cookie": "^3.0.5",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
+    "react-query": "^3.39.3",
     "react-router-dom": "^6.10.0"
   },
   "devDependencies": {

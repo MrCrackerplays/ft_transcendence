@@ -1,12 +1,13 @@
 import React from 'react'
 
-function MyWins() {
+function MyWins()
+{
 	const wins = 15
 	return (
 		<div>
 			<p>Wins: {wins}</p>
 		</div>
 	);
-  }
+}
 
-  export default MyWins
+export default MyWins

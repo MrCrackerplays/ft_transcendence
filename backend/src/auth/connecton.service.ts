@@ -1,7 +1,9 @@
 import { HttpException, HttpStatus, Injectable } from "@nestjs/common";
 import { InjectRepository } from "@nestjs/typeorm";
-import { Connection } from "./connection.entity";
 import { Repository } from "typeorm";
+
+import { Connection } from "./connection.entity";
+import { User } from "src/users/user.entity";
 
 @Injectable()
 export class ConnectionService {
@@ -12,18 +14,25 @@ export class ConnectionService {
 	
 	async get(where: any) : Promise<Connection> {
 		const con = await this.connectionRepository.findOne({where});
-		if (!con)
-			throw new HttpException('User Connection not found', HttpStatus.NOT_FOUND);
+		// if (!con)
+		// 	throw new HttpException('User Connection not found', HttpStatus.NOT_FOUND);
 		return (con);
 	}
 
-	async create(_userUUID: string, _user42ID: number): Promise<Connection> {
-		let con = await this.get({user: _userUUID});
-		if (con)
-			throw new HttpException('User Connection already exists', HttpStatus.CONFLICT);
-		con = this.connectionRepository.create({ user: { id: _userUUID }, user42ID: _user42ID });
-		await this.connectionRepository.save(con);
-		return (con)
+	async create(_user: User, _user42ID: number): Promise<Connection> {
+		// let con = await this.get({user: {id: _userUUID} });
+		// if (con)
+		// 	throw new HttpException('User Connection already exists', HttpStatus.CONFLICT);
+		try {
+			const con = this.connectionRepository.create();
+			con.user = _user;
+			con.user42ID = _user42ID;
+			await con.save();
+			console.log(`Connection created between 42: (${con.user42ID}), User: (${con.user.id})`);
+			return (con);
+		}
+		catch (error) { console.log(error); }
+		return (null);
 	}
 
 	async update(connectionID: number, data: any): Promise<any> {

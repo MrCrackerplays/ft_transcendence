@@ -1,4 +1,5 @@
-.all-matchs {
+.all-matchs
+{
 	position: fixed;
 	margin-left: 30%;
 	margin-top: 10%;
@@ -8,9 +9,11 @@
 	color: white;
 }
 
-.monospace {
+.monospace
+{
 	font-family: "Courier New", Courier, monospace;
 }
+
 .match-card
 {
 	height:100%;
@@ -24,7 +27,8 @@
 	transition: transform 0.3s ease-in-out;
 }
 
-.greenborder{
+.greenborder
+{
 	border-left: 3px solid rgb(23, 124, 23);
 	border-right: 3px solid rgb(38, 37, 37);
 	z-index: 0;
@@ -47,7 +51,8 @@
 	background: rgb(38, 37, 37);
 }
 
-.redborder{
+.redborder
+{
 	border-left: 3px solid rgb(38, 37, 37);
 	border-right: 3px solid rgb(176, 37, 37);
 	z-index: 0;
@@ -103,9 +108,12 @@
 	padding-right: 7px;
 	/* left: 5%; */
 }
-.left-player p:hover{
+
+.left-player p:hover
+{
 	color: red;
 }
+
 .center-score
 {
 	display: flex;
@@ -160,7 +168,8 @@
 
 
 /* Animations are big and clunky therefore at the bottom away from all other css */
-@keyframes red-slide-in{
+@keyframes red-slide-in
+{
 	0%{
 		background: linear-gradient(to left,rgb(176, 37, 37), rgb(38, 37, 37), rgb(38, 37, 37) 0%);
 	}
@@ -196,7 +205,8 @@
 	}
 }
 
-@keyframes red-slide-out{
+@keyframes red-slide-out
+{
 	0%{
 		background: linear-gradient(to left,rgb(176, 37, 37), rgb(38, 37, 37), rgb(38, 37, 37) 99%);
 	}
@@ -232,7 +242,8 @@
 	}
 }
 
-@keyframes green-slide-out {
+@keyframes green-slide-out
+{
 	0%{
 		background: linear-gradient(to right,rgb(23, 124, 23), rgb(38, 37, 37), rgb(38, 37, 37) 99%);
 	}
@@ -268,7 +279,8 @@
 	}	
 }
 
-@keyframes green-slide-in {
+@keyframes green-slide-in 
+{
 	0%{
 		background: linear-gradient(to right,rgb(23, 124, 23), rgb(38, 37, 37), rgb(38, 37, 37) 0%);
 	}
