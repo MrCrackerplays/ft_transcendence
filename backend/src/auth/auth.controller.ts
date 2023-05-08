@@ -1,7 +1,7 @@
 import { Controller, Get, HttpCode, HttpStatus, Post, Req, Res, UseGuards } from "@nestjs/common";
 import { Response } from "express";
 
-import * as Constants from "../../../shared/constants";
+import { Constants } from "../../../shared/constants";
 import { AuthService } from "./auth.service";
 import { User42 } from "./interfaces/user42.interface";
 import { Public } from "./decorators/public.decorator";

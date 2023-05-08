@@ -1,7 +1,7 @@
 import React from 'react';
 import { Router, redirect } from 'react-router-dom';
 import { QueryClient, QueryClientProvider, useQuery } from 'react-query'
-import * as Constants from "../../../../shared/constants";
+import { Constants } from "../../../../shared/constants";
 import './login.css'
 
 function MyLoginPage()
