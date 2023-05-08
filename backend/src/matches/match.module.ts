@@ -10,7 +10,8 @@ import { User } from "src/users/user.entity";
 
 @Module({
 	imports: [ TypeOrmModule.forFeature([Match, User]), UserModule ],
-	providers: [ MatchService, UserService ],
-	controllers: [ MatchController ]
+	providers: [ MatchService ],
+	controllers: [ MatchController ],
+	exports: [ MatchService ]
 })
 export class MatchModule {}

@@ -12,7 +12,8 @@ import { Message } from "src/message/message.entity";
 
 @Module({
 	imports: [ TypeOrmModule.forFeature([Channel, User, Message]), UserModule ],
-	providers: [ ChannelService, UserService, MessageService ],
-	controllers: [ ChannelController ]
+	providers: [ ChannelService, MessageService ],
+	controllers: [ ChannelController ],
+	exports: [ ChannelService ]
 })
 export class ChannelModule {}

@@ -1,11 +1,9 @@
 import { Module } from "@nestjs/common";
 
-import { UserModule } from "src/users/user.module";
 import { AuthService } from "./auth.service";
 import { AuthController } from "./auth.controller";
 import { JwtModule } from "@nestjs/jwt";
-import { UserService } from "src/users/user.service";
-import { ConnectionService } from "./connecton.service";
+import { ConnectionService } from "./connection.service";
 import { TypeOrmModule } from "@nestjs/typeorm";
 import { User } from "src/users/user.entity";
 import { Connection } from "./connection.entity";
@@ -14,14 +12,14 @@ import { Strategy42 } from "./strategies/strat42.strategy";
 import { JwtStrategy } from "./strategies/jwt.strategy";
 import { APP_GUARD } from "@nestjs/core";
 import { JwtAuthGuard } from "./guards/jwt.guard";
+import { UserModule } from "src/users/user.module";
 
 @Module({
 	imports: [
 		TypeOrmModule.forFeature([User, Connection]),
 		AuthModule,
-		UserModule,
 		PassportModule,
-
+		UserModule,
 		JwtModule.register({
 			global: true,
 			secret: process.env.JWT_SECRET,
@@ -30,7 +28,6 @@ import { JwtAuthGuard } from "./guards/jwt.guard";
 	],
 	providers: [
 		AuthService,
-		UserService,
 		ConnectionService,
 		Strategy42,
 		JwtStrategy,
@@ -39,6 +36,7 @@ import { JwtAuthGuard } from "./guards/jwt.guard";
 			useClass: JwtAuthGuard
 		}
 	],
-	controllers: [AuthController]
+	controllers: [AuthController],
+	exports: [ AuthService, ConnectionService ]
 })
 export class AuthModule {}

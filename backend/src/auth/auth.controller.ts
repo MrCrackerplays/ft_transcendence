@@ -15,6 +15,7 @@ export class AuthController {
 	@Public()
 	@UseGuards(AuthGuard42)
 	@Get('login')
+	// SignIn is the process of login in and getting the JWT token (in a cookie)
 	async signIn(@Req() req: any, @Res() res: Response): Promise<void> {
 		const connection: Connection = await this.authService.signIn(req.user as User42);
 
