@@ -2,7 +2,7 @@ import { HttpException, HttpStatus, Injectable, Req } from "@nestjs/common";
 import { InjectRepository } from "@nestjs/typeorm";
 
 import { User } from "./user.entity";
-import { Repository } from "typeorm";
+import { Repository, getRepository } from "typeorm";
 import { CreateUserDTO } from "../../../shared/dto/create-user.dto";
 import { PublicUser } from "../../../shared/public-user";
 import { PublicMatch } from "../../../shared/public-match";
@@ -11,11 +11,14 @@ import { User42 } from "src/auth/interfaces/user42.interface";
 import { ConnectionService } from "src/auth/connection.service";
 import { AuthRequest } from "src/interfaces/authrequest.interface";
 import { Connection } from "src/auth/connection.entity";
+import { Match } from "src/matches/match.entity";
 
 @Injectable()
 export class UserService {
 	constructor(
 		@InjectRepository(User) private usersRepository: Repository<User>,
+		@InjectRepository(Match) private matchRepository: Repository<Match>,
+
 		private readonly connectionService: ConnectionService
 		) { }
 
@@ -119,31 +122,11 @@ export class UserService {
 			.loadMany();
 	}
 
-	async getRecentMatches(user: User): Promise<PublicMatch[]> {
-		// let matches: Match[] = await this.usersRepository.createQueryBuilder()
-		// 	.relation(Match, "players")
-		// 	.of(user)
-		// 	.loadMany();
-		
-		const userWithMatches: User = await this.usersRepository.findOne({
-			relations: ['matches'],
-			where: { id: user.id }
-		});
-		const matches = userWithMatches.matches;
+	async getRecentMatches(user: User): Promise<Match[]> {
 
-		console.log(matches);
+		user = await this.get(user.id, ['matches']);
 
-		let publicMatches: PublicMatch[] = [];
-		for (let m of matches) {
-			publicMatches.push(await m.toPublic(this));
-		}
-
-		// await matches.forEach( async (value: Match) => {
-		// 	publicMatches.push(await value.toPublic(this))
-		// });
-
-		console.log(publicMatches);
-
-		return (publicMatches);
+		const matches = user.matches.slice(0, 10);
+		return (matches);
 	}
 }

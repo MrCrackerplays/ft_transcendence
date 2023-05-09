@@ -1,15 +1,16 @@
 import { Body, Controller, Delete, Get, Param, Post, Req } from '@nestjs/common';
-import { UserService } from './user.service';
-import { User } from './user.entity';
+import { UserService } from '../user.service';
+import { User } from '../user.entity';
 
-import { CreateUserDTO } from '../../../shared/dto/create-user.dto';
-import { AddFriendDTO } from '../../../shared/dto/add-friend.dto';
-import { PublicUser } from '../../../shared/public-user';
-import { PublicMatch } from '../../../shared/public-match';
+import { CreateUserDTO } from '../../../../shared/dto/create-user.dto';
+import { AddFriendDTO } from '../../../../shared/dto/add-friend.dto';
+import { PublicUser } from '../../../../shared/public-user';
+import { PublicMatch } from '../../../../shared/public-match';
 import { AuthService } from 'src/auth/auth.service';
 import { AuthRequest } from 'src/interfaces/authrequest.interface';
 import { ConnectionService } from 'src/auth/connection.service';
 import { Connection } from 'src/auth/connection.entity';
+import { Match } from 'src/matches/match.entity';
 
 @Controller('users')
 export class UserController {
@@ -69,7 +70,7 @@ export class UserController {
 
 	@Get(':name/matches')
 	// Promises a single user found from username
-	async getRecentMatches(@Param('name') name: string): Promise<PublicMatch[]> {
+	async getRecentMatches(@Param('name') name: string): Promise<Match[]> {
 		const user: User = await this.userService.findFromUsername(name);
 		if (user == null)
 			return [];
