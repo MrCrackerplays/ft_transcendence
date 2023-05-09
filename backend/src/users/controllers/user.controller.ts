@@ -65,7 +65,7 @@ export class UserController {
 		const friend: User = await this.userService.findOne(addFriendDTO.userID);
 		if (user == null || friend == null)
 			return ;
-		return this.userService.addFriend(user, friend);
+		return this.userService.addFriend(user, friend.id);
 	}
 
 	@Get(':name/matches')

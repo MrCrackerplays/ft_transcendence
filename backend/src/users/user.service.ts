@@ -1,4 +1,4 @@
-import { HttpException, HttpStatus, Injectable, Req } from "@nestjs/common";
+import { HttpCode, HttpException, HttpStatus, Injectable, Req } from "@nestjs/common";
 import { InjectRepository } from "@nestjs/typeorm";
 
 import { User } from "./user.entity";
@@ -12,6 +12,8 @@ import { ConnectionService } from "src/auth/connection.service";
 import { AuthRequest } from "src/interfaces/authrequest.interface";
 import { Connection } from "src/auth/connection.entity";
 import { Match } from "src/matches/match.entity";
+import { Channel } from "src/channel/channel.entity";
+import { Message } from "src/message/message.entity";
 
 @Injectable()
 export class UserService {
@@ -102,12 +104,19 @@ export class UserService {
 	}
 
 	// ### USER IS KNOWN ###
-	addFriend(user: User, friend: User): Promise<void> {
+	async addFriend(user: User, friend_id: string): Promise<void> {
+
+		if (friend_id == user.id)
+			throw new HttpException('Can not friend yourself', HttpStatus.FORBIDDEN);
+		
+		const friend = await this.get(friend_id);
+		if (!friend)
+			throw new HttpException('Friend does not exist', HttpStatus.FORBIDDEN);
 
 		return this.usersRepository.createQueryBuilder()
 			.relation(User, "friends")
 			.of(user.id)
-			.add(friend.id);
+			.add(friend_id);
 
 		// user.friends.push(friend);
 		// friend.friends.push(user);
@@ -122,11 +131,27 @@ export class UserService {
 			.loadMany();
 	}
 
+	async getChannels(user: User): Promise<Channel[]> {
+		user = await this.get(user.id, ['channelSubscribed']);
+		return (user.channelSubscribed);
+	}
+
+	async getMessages(user: User): Promise<Message[]> {
+		user = await this.get(user.id, ['messages']);
+		return (user.messages);
+	}
+
 	async getRecentMatches(user: User): Promise<Match[]> {
 
-		user = await this.get(user.id, ['matches']);
-
-		const matches = user.matches.slice(0, 10);
+		const matches = await this.matchRepository.find({
+			relations: ['players'],
+			where : {
+				players : {
+					id: user.id
+				}
+			},
+			take: 10
+		});
 		return (matches);
 	}
 }
