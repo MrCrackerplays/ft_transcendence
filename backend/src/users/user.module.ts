@@ -9,11 +9,12 @@ import { ConnectionService } from "src/auth/connection.service";
 import { Connection } from "src/auth/connection.entity";
 import { SelfController } from "./controllers/self.controller";
 import { Match } from "src/matches/match.entity";
+import { IDController } from "./controllers/id.controller";
 
 @Module({
 	imports: [ TypeOrmModule.forFeature([User, Connection, Match]) ],
 	providers: [ UserService, AuthService, ConnectionService ],
-	controllers: [ UserController, SelfController ],
+	controllers: [ UserController, SelfController, IDController],
 	exports: [ UserService ]
 })
 export class UserModule {}

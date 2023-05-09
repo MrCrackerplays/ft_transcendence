@@ -16,8 +16,8 @@ export class User extends BaseEntity {
 	@Column( {default: 0} )
 	score: number;
 
-	@Column( {default: true} )
-	active: boolean;
+	@Column( {default: 'online'} )
+	status: string;
 
 	@Column( {default: ""} )
 	imageURL: string;

@@ -1,13 +1,9 @@
-import { HttpCode, HttpException, HttpStatus, Injectable, Req } from "@nestjs/common";
+import { HttpException, HttpStatus, Injectable } from "@nestjs/common";
 import { InjectRepository } from "@nestjs/typeorm";
 
 import { User } from "./user.entity";
-import { Repository, getRepository } from "typeorm";
+import { Repository } from "typeorm";
 import { CreateUserDTO } from "../../../shared/dto/create-user.dto";
-import { PublicUser } from "../../../shared/public-user";
-import { PublicMatch } from "../../../shared/public-match";
-import { Request } from "express";
-import { User42 } from "src/auth/interfaces/user42.interface";
 import { ConnectionService } from "src/auth/connection.service";
 import { AuthRequest } from "src/interfaces/authrequest.interface";
 import { Connection } from "src/auth/connection.entity";
@@ -71,22 +67,19 @@ export class UserService {
 		return user;
 	}
 
-	async findAll(): Promise<PublicUser[]> {
-		const query = {
-			select : {
-				id: true,
-				userName: true,
-				gamesPlayed: true,
-				gamesWon: true,
-				score: true,
-				active: true,
-				imageURL: true
-			}
-		};
-		return this.usersRepository.find(query) as Promise<PublicUser[]>;
+	async findAll(): Promise<User[]> {
+		return this.usersRepository.find() as Promise<User[]>;
 	}
 
-	findFromUsername(name: string): Promise<User | null> {
+	async getOne(where: any, relations = [] as string[]): Promise<User> {
+		const user = await this.usersRepository.findOne({where, relations});
+
+		if (!user)
+			throw new HttpException('User not found', HttpStatus.NOT_FOUND);
+		return user;
+	}
+
+	getFromUsername(name: string): Promise<User | null> {
 		const query = {
 			where : {
 				userName: name
