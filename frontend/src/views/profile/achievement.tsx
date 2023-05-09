@@ -7,6 +7,8 @@ function AchievementCard({ user }: { user:UserStats}) {
 	const textcolor = user.win ? "green" : "red";
 	const display = user.win ? "Victory" : "Defeat";
 
+	console.log(`Achievemene-ard ${textcolor}`)
+	console.log(`Achievemene-ard${textcolor}`)
 	return (
 		<div className={`achievement-card${textcolor} monospace`}>
 			<div className="left-player">
