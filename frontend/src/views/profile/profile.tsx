@@ -3,10 +3,9 @@ import MyNavBar from "../../hooks/navbar/navbar";
 import QueryTest from "./mainstats";
 import { Router } from 'react-router-dom';
 import { QueryClient, QueryClientProvider, useQuery } from 'react-query'
-import MyAchievement from '../profile/matchhistory';
-import MyMatchHistory from '../profile/matchhistory';
 import isLoggedIn from '../../hooks/isLoggedIn/isLoggedIn';
-
+import MatchHistory from './components/matchhistory/matchhistory';
+import Userbar from './components/userbar/userbar';
 const queryClient = new QueryClient();
 function printToken()
 {
@@ -15,14 +14,15 @@ function printToken()
   console.log(code);
 }
 
-function MyHomePage()
+function ProfilePage()
 {
   const [loginChecked, setLoginChecked] = useState(false);
 
   useEffect(() => {
     async function checkLogin() {
       const loggedIn = await isLoggedIn();
-      setLoginChecked(true);
+      if (loggedIn == true)
+        setLoginChecked(true);
     }
     checkLogin();
   }, []);
@@ -36,7 +36,8 @@ function MyHomePage()
         <QueryClientProvider client={queryClient}>
             <QueryTest />
         </QueryClientProvider>
-        <MyMatchHistory />
+        <Userbar name="znajda"/>
+        {/* <MatchHistory /> */}
       </div>
       ) : (
         <></>
@@ -46,4 +47,4 @@ function MyHomePage()
   )
 }
 
-export default MyHomePage;
+export default ProfilePage;

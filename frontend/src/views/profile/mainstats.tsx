@@ -2,7 +2,7 @@ import React from 'react';
 // import PublicUser from 'shared/public-user.ts'
 import { useState, useEffect } from 'react';
 import { useQuery } from 'react-query';
-import './home.css'
+import './profile.css'
   
 type UserData = 
 {

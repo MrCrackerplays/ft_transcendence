@@ -70,4 +70,4 @@ function MyMatchHistory() {
 	)
 }
 
-export default MyMatchHistory
+export default MatchHistory
