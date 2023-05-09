@@ -65,4 +65,16 @@ export class SelfController {
 		return this.userService.getMessages(currentUser);
 	}
 
+	@Post('changename')
+	async setName(@Req() req: AuthRequest, @Body() nameDTO : any): Promise<User> {
+		const currentUser = await this.get(req);
+		if (!currentUser)
+			throw new HttpException('No current user', HttpStatus.FORBIDDEN);
+		
+		if (!nameDTO || !nameDTO.name)
+			throw new HttpException('No name provided', HttpStatus.NOT_ACCEPTABLE);
+
+		return this.userService.setName(currentUser, nameDTO.name);
+	}
+
 }

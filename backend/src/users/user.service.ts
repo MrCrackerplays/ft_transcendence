@@ -131,6 +131,22 @@ export class UserService {
 			.loadMany();
 	}
 
+	async setName(user: User, name: string): Promise<User> {
+		if (!name || name.length == 0)
+			throw new HttpException('Provide an actual name', HttpStatus.FORBIDDEN);
+		
+		const userWithName = await this.usersRepository.findOne({
+			where: {
+				userName: name
+			}
+		});
+
+		if (userWithName)
+			throw new HttpException('Username taken', HttpStatus.FORBIDDEN);
+		
+		return user.save();
+	}
+
 	async getChannels(user: User): Promise<Channel[]> {
 		user = await this.get(user.id, ['channelSubscribed']);
 		return (user.channelSubscribed);
