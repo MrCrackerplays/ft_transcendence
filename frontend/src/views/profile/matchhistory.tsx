@@ -1,22 +1,22 @@
 import { Card, Container } from "@mui/material"
-import './achivement.css'
+import './matchhistory.css'
 import pfp from './Tateru.png'
 import pfp2 from './Tortenite.png'
 
-function AchievementCard({ user }: { user:UserStats}) {
+function MatchCard({ user }: { user:UserStats}) {
 	const textcolor = user.win ? "green" : "red";
 	const display = user.win ? "Victory" : "Defeat";
 
 	console.log(`Achievemene-ard ${textcolor}`)
 	console.log(`Achievemene-ard${textcolor}`)
 	return (
-		<div className={`achievement-card${textcolor} monospace`}>
+		<div className={`match-card ${textcolor}border monospace`}>
 			<div className="left-player">
 				<img src={user.userPFP} alt="pfp not found"/>
 				<p>{user.userName}</p>
 			</div>
 			<div className="center-score">
-				<h1 className={`victory-loss${textcolor}`}>{display}</h1>
+				<h1 className={`${textcolor}`}>{display}</h1>
 				<div className="center-row">
 					<p>{user.userScore}</p>
 					<p>-</p>
@@ -55,21 +55,21 @@ class UserStats
 	}
 }
 
-function MyAchievement() {
+function MyMatchHistory() {
 	var user = new UserStats();
 	var user2 = new UserStats();
 	user2.win = false;
 	user2.userScore = "00";
 	user2.opponentScore = "10";
 	return (
-		<div className="all-achievements">
-			<AchievementCard user={user} />
-			<AchievementCard user={user2} />
-			<AchievementCard user={user} />
-			<AchievementCard user={user2} />
-			<AchievementCard user={user2} />
+		<div className="all-matchs">
+			<MatchCard user={user} />
+			<MatchCard user={user2} />
+			<MatchCard user={user} />
+			<MatchCard user={user} />
+			<MatchCard user={user2} />
 		</div>
 	)
 }
 
-export default MyAchievement
+export default MyMatchHistory

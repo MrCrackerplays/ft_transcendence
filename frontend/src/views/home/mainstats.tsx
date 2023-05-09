@@ -4,23 +4,29 @@
 // import { useQuery } from 'react-query';
 // import './home.css'
   
-//   type UserData = {
-// 	userName: string;
-// 	score: number;
-// 	active: boolean;
-// 	imageURL: string;
-//   }
-//   function QueryTest() {
-// 	// Fetcher function
-// 	async function getData() {
-// 		const res = await fetch('http://localhost:3000/users/Zach');
-// 		if (!res.ok)
-// 			console.log("something wrong")
-// 		const jsonData = await res.json();
-// 		return jsonData;
-// 	}
-// 	// Using the hook
-// 	const {data, error, isLoading} = useQuery('randomFacts', getData);
+type UserData = 
+{
+	userName: string;
+	score: number;
+	active: boolean;
+	imageURL: string;
+}
+function QueryTest()
+{
+	// Fetcher function
+	async function getData()
+	{
+		const res = await fetch('http://localhost:3000/users',
+		{
+			credentials: 'include'
+		});
+		if (!res.ok)
+			console.log("something wrong")
+		const jsonData = await res.json();
+		return jsonData;
+	}
+	// Using the hook
+	const {data, error, isLoading} = useQuery('randomFacts', getData);
 
 // 	// Error and Loading states
 // 	if (error) return <div>Request Failed</div>;

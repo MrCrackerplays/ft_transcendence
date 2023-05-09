@@ -12,13 +12,13 @@ function handleClick(image) {
 	)
 };
 
-function MySettingsPage() {
-	return (
-	    <div>
-	      <MyNavBar />
-		  <MyButton label="hello" handleClick={handleClick}></MyButton>
-	    </div>
-	);
+function MySettingsPage()
+{
+  return (
+    <div>
+      <MyNavBar />
+    </div>
+  );
 }
 
 export default MySettingsPage;
