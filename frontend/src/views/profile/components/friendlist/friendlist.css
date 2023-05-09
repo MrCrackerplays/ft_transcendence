@@ -1,0 +1,37 @@
+.all-friends
+{
+	position: fixed;
+	margin-left: 85%;
+	margin-top: 10%;
+	min-height: 50px;
+	height: 1rem;
+	width: 7rem;
+	color: white;
+}
+
+.friend-card
+{
+	height: 100%;
+	width: 100%;
+	display: flex;
+	justify-content: space-between;
+	flex-direction: row;
+	position: relative;
+	background-color: rgb(38, 37, 37);
+}
+
+.ONLINE {
+	color: green;
+}
+
+.OFFLINE {
+	color: grey;
+}
+
+.BUSY {
+	color: rgb(165, 0, 0);
+}
+
+.INGAME {
+	color: rebeccapurple;
+}

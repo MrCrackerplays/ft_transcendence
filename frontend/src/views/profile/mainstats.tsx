@@ -1,8 +1,8 @@
-// import React from 'react';
-// // import PublicUser from 'shared/public-user.ts'
-// import { useState, useEffect } from 'react';
-// import { useQuery } from 'react-query';
-// import './home.css'
+import React from 'react';
+// import PublicUser from 'shared/public-user.ts'
+import { useState, useEffect } from 'react';
+import { useQuery } from 'react-query';
+import './profile.css'
   
 type UserData = 
 {
@@ -16,13 +16,14 @@ function QueryTest()
 	// Fetcher function
 	async function getData()
 	{
-		const res = await fetch('http://localhost:3000/users',
+		const res = await fetch('http://localhost:3000/users/self',
 		{
 			credentials: 'include'
 		});
 		if (!res.ok)
-			console.log("something wrong")
+			console.log("something wrong");
 		const jsonData = await res.json();
+		console.log(`JSON Data: ${jsonData}`);
 		return jsonData;
 	}
 	// Using the hook

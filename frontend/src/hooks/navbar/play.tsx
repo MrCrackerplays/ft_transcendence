@@ -39,11 +39,15 @@ function MyLinks()
 
 function MyPopover()
 {
+	const name = "ThisisAReallyLongusername"
 	return (
 	  <Popover className="pfp-popover">
-		<Popover.Button className="pfp-button">
-			<img src={pfp} alt="Tateru" className="pfp-circle-image"/>
-		</Popover.Button>
+		<div className='pfp-flex-box'>
+			<p>{name}</p>
+			<Popover.Button className="pfp-button">
+				<img src={pfp} alt="Tateru" className="pfp-circle-image"/>
+			</Popover.Button>
+		</div>
 		<Popover.Panel className="pfp-popover-content">
 			<MyLinks />
 		</Popover.Panel>

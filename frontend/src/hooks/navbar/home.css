@@ -4,7 +4,7 @@
 	left: 0;
 	position: fixed;
 	width: 100%;
-	height: 9%;
+	height: 60px;
 	background: linear-gradient(to right,rgb(38, 37, 37) 50%, rgb(38, 37, 37), white);
 }
 
@@ -18,12 +18,24 @@
 	/* background: linear-gradient(to right, red, pink); */
 }
 
+.pfp-flex-box
+{
+	display: flex;
+	/* flex-direction: row-reverse; */
+	align-items: center;
+}
+
+.pfp-flex-box p
+{
+	margin:10px;
+}
+
 .pfp-button
 {
 	background-color: transparent;
 	outline: none;
 	border-radius: 50%;
-	height:50px;
+	height: 50px;
 	width: 50px;
 	box-shadow: 0px 0px 10px 0px rgba(0, 0, 0, 0.75);
 
@@ -32,15 +44,19 @@
 .pfp-circle-image
 {
 	position: absolute;
-	top: 50%;
-	left: 50%;
+	top: 48%;
+	/* left: 10%; */
 	transform: translate(-50%, -50%);
-	height: 50px;
-	width: 50px;
+	/* height: 50px; */
+	/* width: 50px; */
+	/* border-radius: 50%; */
+	/* border-color: lightgray; */
+	/* border: 1px solid black; */
 	/* object-fit: cover; */
+	width: 45px;
+	height: 45px;
 	border-radius: 50%;
-	border: 1px solid black;
-	border-color: lightgray;
+	/* margin-right: 10px; */
 }
 
 .pfp-popover

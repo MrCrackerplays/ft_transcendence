@@ -1,13 +1,21 @@
-import { BaseEntity, Column, Entity, JoinTable, ManyToMany, PrimaryGeneratedColumn } from "typeorm";
+import { BaseEntity, Column, CreateDateColumn, Entity, JoinTable, ManyToMany, PrimaryGeneratedColumn } from "typeorm";
 
 import { User } from "src/users/user.entity";
 import { PublicMatch } from "../../../shared/public-match";
 import { UserService } from "src/users/user.service";
 
-@Entity()
+@Entity({
+	orderBy: {
+		date: "DESC",
+		id: "DESC"
+	}
+})
 export class Match extends BaseEntity {
 	@PrimaryGeneratedColumn("uuid")
 	id: string;
+
+	@CreateDateColumn({ type: "timestamp", default: () => "CURRENT_TIMESTAMP(6)" })
+	date: Date;
 
 	@ManyToMany(type => User, user => user.matches, { cascade: true })
 	@JoinTable()

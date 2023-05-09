@@ -1,16 +1,26 @@
-import { HttpException, HttpStatus, Injectable } from "@nestjs/common";
+import { HttpException, HttpStatus, Injectable, Req } from "@nestjs/common";
 import { InjectRepository } from "@nestjs/typeorm";
 
 import { User } from "./user.entity";
-import { Repository } from "typeorm";
+import { Repository, getRepository } from "typeorm";
 import { CreateUserDTO } from "../../../shared/dto/create-user.dto";
 import { PublicUser } from "../../../shared/public-user";
 import { PublicMatch } from "../../../shared/public-match";
+import { Request } from "express";
+import { User42 } from "src/auth/interfaces/user42.interface";
+import { ConnectionService } from "src/auth/connection.service";
+import { AuthRequest } from "src/interfaces/authrequest.interface";
+import { Connection } from "src/auth/connection.entity";
+import { Match } from "src/matches/match.entity";
 
 @Injectable()
 export class UserService {
 	constructor(
-		@InjectRepository(User) private usersRepository: Repository<User>) { }
+		@InjectRepository(User) private usersRepository: Repository<User>,
+		@InjectRepository(Match) private matchRepository: Repository<Match>,
+
+		private readonly connectionService: ConnectionService
+		) { }
 
 	async createOne(createUserDTO: CreateUserDTO) {
 		console.log(`UserService: creating new user (${createUserDTO.userName})`);
@@ -21,12 +31,34 @@ export class UserService {
 		return user;
 	}
 
-	async get(userID: string): Promise<User> {
-		const user = await this.usersRepository.findOneBy({id: userID});
+	async get(userID: string, relations = [] as string[]): Promise<User> {
+		const user = await this.usersRepository.findOne({where : {id: userID}, relations});
 
 		if (!userID || !user)
 			throw new HttpException('User not found', HttpStatus.NOT_FOUND);
 		return user;
+	}
+
+	async updateName(userID: string, newName: string) {
+		const user = await this.get(userID);
+		
+		if (await this.usersRepository.findOne({where : { userName: newName}}) != null) {
+			// USERNAME EXISTS!
+			throw new HttpException('Username exists', HttpStatus.FORBIDDEN);
+		}
+		user.userName = newName;
+		user.save();
+		return user;
+	}
+
+	async getCurrentUser(req: AuthRequest): Promise<User> {
+		// Get the connection from the Request payload and attatch the 'user' relation, then return that user
+		const connection : Connection = await this.connectionService.get({ id: req.user.id }, ['user']);
+		return (connection.user);
+	}
+
+	profileComplete(user: User) : boolean {
+		return (user.userName.length > 0);
 	}
 
 	async create() {
@@ -90,31 +122,11 @@ export class UserService {
 			.loadMany();
 	}
 
-	async getRecentMatches(user: User): Promise<PublicMatch[]> {
-		// let matches: Match[] = await this.usersRepository.createQueryBuilder()
-		// 	.relation(Match, "players")
-		// 	.of(user)
-		// 	.loadMany();
-		
-		const userWithMatches: User = await this.usersRepository.findOne({
-			relations: ['matches'],
-			where: { id: user.id }
-		});
-		const matches = userWithMatches.matches;
+	async getRecentMatches(user: User): Promise<Match[]> {
 
-		console.log(matches);
+		user = await this.get(user.id, ['matches']);
 
-		let publicMatches: PublicMatch[] = [];
-		for (let m of matches) {
-			publicMatches.push(await m.toPublic(this));
-		}
-
-		// await matches.forEach( async (value: Match) => {
-		// 	publicMatches.push(await value.toPublic(this))
-		// });
-
-		console.log(publicMatches);
-
-		return (publicMatches);
+		const matches = user.matches.slice(0, 10);
+		return (matches);
 	}
 }
