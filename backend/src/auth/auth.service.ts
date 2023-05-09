@@ -1,9 +1,12 @@
-import { Injectable } from "@nestjs/common";
+import { Injectable, Req } from "@nestjs/common";
 import { JwtService } from "@nestjs/jwt";
 import { UserService } from "src/users/user.service";
 import { User42 } from "./interfaces/user42.interface";
-import { ConnectionService } from "./connecton.service";
+import { ConnectionService } from "./connection.service";
 import { Connection } from "./connection.entity";
+import { User } from "src/users/user.entity";
+import { Request } from "express";
+import { UserPayload } from "src/interfaces/authrequest.interface";
 
 
 @Injectable()
@@ -35,6 +38,7 @@ export class AuthService {
 	}
 
 	signConnection(connection: Connection) : string {
+		console.log(`Signing payload with sub: ${connection.id}`);
 		return this.jwtService.sign({ sub: connection.id });
 	}
 
@@ -43,4 +47,13 @@ export class AuthService {
 		console.log(`Building cookie with signed-token: ${token}`);
 		return `Authentication=${token}; HttpOnly; Path=/; Max-Age=100000`;
 	}
+
+	async getCurrentUser(@Req() req: any): Promise<User> {
+		const user42 : User42 = req.user as User42;
+
+		if (!user42)
+			return (null);
+		return ((await this.connectionService.get({ id: user42.id })).user);
+	}
+
 }

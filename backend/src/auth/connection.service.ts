@@ -12,8 +12,8 @@ export class ConnectionService {
 		@InjectRepository(Connection) private readonly connectionRepository: Repository<Connection>
 	) {}
 	
-	async get(where: any) : Promise<Connection> {
-		const con = await this.connectionRepository.findOne({where});
+	async get(where: any, relations = [] as string[]) : Promise<Connection> {
+		const con = await this.connectionRepository.findOne({ where, relations });
 		// if (!con)
 		// 	throw new HttpException('User Connection not found', HttpStatus.NOT_FOUND);
 		return (con);

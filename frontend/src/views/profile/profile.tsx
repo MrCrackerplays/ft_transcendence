@@ -7,12 +7,6 @@ import isLoggedIn from '../../hooks/isLoggedIn/isLoggedIn';
 import MatchHistory from './components/matchhistory/matchhistory';
 import Userbar from './components/userbar/userbar';
 const queryClient = new QueryClient();
-function printToken()
-{
-  const urlParams = new URLSearchParams(window.location.search);
-  const code = urlParams.get('code');
-  console.log(code);
-}
 
 function ProfilePage()
 {
@@ -26,6 +20,20 @@ function ProfilePage()
     }
     checkLogin();
   }, []);
+
+  	async function giveMedata() {
+
+		const res = await fetch('http://localhost:3000/users/self', {
+			credentials: 'include'
+		});
+		if (!res.ok)
+			console.log("something wrong");
+		const jsonData = await res.json();
+		console.log(`User Score: ${jsonData.score}, User active: ${jsonData.active}`);
+		return jsonData;
+	}
+
+	giveMedata();
   
   return(
     <>

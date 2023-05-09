@@ -28,6 +28,9 @@ export class User extends BaseEntity {
 	@Column( {default: 0})
 	gamesWon: number;
 
+	@Column( {default: false})
+	twofactor: boolean;
+
 	// Every user can own mutliple channels, every channel only has one owner
 	// ONE user has MANY channels
 	@OneToMany(type => Channel, channel => channel.owner)

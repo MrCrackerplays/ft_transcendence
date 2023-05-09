@@ -16,13 +16,14 @@ function QueryTest()
 	// Fetcher function
 	async function getData()
 	{
-		const res = await fetch('http://localhost:3000/users',
+		const res = await fetch('http://localhost:3000/users/self',
 		{
 			credentials: 'include'
 		});
 		if (!res.ok)
-			console.log("something wrong")
+			console.log("something wrong");
 		const jsonData = await res.json();
+		console.log(`JSON Data: ${jsonData}`);
 		return jsonData;
 	}
 	// Using the hook
