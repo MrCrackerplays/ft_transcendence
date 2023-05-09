@@ -2,8 +2,8 @@
 {
 	/* display:flex; */
 	position:fixed;
-	width:40%;
-	height:10%;
+	top:5%;
+	right:50%;
 	color: white;
 	text-shadow: 2px;
 	font-size: 50px;
