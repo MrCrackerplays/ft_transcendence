@@ -40,4 +40,9 @@ export class ConnectionService {
 		catch (error) { throw new HttpException(error.message, HttpStatus.BAD_REQUEST); }
 	}
 
+	setTwoFactorSecret(connection: Connection, secret: string) {
+		connection.otpSecret = secret;
+		connection.save();
+	}
+
 }

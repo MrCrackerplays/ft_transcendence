@@ -43,6 +43,13 @@ export class UserService {
 		return (connection.user);
 	}
 
+	async setTwoFactor(_user: User, enable: boolean): Promise<User> {
+		const connection : Connection = await this.connectionService.get({ user: { id: _user.id } }, ['user']);
+		connection.twoFactorEnabled = enable;
+		connection.save();
+		return connection.user;
+	}
+
 	profileComplete(user: User) : boolean {
 		return (user.userName.length > 0);
 	}

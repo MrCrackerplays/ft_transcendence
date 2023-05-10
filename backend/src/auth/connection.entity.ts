@@ -11,10 +11,13 @@ export class Connection extends BaseEntity {
 	@JoinColumn()
 	user: User;
 
-	@Column({ nullable: true})
+	@Column({ nullable: true })
 	user42ID: number;
 
-	// ONE TIME PASSWORD
+	@Column({ default: false })
+	twoFactorEnabled: boolean;
+
+	// ONE TIME PASSWORD FOR 2FA
 	@Column({ nullable: true})
-	otp: string;
+	otpSecret: string;
 }

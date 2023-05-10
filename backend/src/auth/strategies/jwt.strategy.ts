@@ -1,4 +1,4 @@
-import { Injectable } from "@nestjs/common";
+import { HttpException, HttpStatus, Injectable } from "@nestjs/common";
 import { PassportStrategy } from "@nestjs/passport";
 import { ExtractJwt, Strategy } from "passport-jwt"
 import { AuthRequest, UserPayload } from "src/interfaces/authrequest.interface";
@@ -16,7 +16,8 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
 	}
 
 	validate(payload: any): any {
-		// Check payload OTP??
+		// if (!payload.otp)
+		// 	throw new HttpException('OTP Token Required', HttpStatus.FORBIDDEN);
 		return { id: payload.sub };
 	}
 }
