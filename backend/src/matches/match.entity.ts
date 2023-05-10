@@ -17,7 +17,7 @@ export class Match extends BaseEntity {
 	@CreateDateColumn({ type: "timestamp", default: () => "CURRENT_TIMESTAMP(6)" })
 	date: Date;
 
-	@ManyToMany(type => User, user => user.matches, { cascade: true })
+	@ManyToMany(type => User, user => user.matches, { cascade: true, eager: true })
 	@JoinTable()
 	players: User[];
 

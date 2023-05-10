@@ -2,7 +2,7 @@ import { HttpException, HttpStatus, Injectable } from "@nestjs/common";
 import { InjectRepository } from "@nestjs/typeorm";
 
 import { User } from "./user.entity";
-import { Repository } from "typeorm";
+import { Any, In, Repository } from "typeorm";
 import { CreateUserDTO } from "../../../shared/dto/create-user.dto";
 import { ConnectionService } from "src/auth/connection.service";
 import { AuthRequest } from "src/interfaces/authrequest.interface";
@@ -147,13 +147,13 @@ export class UserService {
 
 	async getRecentMatches(user: User): Promise<Match[]> {
 
-		const matches = await this.matchRepository.find({
+		const matches = await this.matchRepository
+		.find({
 			relations: ['players'],
-			where : {
-				players : {
-					id: user.id
-				}
-			},
+			where : [
+				{ p1ID: user.id },
+				{ p2ID: user.id }
+			],
 			take: 10
 		});
 		return (matches);
