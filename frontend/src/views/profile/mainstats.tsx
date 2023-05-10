@@ -33,7 +33,7 @@ function QueryTest()
 	if (error) return <div>Request Failed</div>;
 	if (isLoading) return <div>Loading...</div>;
 	// Show the response if everything is fine
-	console.log(data)
+	// console.log(data)
 	return (
 		<div className="main-stats">
 			<img src={data.imageURL} alt="This is a PFP" width={200} height={200}/>

@@ -4,54 +4,32 @@ import pfp from './Tateru.png'
 import pfp2 from './Tortenite.png'
 import React, {useEffect, useState} from "react"
 
-function MatchCard({ user }: { user:UserStats}) {
-	const textcolor = user.win ? "green" : "red";
-	const display = user.win ? "Victory" : "Defeat";
+function MatchCard({ user }) {
+	const textcolor = user.winner ? "red" : "green";
+	const display = user.winner ? "Defeat" : "Victory";
 
+	// console.log(user)
 	return (
 		<div className={`match-card ${textcolor}border monospace`}>
 			<div className="left-player">
-				<img src={user.userPFP} alt="pfp not found"/>
-				<p>{user.userName}</p>
+				<img src={user} alt="pfp not found"/>
+				<p>{user.players[0].userName}</p>
 			</div>
 			<div className="center-score">
 				<h1 className={`${textcolor}`}>{display}</h1>
 				<div className="center-row">
-					<p>{user.userScore}</p>
+					<p>{user.p1Score}</p>
 					<p>-</p>
-					<p>{user.opponentScore}</p>
+					<p>{user.p2Score}</p>
 				</div>
 				<p className={"gamemode"}>{user.gameMode}</p>
 			</div>
 			<div className="right-player">
-				<img src={user.opponentPFP} alt="pfp not found"/>
-				<p>{user.opponentName}</p>
+				<img src={user.p2} alt="pfp not found"/>
+				<p>{user.players[1].userName}</p>
 			</div>
 		</div>
 	)
-}
-
-class UserStats
-{
-	userName: string;
-	userPFP: string;
-	userScore: string;
-	gameMode: string;
-	win: boolean;
-	opponentName: string;
-	opponentPFP: string;
-	opponentScore: string;
-
-	constructor() {
-		this.userName = "Tateru";
-		this.userPFP = pfp;
-		this.userScore = "10";
-		this.gameMode = "Normal"
-		this.win = true;
-		this.opponentName = "Tortenite"
-		this.opponentPFP = pfp2;
-		this.opponentScore = "03";
-	}
 }
 
 async function getMatchHistory() {
@@ -78,22 +56,13 @@ function MatchHistory() {
 		}
 		checkJson();
 	}, []);
-	// var user = new UserStats();
-	// var user2 = new UserStats();
-	// user2.win = false;
-	// user2.userScore = "00";
-	// user2.opponentScore = "10";
-	// for (let i = 0; i < jsonData.length; i++)
-	// 	console.log(`"Match History: ${i} ${jsonData[i]}"`)
-	// let parsed = JSON.parse(jsonData)
-	// console.log(jsonData[0])
 	return (
 		<div className="all-matchs">
-			{/* <MatchCard user={user} />
-			<MatchCard user={user2} />
-			<MatchCard user={user} />
-			<MatchCard user={user} />
-			<MatchCard user={user2} /> */}
+			{ 
+				jsonData.map((user, index) => (
+					<MatchCard key={index} user={user} /> 
+				))
+			}
 		</div>
 	)
 }

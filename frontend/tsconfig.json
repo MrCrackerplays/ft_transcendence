@@ -17,6 +17,6 @@
     "noImplicitAny": false,
     "jsx": "react-jsx"
   },
-  "include": ["src"],
+  "include": ["src", "../public-match.ts"],
   "references": [{ "path": "./tsconfig.node.json" }]
 }

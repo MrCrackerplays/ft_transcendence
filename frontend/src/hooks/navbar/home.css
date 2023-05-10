@@ -28,6 +28,8 @@
 .pfp-flex-box p
 {
 	margin:10px;
+	font-size: 25px;
+	text-align: center;
 }
 
 .pfp-button

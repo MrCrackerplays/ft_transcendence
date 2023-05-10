@@ -1,7 +1,6 @@
 import { Menu, Transition } from '@headlessui/react'
 import { Popover } from '@headlessui/react'
 import React, {useState} from 'react'
-import pfp from './Tateru.png'
 import './home.css'
 
 function MyLink({ label, link }: { label: string, link: string })
@@ -37,15 +36,14 @@ function MyLinks()
 	);
 }
 
-function MyPopover()
+function MyPopover( {name, imgsrc} )
 {
-	const name = "ThisisAReallyLongusername"
 	return (
 	  <Popover className="pfp-popover">
 		<div className='pfp-flex-box'>
 			<p>{name}</p>
 			<Popover.Button className="pfp-button">
-				<img src={pfp} alt="Tateru" className="pfp-circle-image"/>
+				<img src={imgsrc} alt="Missing" className="pfp-circle-image"/>
 			</Popover.Button>
 		</div>
 		<Popover.Panel className="pfp-popover-content">
