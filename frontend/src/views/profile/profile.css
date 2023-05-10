@@ -4,3 +4,10 @@
 	top: 10%;
 	left: 10%;
 }
+
+.btn-temp
+{
+	position:absolute;
+	top: 50%;
+	left: 5%;
+}

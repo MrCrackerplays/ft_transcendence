@@ -6,6 +6,7 @@ import { QueryClient, QueryClientProvider, useQuery } from 'react-query'
 import isLoggedIn from '../../hooks/isLoggedIn/isLoggedIn';
 import MatchHistory from './components/matchhistory/matchhistory';
 import Userbar from './components/userbar/userbar';
+import FetchSelf from '../../hooks/fetch/fetchSelf';
 const queryClient = new QueryClient();
 
 function ProfilePage()
@@ -20,20 +21,32 @@ function ProfilePage()
     }
     checkLogin();
   }, []);
+  
+  async function handleSubmit() {
+	window.event?.preventDefault();
+    const data = await FetchSelf()
+    if (!data.ok)
+    	return (false)
+	// console.log(data.id)
+	const p2ID2 = "32788b79-b4b3-4b23-ba5b-9d1a58551b0d"
+    const RESPONSE = await fetch("http://localhost:3000/matches", {
+    	method: 'POST',
+    	credentials: 'include',
+		headers: {
+			'content-type': "application/json"
+		},
+		body: JSON.stringify({
+				p1ID: data.id,
+				p2ID: p2ID2,
+				p1Score:10,
+				p2Score:5,
+				winner: 0
+		})
+	});
+	    	// body: `'{"p1ID":"${data.id}","p2ID":"${p2ID2}","p1Score":5,"p2Score":10,"winner":1}'`
+  }
 
-  	async function giveMedata() {
-
-		const res = await fetch('http://localhost:3000/users/self', {
-			credentials: 'include'
-		});
-		if (!res.ok)
-			console.log("something wrong");
-		const jsonData = await res.json();
-		console.log(`User Score: ${jsonData.score}, User active: ${jsonData.active}`);
-		return jsonData;
-	}
-
-	giveMedata();
+	// giveMedata();
   
   return(
     <>
@@ -45,7 +58,12 @@ function ProfilePage()
             <QueryTest />
         </QueryClientProvider>
         <Userbar name="znajda"/>
-        {/* <MatchHistory /> */}
+        <form onSubmit={handleSubmit}>
+        <button className="btn-temp">
+          Post Request!
+        </button>
+        </form>
+        <MatchHistory />
       </div>
       ) : (
         <></>
