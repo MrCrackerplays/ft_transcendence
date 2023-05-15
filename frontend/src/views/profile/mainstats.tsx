@@ -2,7 +2,7 @@ import React from 'react';
 // import PublicUser from 'shared/public-user.ts'
 import { useState, useEffect } from 'react';
 import { useQuery } from 'react-query';
-import './home.css'
+import './profile.css'
   
 type UserData = 
 {
@@ -16,13 +16,14 @@ function QueryTest()
 	// Fetcher function
 	async function getData()
 	{
-		const res = await fetch('http://localhost:3000/users',
+		const res = await fetch('http://localhost:3000/self',
 		{
 			credentials: 'include'
 		});
 		if (!res.ok)
-			console.log("something wrong")
+			console.log("something wrong");
 		const jsonData = await res.json();
+		// console.log(`JSON Data: ${jsonData}`);
 		return jsonData;
 	}
 	// Using the hook
@@ -32,12 +33,13 @@ function QueryTest()
 	if (error) return <div>Request Failed</div>;
 	if (isLoading) return <div>Loading...</div>;
 	// Show the response if everything is fine
+	// console.log(data)
 	return (
 		<div className="main-stats">
 			<img src={data.imageURL} alt="This is a PFP" width={200} height={200}/>
-			<h1>{data.userName}</h1>
+			<h1>{data.userName} SUP</h1>
 			<p>Score: {data.score}</p>
-			<p>Active: {data.active}</p>
+			<p>Active: {data.status}</p>
 		</div>
 	);
 }

@@ -2,15 +2,23 @@ import { HttpException, HttpStatus, Injectable } from "@nestjs/common";
 import { InjectRepository } from "@nestjs/typeorm";
 
 import { User } from "./user.entity";
-import { Repository } from "typeorm";
+import { Any, In, Repository } from "typeorm";
 import { CreateUserDTO } from "../../../shared/dto/create-user.dto";
-import { PublicUser } from "../../../shared/public-user";
-import { PublicMatch } from "../../../shared/public-match";
+import { ConnectionService } from "src/auth/connection.service";
+import { AuthRequest } from "src/interfaces/authrequest.interface";
+import { Connection } from "src/auth/connection.entity";
+import { Match } from "src/matches/match.entity";
+import { Channel } from "src/channel/channel.entity";
+import { Message } from "src/message/message.entity";
 
 @Injectable()
 export class UserService {
 	constructor(
-		@InjectRepository(User) private usersRepository: Repository<User>) { }
+		@InjectRepository(User) private usersRepository: Repository<User>,
+		@InjectRepository(Match) private matchRepository: Repository<Match>,
+
+		private readonly connectionService: ConnectionService
+		) { }
 
 	async createOne(createUserDTO: CreateUserDTO) {
 		console.log(`UserService: creating new user (${createUserDTO.userName})`);
@@ -21,12 +29,29 @@ export class UserService {
 		return user;
 	}
 
-	async get(userID: string): Promise<User> {
-		const user = await this.usersRepository.findOneBy({id: userID});
+	async get(userID: string, relations = [] as string[]): Promise<User> {
+		const user = await this.usersRepository.findOne({where : {id: userID}, relations});
 
 		if (!userID || !user)
 			throw new HttpException('User not found', HttpStatus.NOT_FOUND);
 		return user;
+	}
+
+	async getCurrentUser(req: AuthRequest): Promise<User> {
+		// Get the connection from the Request payload and attatch the 'user' relation, then return that user
+		const connection : Connection = await this.connectionService.get({ id: req.user.id }, ['user']);
+		return (connection.user);
+	}
+
+	async setTwoFactor(_user: User, enable: boolean): Promise<User> {
+		const connection : Connection = await this.connectionService.get({ user: { id: _user.id } }, ['user']);
+		connection.twoFactorEnabled = enable;
+		connection.save();
+		return connection.user;
+	}
+
+	profileComplete(user: User) : boolean {
+		return (user.userName.length > 0);
 	}
 
 	async create() {
@@ -37,22 +62,19 @@ export class UserService {
 		return user;
 	}
 
-	async findAll(): Promise<PublicUser[]> {
-		const query = {
-			select : {
-				id: true,
-				userName: true,
-				gamesPlayed: true,
-				gamesWon: true,
-				score: true,
-				active: true,
-				imageURL: true
-			}
-		};
-		return this.usersRepository.find(query) as Promise<PublicUser[]>;
+	async findAll(): Promise<User[]> {
+		return this.usersRepository.find() as Promise<User[]>;
 	}
 
-	findFromUsername(name: string): Promise<User | null> {
+	async getOne(where: any, relations = [] as string[]): Promise<User> {
+		const user = await this.usersRepository.findOne({where, relations});
+
+		if (!user)
+			throw new HttpException('User not found', HttpStatus.NOT_FOUND);
+		return user;
+	}
+
+	getFromUsername(name: string): Promise<User | null> {
 		const query = {
 			where : {
 				userName: name
@@ -70,12 +92,19 @@ export class UserService {
 	}
 
 	// ### USER IS KNOWN ###
-	addFriend(user: User, friend: User): Promise<void> {
+	async addFriend(user: User, friend_id: string): Promise<void> {
+
+		if (friend_id == user.id)
+			throw new HttpException('Can not friend yourself', HttpStatus.FORBIDDEN);
+		
+		const friend = await this.get(friend_id);
+		if (!friend)
+			throw new HttpException('Friend does not exist', HttpStatus.FORBIDDEN);
 
 		return this.usersRepository.createQueryBuilder()
 			.relation(User, "friends")
 			.of(user.id)
-			.add(friend.id);
+			.add(friend_id);
 
 		// user.friends.push(friend);
 		// friend.friends.push(user);
@@ -90,31 +119,43 @@ export class UserService {
 			.loadMany();
 	}
 
-	async getRecentMatches(user: User): Promise<PublicMatch[]> {
-		// let matches: Match[] = await this.usersRepository.createQueryBuilder()
-		// 	.relation(Match, "players")
-		// 	.of(user)
-		// 	.loadMany();
+	async setName(user: User, name: string): Promise<User> {
+		if (!name || name.length == 0)
+			throw new HttpException('Provide an actual name', HttpStatus.FORBIDDEN);
 		
-		const userWithMatches: User = await this.usersRepository.findOne({
-			relations: ['matches'],
-			where: { id: user.id }
+		const userWithName = await this.usersRepository.findOne({
+			where: {
+				userName: name
+			}
 		});
-		const matches = userWithMatches.matches;
 
-		console.log(matches);
+		if (userWithName)
+			throw new HttpException('Username taken', HttpStatus.FORBIDDEN);
+		user.userName = name;
+		return user.save();
+	}
 
-		let publicMatches: PublicMatch[] = [];
-		for (let m of matches) {
-			publicMatches.push(await m.toPublic(this));
-		}
+	async getChannels(user: User): Promise<Channel[]> {
+		user = await this.get(user.id, ['channelSubscribed']);
+		return (user.channelSubscribed);
+	}
 
-		// await matches.forEach( async (value: Match) => {
-		// 	publicMatches.push(await value.toPublic(this))
-		// });
+	async getMessages(user: User): Promise<Message[]> {
+		user = await this.get(user.id, ['messages']);
+		return (user.messages);
+	}
 
-		console.log(publicMatches);
+	async getRecentMatches(user: User): Promise<Match[]> {
 
-		return (publicMatches);
+		const matches = await this.matchRepository
+		.find({
+			relations: ['players'],
+			where : [
+				{ p1ID: user.id },
+				{ p2ID: user.id }
+			],
+			take: 10
+		});
+		return (matches);
 	}
 }
