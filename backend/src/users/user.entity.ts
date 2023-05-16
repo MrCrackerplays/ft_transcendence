@@ -19,7 +19,7 @@ export class User extends BaseEntity {
 	@Column( {default: 'online'} )
 	status: string;
 
-	@Column( {default: ""} )
+	@Column( {default: ''} )
 	imageURL: string;
 
 	@Column( {default: 0})
@@ -27,9 +27,6 @@ export class User extends BaseEntity {
 
 	@Column( {default: 0})
 	gamesWon: number;
-
-	@Column( {default: false})
-	twofactor: boolean;
 
 	// Every user can own mutliple channels, every channel only has one owner
 	// ONE user has MANY channels
@@ -47,8 +44,13 @@ export class User extends BaseEntity {
 	@JoinTable({ joinColumn: { name: 'users_id_1' } })
 	friends: User[];
 
-	@ManyToMany(type => Match, match => match.players)
-	matches: Match[];
+	@OneToMany(type => Match, match => match.winner)
+	@JoinTable()
+	wonMatches: Match[];
+
+	@OneToMany(type => Match, match => match.loser)
+	@JoinTable()
+	lostMatches: Match[];
 
 	@OneToOne( type => Connection, connection => connection.user )
 	connection: Connection;

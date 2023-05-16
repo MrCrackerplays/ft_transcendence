@@ -16,15 +16,15 @@ export class MatchService {
 	
 	async createMatch(createMatchDTO: CreateMatchDTO): Promise<Match> {
 		const match = new Match();
-		match.p1ID = createMatchDTO.p1ID;
-		match.p2ID = createMatchDTO.p2ID;
-		match.p1Score = createMatchDTO.p1Score;
-		match.p2Score = createMatchDTO.p2Score;
-		match.winner = createMatchDTO.winner;
 
-		const p1: User = await this.userService.findOne(createMatchDTO.p1ID);
-		const p2: User = await this.userService.findOne(createMatchDTO.p2ID);
-		match.players = [p1, p2];
+		const userWinner: User = await this.userService.findOne(createMatchDTO.winnerID);
+		const userLoser: User = await this.userService.findOne(createMatchDTO.loserID);
+		
+		match.winner = userWinner;
+		match.loser = userLoser;
+
+		match.winnerScore = createMatchDTO.winnerScore;
+		match.loserScore = createMatchDTO.loserScore;
 
 		return match.save();
 	}

@@ -2,7 +2,7 @@ import { HttpException, HttpStatus, Injectable } from "@nestjs/common";
 import { InjectRepository } from "@nestjs/typeorm";
 
 import { User } from "./user.entity";
-import { Any, In, Repository } from "typeorm";
+import { Any, ArrayContains, In, Repository } from "typeorm";
 import { CreateUserDTO } from "../../../shared/dto/create-user.dto";
 import { ConnectionService } from "src/auth/connection.service";
 import { AuthRequest } from "src/interfaces/authrequest.interface";
@@ -149,13 +149,27 @@ export class UserService {
 
 		const matches = await this.matchRepository
 		.find({
-			relations: ['players'],
+			relations: ['winner', 'loser'],
 			where : [
-				{ p1ID: user.id },
-				{ p2ID: user.id }
+				{ winner : { id: user.id } },
+				{ loser : { id: user.id } }
 			],
 			take: 10
 		});
+
+		// const matchIDs: string[] = [];
+		// matches.forEach((value) => {
+		// 	matchIDs.push(value.id);
+		// });
+
+		// const loadedMatches = await this.matchRepository
+		// .find({
+		// 	relations: ['players'],
+		// 	where: {
+		// 		id: In(matchIDs)
+		// 	}
+		// })
+
 		return (matches);
 	}
 }
