@@ -5,21 +5,35 @@ import MyLoginPage from './views/login/login';
 import Temp from './views/profile/temp/temp';
 import isLoggedIn from './hooks/isLoggedIn/isLoggedIn'
 
-function App()
+const PrivateRoute = ({component: Component, ...rest}) => {
+    return (
+
+        // Show the component only when the user is logged in
+        // Otherwise, redirect the user to /signin page
+        <Route {...rest} render={props => (
+            isLoggedIn() ?
+                <Component {...props} />
+            : <Navigate to="/login" />
+        )} />
+    );
+};
+
+function App(): React.ReactElement
 {
   return (
     <div className="App">
 		<Router>
+			<h1>Tet</h1>
     		<Routes>
-				<Route path="/" element={isLoggedIn() == true ? <ProfilePage /> : <Navigate to="/login" />}/>
-    			<Route path="/profile/*" element={isLoggedIn() == true ? <ProfilePage /> : <Navigate to="/login" />} />
-    			<Route path="/setting" Component={MySettingsPage} />
-				<Route path="/login" Component={MyLoginPage} />
-				<Route path="/temp" Component={Temp} />
+				<PrivateRoute path="/" Component={ProfilePage}/>
+				<PrivateRoute path="/profile/*" Component={ProfilePage}/>
+    			<Route path="/setting" component={ProfilePage} />
+				<Route path="/login" element={<MyLoginPage />} />
+				<Route path="/temp" element={<Temp />}/>
     		</Routes>
 		</Router>
     </div>
   );
 }
 
-export default App
+export default App	

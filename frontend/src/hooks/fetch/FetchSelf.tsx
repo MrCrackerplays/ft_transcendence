@@ -4,7 +4,10 @@ async function FetchSelf() {
 		credentials: 'include'
 	});
 	if (!res.ok)
+	{
 		console.log("something wrong");
+		return false
+	}
 	const jsonData = await res.json();
 	// console.log(`User Score: ${jsonData.score}, User active: ${jsonData.active}`);
 	return jsonData;

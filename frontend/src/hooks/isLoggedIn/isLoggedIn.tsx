@@ -7,16 +7,15 @@ function isLoggedIn()
 
 	useEffect(() => {
 		async function checkLogin() {
-			const res = await fetch('http://localhost:3000/', {
+			const res = await fetch('http://localhost:3000/self', {
 					credentials: 'include'
 				});
 			setLogin(res.status);
-			// console.log(value)
-
 		}
 		checkLogin();
 	}, []);
 
+	// return (true)
 	if (isLogin == 200)
 		return (true);
 	else
