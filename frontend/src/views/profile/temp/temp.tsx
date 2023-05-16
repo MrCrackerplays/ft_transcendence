@@ -10,6 +10,7 @@ function Temp() {
 	const [p1s, setP1S] = useState(0)
 	const [p2s, setP2S] = useState(0)
 	const [winner, setWinner] = useState(0)
+	const [twofa, setTwofa] = React.useState("")
 
 	async function handleMatch() {
 		window.event?.preventDefault();
@@ -65,6 +66,15 @@ function Temp() {
 		console.log({friend})
 		console.log(RESPONSE.ok);
 	}
+	async function handle2fa()
+	{
+		window.event?.preventDefault();
+		const response = await fetch('http://localhost:3000/2fa',{
+			credentials: 'include'
+		});
+		const responseBody = await response.text();
+		setTwofa(responseBody)
+	}
 	return (
 		<div className='white'>
 			<form onSubmit={handleName}>
@@ -100,6 +110,10 @@ function Temp() {
 				</label>
 				<button type="submit">Submit Match</button>
 			</form>
+			<div>
+				<button onClick={handle2fa}>Enable 2fa!</button>
+				<img src={twofa} alt="Not found!"	/>
+			</div>
 		</div>
 	)
 }
