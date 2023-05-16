@@ -9,6 +9,7 @@ import { DatabaseModule } from './database/database.module';
 import { ChannelModule } from './channel/channel.module';
 import { MatchModule } from './matches/match.module';
 import { AuthModule } from './auth/auth.module';
+import { AchievementModule } from './achievements/achievement.module';
 
 @Module({
 
@@ -34,7 +35,8 @@ import { AuthModule } from './auth/auth.module';
 		UserModule,
 		ChannelModule,
 		MatchModule,
-		AuthModule
+		AuthModule,
+		AchievementModule
 	],
 
 	controllers: [

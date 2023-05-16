@@ -4,6 +4,7 @@ import { Message } from "src/message/message.entity";
 import { Channel } from "src/channel/channel.entity";
 import { Match } from "src/matches/match.entity";
 import { Connection } from "src/auth/connection.entity";
+import { Achievement } from "src/achievements/achievement.entity";
 
 @Entity()
 export class User extends BaseEntity {
@@ -37,6 +38,9 @@ export class User extends BaseEntity {
 	// MANY users subscribe to MANY channels
 	@ManyToMany(type => Channel, channel => channel.members)
 	channelSubscribed: Channel[];
+
+	@ManyToMany(type => Achievement, achievement => achievement.members, { eager: true })
+	achievements: Achievement[];
 
 	// Every user can have multiple friends
 	// ONE user, MANY friends
