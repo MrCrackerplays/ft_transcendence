@@ -1,7 +1,6 @@
-import { Menu, Transition } from '@headlessui/react'
 import { Popover } from '@headlessui/react'
 import React, {useState} from 'react'
-import './home.css'
+import './navbar.css'
 
 function MyLink({ label, link }: { label: string, link: string })
 {

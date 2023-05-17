@@ -4,8 +4,8 @@ import QueryTest from "./mainstats";
 import { Router } from 'react-router-dom';
 import { QueryClient, QueryClientProvider, useQuery } from 'react-query'
 import isLoggedIn from '../../hooks/isLoggedIn/isLoggedIn';
-import MatchHistory from './components/matchhistory/matchhistory';
-import Userbar from './components/userbar/userbar';
+import MatchHistory from './flexbox/matchhistory/matchhistory';
+import Userbar from './flexbox/userbar/userbar';
 import FetchSelf from '../../hooks/fetch/FetchSelf';
 const queryClient = new QueryClient();
 
@@ -13,6 +13,7 @@ function ProfilePage()
 {
 	const [loginChecked, setLoginChecked] = useState(false);
 	const [jsonData, setJsonData] = useState([] as any);
+	
 	useEffect(() => {
     async function checkLogin() {
     	const loggedIn = await isLoggedIn();
@@ -33,7 +34,7 @@ function ProfilePage()
 		{
 			loginChecked ? (
 				<div>
-					<MyNavBar name={jsonData.userName} imgsrc={jsonData.imageURL} />
+					<MyNavBar name={jsonData.userName} imgsrc={"http://localhost:3000/self/pfp"} />
 					<Userbar name={jsonData.userName}/>
 					<MatchHistory />
 				</div> 				

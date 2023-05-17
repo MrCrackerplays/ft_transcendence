@@ -1,12 +1,11 @@
-import React from "react"
 import MyPopover from "./play";
-import './home.css'
-import { AppBar, Toolbar, Typography, Button, Popover } from '@mui/material';
+import './navbar.css'
 
 function MyNavBar( {name, imgsrc} )
 {
 	return (
 		<div className="my-navbar">
+			<p className="website">Ball Busters</p>
 			<MyPopover name={name} imgsrc={imgsrc}/>
 		</div>
 	)

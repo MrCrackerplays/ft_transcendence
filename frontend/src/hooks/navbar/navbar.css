@@ -5,14 +5,26 @@
 	position: fixed;
 	width: 100%;
 	height: 60px;
-	background: linear-gradient(to right,rgb(38, 37, 37) 50%, rgb(38, 37, 37), white);
+	background: linear-gradient(to right,rgb(38, 37, 37) 25%, rgb(38, 37, 37), white);
+    border-image: linear-gradient(to right, white, rgba(56,2,155,0) 25%);
+	border-bottom: 2px solid transparent;
+	border-image-slice: 1;
+    width:100%;
 }
 
+.website
+{
+	position:relative;
+	margin-left: 2%;
+	font-size: 30px;
+	color:white;
+	text-shadow: 1px;
+}
 .my-navbar-text
 {
 	position:relative;
 	/* margin-left: auto; */
-	bottom: 20%;
+	/* bottom: 20%; */
 	font-size: 30px;
 	color:red;
 	/* background: linear-gradient(to right, red, pink); */
