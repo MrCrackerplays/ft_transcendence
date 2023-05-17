@@ -1,9 +1,7 @@
 export class CreateMatchDTO {
-	p1ID: string;
-	p2ID: string;
+	winnerID: string;
+	loserID: string;
 
-	p1Score: number;
-	p2Score: number;
-
-	winner: number;
+	winnerScore: number;
+	loserScore: number;
 }

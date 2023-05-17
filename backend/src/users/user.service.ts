@@ -2,7 +2,7 @@ import { HttpException, HttpStatus, Injectable } from "@nestjs/common";
 import { InjectRepository } from "@nestjs/typeorm";
 
 import { User } from "./user.entity";
-import { Any, In, Repository } from "typeorm";
+import { Any, ArrayContains, In, Repository } from "typeorm";
 import { CreateUserDTO } from "../../../shared/dto/create-user.dto";
 import { ConnectionService } from "src/auth/connection.service";
 import { AuthRequest } from "src/interfaces/authrequest.interface";
@@ -10,12 +10,14 @@ import { Connection } from "src/auth/connection.entity";
 import { Match } from "src/matches/match.entity";
 import { Channel } from "src/channel/channel.entity";
 import { Message } from "src/message/message.entity";
+import { Achievement } from "src/achievements/achievement.entity";
 
 @Injectable()
 export class UserService {
 	constructor(
 		@InjectRepository(User) private usersRepository: Repository<User>,
 		@InjectRepository(Match) private matchRepository: Repository<Match>,
+		@InjectRepository(Achievement) private achievementRepository: Repository<Achievement>,
 
 		private readonly connectionService: ConnectionService
 		) { }
@@ -135,6 +137,12 @@ export class UserService {
 		return user.save();
 	}
 
+	async addAchievement(user: User, achievementID: number): Promise<User> {
+		const ach = await this.achievementRepository.findOne({ where: { id : achievementID } });
+		user.achievements.push(ach);
+		return user.save();
+	}
+
 	async getChannels(user: User): Promise<Channel[]> {
 		user = await this.get(user.id, ['channelSubscribed']);
 		return (user.channelSubscribed);
@@ -145,17 +153,36 @@ export class UserService {
 		return (user.messages);
 	}
 
+	async getAchievements(user: User): Promise<Achievement[]> {
+		const userWithAchievements = await this.get(user.id, ['achievements']);
+		return userWithAchievements.achievements;
+	}
+
 	async getRecentMatches(user: User): Promise<Match[]> {
 
 		const matches = await this.matchRepository
 		.find({
-			relations: ['players'],
+			relations: ['winner', 'loser'],
 			where : [
-				{ p1ID: user.id },
-				{ p2ID: user.id }
+				{ winner : { id: user.id } },
+				{ loser : { id: user.id } }
 			],
 			take: 10
 		});
+
+		// const matchIDs: string[] = [];
+		// matches.forEach((value) => {
+		// 	matchIDs.push(value.id);
+		// });
+
+		// const loadedMatches = await this.matchRepository
+		// .find({
+		// 	relations: ['players'],
+		// 	where: {
+		// 		id: In(matchIDs)
+		// 	}
+		// })
+
 		return (matches);
 	}
 }

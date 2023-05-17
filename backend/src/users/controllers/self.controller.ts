@@ -6,6 +6,7 @@ import { User } from "../user.entity";
 import { Match } from "src/matches/match.entity";
 import { Channel } from "src/channel/channel.entity";
 import { Message } from "src/message/message.entity";
+import { Achievement } from "src/achievements/achievement.entity";
 
 @Controller('self')
 export class SelfController {
@@ -46,7 +47,7 @@ export class SelfController {
 
 	@Get('messages')
 	async getMessages(@Req() req: AuthRequest): Promise<Message[]> {
-		const currentUser = await this.getCurrrentUser(req);		
+		const currentUser = await this.getCurrrentUser(req);
 		return this.userService.getMessages(currentUser);
 	}
 
@@ -58,6 +59,12 @@ export class SelfController {
 			throw new HttpException('No name provided', HttpStatus.NOT_ACCEPTABLE);
 
 		return this.userService.setName(currentUser, nameDTO.name);
+	}
+
+	@Get('achievements')
+	async getAchievements(@Req() req: AuthRequest): Promise<Achievement[]> {
+		const currentUser = await this.getCurrrentUser(req);
+		return this.userService.getAchievements(currentUser);
 	}
 
 	// ====== HELPERS =======

@@ -7,6 +7,7 @@ import { Channel } from "src/channel/channel.entity";
 import { Message } from "src/message/message.entity";
 import { Match } from "src/matches/match.entity";
 import { Connection } from "src/auth/connection.entity";
+import { Achievement } from "src/achievements/achievement.entity";
 
 @Module({
 	imports: [
@@ -26,7 +27,8 @@ import { Connection } from "src/auth/connection.entity";
 					Channel,
 					Message,
 					Match,
-					Connection
+					Connection,
+					Achievement
 				],
 				synchronize: true
 			})			
