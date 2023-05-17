@@ -40,6 +40,7 @@ export class User extends BaseEntity {
 	channelSubscribed: Channel[];
 
 	@ManyToMany(type => Achievement, achievement => achievement.members, { eager: true })
+	@JoinTable()
 	achievements: Achievement[];
 
 	// Every user can have multiple friends

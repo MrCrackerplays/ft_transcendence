@@ -10,12 +10,14 @@ import { Connection } from "src/auth/connection.entity";
 import { Match } from "src/matches/match.entity";
 import { Channel } from "src/channel/channel.entity";
 import { Message } from "src/message/message.entity";
+import { Achievement } from "src/achievements/achievement.entity";
 
 @Injectable()
 export class UserService {
 	constructor(
 		@InjectRepository(User) private usersRepository: Repository<User>,
 		@InjectRepository(Match) private matchRepository: Repository<Match>,
+		@InjectRepository(Achievement) private achievementRepository: Repository<Achievement>,
 
 		private readonly connectionService: ConnectionService
 		) { }
@@ -135,6 +137,12 @@ export class UserService {
 		return user.save();
 	}
 
+	async addAchievement(user: User, achievementID: number): Promise<User> {
+		const ach = await this.achievementRepository.findOne({ where: { id : achievementID } });
+		user.achievements.push(ach);
+		return user.save();
+	}
+
 	async getChannels(user: User): Promise<Channel[]> {
 		user = await this.get(user.id, ['channelSubscribed']);
 		return (user.channelSubscribed);
@@ -143,6 +151,11 @@ export class UserService {
 	async getMessages(user: User): Promise<Message[]> {
 		user = await this.get(user.id, ['messages']);
 		return (user.messages);
+	}
+
+	async getAchievements(user: User): Promise<Achievement[]> {
+		const userWithAchievements = await this.get(user.id, ['achievements']);
+		return userWithAchievements.achievements;
 	}
 
 	async getRecentMatches(user: User): Promise<Match[]> {
