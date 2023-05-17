@@ -1,4 +1,4 @@
-import { Body, Controller, Delete, Get, Param, Post, Req } from '@nestjs/common';
+import { Body, Controller, Delete, Get, HttpException, HttpStatus, Param, Post, Req, Res } from '@nestjs/common';
 import { UserService } from '../user.service';
 import { User } from '../user.entity';
 
@@ -12,6 +12,9 @@ import { ConnectionService } from 'src/auth/connection.service';
 import { Connection } from 'src/auth/connection.entity';
 import { Match } from 'src/matches/match.entity';
 import { Public } from 'src/auth/decorators/public.decorator';
+import { join } from 'path';
+import { Response } from 'express';
+import { STORAGE_DEFAULT_IMAGE, STORAGE_IMAGE_LOCATION } from 'src/storage';
 
 @Controller('users')
 export class UserController {
@@ -37,6 +40,20 @@ export class UserController {
 	// Promises a single user found from username
 	async getFromUsername(@Param('name') name: string): Promise<User> {
 		return this.userService.getOne({userName: name});
+	}
+
+	@Get(':name/pfp')
+	async getProfilePicture(@Param('name') name: string, @Res() res: Response): Promise<any> {
+		const user : User = await this.userService.getOne({userName: name});
+
+		if (!user)
+			throw new HttpException('User not found', HttpStatus.NOT_FOUND);
+
+		if (!user.imageURL) {
+			// DEFAULT IMAGE!
+			return res.sendFile(join(process.cwd(), STORAGE_DEFAULT_IMAGE));
+		}
+		return res.sendFile(join(process.cwd(), STORAGE_IMAGE_LOCATION + '/' + user.imageURL));
 	}
 
 	// @Get(':name/friends')
