@@ -8,7 +8,6 @@ import { Public } from "./decorators/public.decorator";
 import { AuthGuard42 } from "./guards/auth42.guard";
 import { Connection } from "./connection.entity";
 import { AuthRequest } from "src/interfaces/authrequest.interface";
-import { HttpErrorByCode } from "@nestjs/common/utils/http-error-by-code.util";
 import { ConnectionService } from "./connection.service";
 
 @Controller()

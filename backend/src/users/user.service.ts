@@ -52,6 +52,14 @@ export class UserService {
 		return connection.user;
 	}
 
+	setProfilePicture(_user: User, file: Express.Multer.File): Promise<User> {
+		if (_user.imageURL)
+			console.log("User already has image (PROBABLY SHOULD DELETE?)");
+
+		_user.imageURL = file.filename;
+		return _user.save();
+	}
+
 	profileComplete(user: User) : boolean {
 		return (user.userName.length > 0);
 	}
