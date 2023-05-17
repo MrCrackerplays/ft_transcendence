@@ -4,6 +4,16 @@ import pfp from './Tateru.png'
 import pfp2 from './Tortenite.png'
 import React, {useEffect, useState} from "react"
 
+class Match {
+	id!: string
+	date!: Date
+	winner: any;
+	loser: any;
+	winnerScore!: number
+	loserScore!: number
+	gameMode!: string
+}
+
 function MatchCard({ user }) {
 	const textcolor = user.winner ? "red" : "green";
 	const display = user.winner ? "Defeat" : "Victory";
