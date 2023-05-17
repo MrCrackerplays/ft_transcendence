@@ -87,7 +87,7 @@ export class SelfController {
 			// DEFAILT IMAGE!
 			return res.sendFile(join(process.cwd(), STORAGE_DEFAULT_IMAGE));
 		}
-		return res.sendFile(join(process.cwd(), STORAGE_IMAGE_LOCATION + currentUser.imageURL));
+		return res.sendFile(join(process.cwd(), STORAGE_IMAGE_LOCATION + '/' + currentUser.imageURL));
 	}
 
 	// ====== HELPERS =======

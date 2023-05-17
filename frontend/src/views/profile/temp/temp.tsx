@@ -125,6 +125,10 @@ function Temp() {
 				<button onClick={handle2fa}>Enable 2fa!</button>
 				<img src={twofa} alt="Not found!"	/>
 			</div>
+			<form method="POST" encType="multipart/form-data" action="http://localhost:3000/self/pfp">
+  				<input type="file" id="file" name="file" accept='image/*'/>
+  				<input type="submit" />
+			</form>
 		</div>
 	)
 }
