@@ -129,6 +129,7 @@ function Temp() {
   				<input type="file" id="file" name="file" accept='image/*'/>
   				<input type="submit" />
 			</form>
+			<img src="http://localhost:3000/self/pfp" alt="Not found!"	/>
 		</div>
 	)
 }
