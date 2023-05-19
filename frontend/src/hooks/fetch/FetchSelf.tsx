@@ -1,11 +1,11 @@
-async function FetchSelf() {
+async function FetchSelf() {;
 
 	const res = await fetch('http://localhost:3000/self', {
 		credentials: 'include'
 	});
-	if (!res.ok)
+	if (!res.ok || res.status == 401) 
 	{
-		console.log("something wrong");
+		console.log("something wrong redirect to login");
 		return false
 	}
 	const jsonData = await res.json();
