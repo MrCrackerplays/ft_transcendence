@@ -1,4 +1,4 @@
-import { Body, Controller, Get, HttpException, HttpStatus, Post, Req } from "@nestjs/common";
+import { Body, Controller, Get, HttpException, HttpStatus, Post, Req, Res, UploadedFile, UseInterceptors } from "@nestjs/common";
 import { UserService } from "../user.service";
 import { ConnectionService } from "src/auth/connection.service";
 import { AuthRequest } from "src/interfaces/authrequest.interface";
@@ -6,6 +6,11 @@ import { User } from "../user.entity";
 import { Match } from "src/matches/match.entity";
 import { Channel } from "src/channel/channel.entity";
 import { Message } from "src/message/message.entity";
+import { Achievement } from "src/achievements/achievement.entity";
+import { FileInterceptor } from "@nestjs/platform-express";
+import { STORAGE_DEFAULT_IMAGE, STORAGE_IMAGE_LOCATION, storage } from "src/storage";
+import { Response } from "express";
+import { join } from "path";
 
 @Controller('self')
 export class SelfController {
@@ -46,7 +51,7 @@ export class SelfController {
 
 	@Get('messages')
 	async getMessages(@Req() req: AuthRequest): Promise<Message[]> {
-		const currentUser = await this.getCurrrentUser(req);		
+		const currentUser = await this.getCurrrentUser(req);
 		return this.userService.getMessages(currentUser);
 	}
 
@@ -58,6 +63,31 @@ export class SelfController {
 			throw new HttpException('No name provided', HttpStatus.NOT_ACCEPTABLE);
 
 		return this.userService.setName(currentUser, nameDTO.name);
+	}
+
+	@Get('achievements')
+	async getAchievements(@Req() req: AuthRequest): Promise<Achievement[]> {
+		const currentUser = await this.getCurrrentUser(req);
+		return this.userService.getAchievements(currentUser);
+	}
+
+	@Post('pfp')
+	@UseInterceptors(FileInterceptor('file', storage))
+	async uploadProfilePicture(@Req() req: AuthRequest, @UploadedFile() file : Express.Multer.File): Promise<User> {
+		const currentUser = await this.getCurrrentUser(req);
+
+		return this.userService.setProfilePicture(currentUser, file);
+	}
+
+	@Get('pfp')
+	async getProfilePicture(@Req() req: AuthRequest, @Res() res: Response): Promise<any> {
+		const currentUser = await this.getCurrrentUser(req);
+
+		if (!currentUser.imageURL) {
+			// DEFAILT IMAGE!
+			return res.sendFile(join(process.cwd(), STORAGE_DEFAULT_IMAGE));
+		}
+		return res.sendFile(join(process.cwd(), STORAGE_IMAGE_LOCATION + '/' + currentUser.imageURL));
 	}
 
 	// ====== HELPERS =======

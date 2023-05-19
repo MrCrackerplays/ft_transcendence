@@ -1,6 +1,11 @@
 import React, {useState} from 'react'
+
+
 import FetchSelf from '../../../hooks/fetch/fetchSelf';
 import './temp.css'
+import { CreateMatchDTO } from '../../../../../shared/dto/create-match.dto'
+
+
 function Temp() {
 	const [name, setName] = useState('')
 	const [friend, setFriend] = useState('')
@@ -10,12 +15,22 @@ function Temp() {
 	const [p1s, setP1S] = useState(0)
 	const [p2s, setP2S] = useState(0)
 	const [winner, setWinner] = useState(0)
+	const [twofa, setTwofa] = React.useState("")
 
 	async function handleMatch() {
 		window.event?.preventDefault();
 		const data = await FetchSelf()
 		if (data == false)
     		return (false)
+
+		/// BUILD DTO
+		const matchDTO : CreateMatchDTO = {
+			winnerID : data.id,
+			loserID : p2,
+			winnerScore : p1s,
+			loserScore : p2s
+		};
+
 		// console.log(data.id)
 		const RESPONSE = await fetch("http://localhost:3000/matches", {
 			method: 'POST',
@@ -23,17 +38,13 @@ function Temp() {
 			headers: {
 				'content-type': "application/json"
 			},
-			body: JSON.stringify({
-					p1ID: data.id,
-					p2ID: p2,
-					p1Score:p1s,
-					p2Score:p2s,
-					winner: winner
-			})
-		})
+			body: JSON.stringify(matchDTO)
+		});
+	
 		// console.log({name})
 		console.log(RESPONSE.ok);
 	};
+
 	async function handleName() {
 		window.event?.preventDefault()
 		//POST /self/changename
@@ -50,6 +61,7 @@ function Temp() {
 		console.log({name})
 		console.log(RESPONSE.ok);
 	}
+
 	async function handleFriend() {
 		window.event?.preventDefault()
 		const RESPONSE = await fetch("http://localhost:3000/self/friends", {
@@ -64,6 +76,15 @@ function Temp() {
 		});
 		console.log({friend})
 		console.log(RESPONSE.ok);
+	}
+	async function handle2fa()
+	{
+		window.event?.preventDefault();
+		const response = await fetch('http://localhost:3000/2fa',{
+			credentials: 'include'
+		});
+		const responseBody = await response.text();
+		setTwofa(responseBody)
 	}
 	return (
 		<div className='white'>
@@ -100,6 +121,15 @@ function Temp() {
 				</label>
 				<button type="submit">Submit Match</button>
 			</form>
+			<div>
+				<button onClick={handle2fa}>Enable 2fa!</button>
+				<img src={twofa} alt="Not found!"	/>
+			</div>
+			<form method="POST" encType="multipart/form-data" action="http://localhost:3000/self/pfp">
+  				<input type="file" id="file" name="file" accept='image/*'/>
+  				<input type="submit" />
+			</form>
+			<img src="http://localhost:3000/self/pfp" alt="Not found!"	/>
 		</div>
 	)
 }
