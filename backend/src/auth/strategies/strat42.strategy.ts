@@ -1,7 +1,7 @@
 import { Injectable } from "@nestjs/common";
 import { PassportStrategy } from "@nestjs/passport";
-
 import { Strategy } from 'passport-42';
+
 import { AuthService } from "../auth.service";
 import { User42 } from "../interfaces/user42.interface";
 

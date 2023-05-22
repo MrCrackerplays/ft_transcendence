@@ -31,6 +31,7 @@ import { AchievementModule } from './achievements/achievement.module';
 			})
 		}),
 
+		// Register all modules
 		DatabaseModule,
 		UserModule,
 		ChannelModule,

@@ -1,9 +1,10 @@
-import { diskStorage } from "multer";
 import path = require('path');
+import { diskStorage } from "multer";
 import { v4 as uuidv4 } from "uuid";
 
-export const STORAGE_IMAGE_LOCATION : string = './upload/pfp'
+// storage is used for storing uploaded profile pictures of users
 
+export const STORAGE_IMAGE_LOCATION : string = './upload/pfp'
 export const STORAGE_DEFAULT_IMAGE : string = './default.jpeg'
 
 export const storage = {

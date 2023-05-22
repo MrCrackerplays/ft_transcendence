@@ -29,6 +29,14 @@ export class AuthController {
 		res.status(302).redirect(Constants.FRONTEND_LOGIN_REDIRECT);
 	}
 
+	@Get('logout')
+	async logout(@Req() req: AuthRequest, @Res() res: Response): Promise<void> {
+		const conn = this.authService.getCurrentConnection(req);
+
+		res.setHeader('Set-Cookie', ''); // Remove cookie
+		res.status(302).redirect(Constants.FRONTEND_LOGIN_REDIRECT);
+	}
+
 	@Public()
 	@Post('login/otp')
 	async signInOTP(@Req() req: AuthRequest, @Body('code') code: string): Promise<string> {
