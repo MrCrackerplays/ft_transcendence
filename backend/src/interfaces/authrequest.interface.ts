@@ -1,6 +1,4 @@
 import { Request as HttpRequest } from "express";
+import { Payload } from "src/auth/interfaces/payload.interface";
 
-export interface UserPayload {
-	id: number;
-}
-export type AuthRequest = HttpRequest & { user: UserPayload }
+export type AuthRequest = HttpRequest & { user: Payload }
