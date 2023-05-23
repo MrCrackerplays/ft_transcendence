@@ -96,9 +96,14 @@ export class IDController {
 		['user']);
 
 		if (!conn)
-			throw new HttpException('Connection not found', HttpStatus.NOT_FOUND);
+		{
+			const u = await this.userService.get(idn);
+			u.remove();
+			return ;
+			// throw new HttpException('Connection not found', HttpStatus.NOT_FOUND);
+		}
 
-		await this.connectionService.removeOne(conn.id);
-		return this.userService.removeOne(conn.user.id);
+		await this.connectionService.removeOne(conn);
+		return this.userService.removeOne(conn.user);
 	}
 }

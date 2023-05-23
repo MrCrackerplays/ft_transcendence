@@ -97,8 +97,8 @@ export class UserService {
 		return this.usersRepository.findOneBy({ id });
 	}
 
-	async removeOne(id: string): Promise<void> {
-		await this.usersRepository.delete(id);
+	async removeOne(user: User): Promise<void> {
+		await this.usersRepository.remove(user);
 	}
 
 	// ### USER IS KNOWN ###

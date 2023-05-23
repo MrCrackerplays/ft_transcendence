@@ -3,13 +3,11 @@ import { Response } from "express";
 
 import { Constants } from "../../../shared/constants";
 import { AuthService } from "./auth.service";
-import { Payload } from "./interfaces/payload.interface";
 import { Public } from "./decorators/public.decorator";
 import { AuthGuard42 } from "./guards/auth42.guard";
 import { Connection } from "./connection.entity";
 import { AuthRequest } from "src/interfaces/authrequest.interface";
 import { ConnectionService } from "./connection.service";
-import { JwtAuthGuard } from "./guards/jwt.guard";
 
 @Controller()
 export class AuthController {
@@ -49,14 +47,11 @@ export class AuthController {
 	@Public()
 	@Post('setup')
 	// Profile setup, to make sure user's set their profile name before being validated
-	async signInSetup(@Req() req: AuthRequest, @Body('username') name : string, @Res() res: Response): Promise<void> {
-		const conn: Connection = await this.authService.signIn(req.user as any);
-
-		// Validate (and set) name
-		const finished = await this.authService.validateName(conn, name);
+	async signInSetup(@Req() req: AuthRequest, @Body('name') name : string, @Res() res: Response): Promise<void> {
+		const conn: Connection = await this.authService.signInSetup(req, name);
 
 		// name changed?
-		const cookie: string = this.authService.buildCookie(conn, true, finished);
+		const cookie: string = this.authService.buildCookie(conn, true, true);
 
 		res.setHeader('Set-Cookie', cookie);
 		res.status(200).send();

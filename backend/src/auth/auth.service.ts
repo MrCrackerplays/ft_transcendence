@@ -37,6 +37,24 @@ export class AuthService {
 		return con;
 	}
 
+	async signInSetup(req: AuthRequest, name: string): Promise<Connection> {
+		// verify the JWT token
+		let jwt = null;
+		try {jwt = this.jwtService.verify(req?.cookies?.Authentication);}
+		catch (err) {
+			console.log(err);
+			return null;
+		}
+		if (!jwt)
+			throw new HttpException('Invalid JWT', HttpStatus.FORBIDDEN);
+		
+		console.log(`Attempting signin with setup username: ${name}`);
+
+		const conn = await this.connectionService.get({id: jwt.id});
+		this.validateName(conn, name);
+		return conn;
+	}
+
 	async signInOTP(req: AuthRequest, code: string): Promise<Connection> {
 		// verify the JWT token
 		let jwt = null;
