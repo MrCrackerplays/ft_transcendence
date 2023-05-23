@@ -5,6 +5,7 @@ import MyLoginPage from './views/login/login';
 import Temp from './views/profile/temp/temp';
 import isLoggedIn from './hooks/isLoggedIn/isLoggedIn'
 import LoginOTP from './views/loginotp/loginotp';
+import SetUp from './views/newuser/newuser';
 import { useEffect, useState } from 'react'
 
 function App(): React.ReactElement
@@ -20,7 +21,7 @@ function App(): React.ReactElement
 				navigate("/login");
 			setIsLoading(false);
 		}
-		if (location.pathname !== "/login" && location.pathname !== "/loginOTP")
+		if (location.pathname !== "/login" && location.pathname !== "/loginOTP" && location.pathname !== "/setup")
 			fetchData();
 		else
 			setIsLoading(false);
@@ -35,6 +36,7 @@ function App(): React.ReactElement
 			<Route path="/temp" element={<Temp />}/>
 			<Route path="/login" element={<MyLoginPage />}/>
 			<Route path="/loginOTP" element={<LoginOTP />}/>
+			<Route path="/setup" element={<SetUp />} />
     	</Routes>
   );
 }

@@ -19,6 +19,7 @@ export class Constants {
 	public static FRONTEND_QR_REDIRECT = `${Constants.FRONTEND_URL}/qr`;
 
 	public static FRONTEND_SETUP_REDIRECT = `${Constants.FRONTEND_URL}/setup`;
+	public static BACKEND_SETUP_REDIRECT = `${Constants.BACKEND_URL}/setup`;
 
 }
 
