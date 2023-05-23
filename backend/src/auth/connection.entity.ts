@@ -1,4 +1,3 @@
-import { number } from "@hapi/joi";
 import { User } from "src/users/user.entity";
 import { BaseEntity, Column, Entity, JoinColumn, OneToOne, PrimaryGeneratedColumn } from "typeorm";
 
@@ -7,7 +6,7 @@ export class Connection extends BaseEntity {
 	@PrimaryGeneratedColumn()
 	id: number;
 
-	@OneToOne(type => User, { onDelete: 'CASCADE' })
+	@OneToOne(type => User, { onDelete: 'CASCADE', eager: true })
 	@JoinColumn()
 	user: User;
 

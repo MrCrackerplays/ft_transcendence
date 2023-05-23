@@ -32,11 +32,34 @@ export class AuthController {
 			otp = false;
 		}
 
-
-		const cookie: string = this.authService.buildCookie(conn, otp);
+		let finished = true;
+		console.log(`username: ${conn.user.userName}`);
+		if (!conn.user.userName) {
+			redirectURL = Constants.FRONTEND_SETUP_REDIRECT;
+			finished = false;
+		}
+		
+		const cookie: string = this.authService.buildCookie(conn, otp, finished);
 
 		res.setHeader('Set-Cookie', cookie);
-		res.status(302).redirect(redirectURL);
+		res.status(302);
+		res.redirect(redirectURL);
+	}
+
+	@Public()
+	@Post('setup')
+	// Profile setup, to make sure user's set their profile name before being validated
+	async signInSetup(@Req() req: AuthRequest, @Body('username') name : string, @Res() res: Response): Promise<void> {
+		const conn: Connection = await this.authService.signIn(req.user as any);
+
+		// Validate (and set) name
+		const finished = await this.authService.validateName(conn, name);
+
+		// name changed?
+		const cookie: string = this.authService.buildCookie(conn, true, finished);
+
+		res.setHeader('Set-Cookie', cookie);
+		res.status(200).send();
 	}
 
 	@Public()
@@ -50,7 +73,11 @@ export class AuthController {
 			return ;
 		}
 
-		const cookie: string = this.authService.buildCookie(conn, true);
+		let finished = false;
+		if (conn.user.userName.length > 0)
+			finished = true;
+
+		const cookie: string = this.authService.buildCookie(conn, true, finished);
 
 		res.setHeader('Set-Cookie', cookie);
 		res.status(200).send();
@@ -88,7 +115,7 @@ export class AuthController {
 
 		const conn: Connection = await this.authService.getCurrentConnection(req);
 		// Cookie needs to be updated (otp = false; because with a new OTP it'll never be validated at this point)
-		const cookie: string = this.authService.buildCookie(conn, false);
+		const cookie: string = this.authService.buildCookie(conn, false, true);
 
 		res.setHeader('Set-Cookie', cookie);
 		res.json({ qr: qrcode });
@@ -115,7 +142,7 @@ export class AuthController {
 		await this.authService.disableTwoFactor(conn);
 
 		// Cookie needs to be updated, true because OTP is disabled
-		const cookie: string = this.authService.buildCookie(conn, true);
+		const cookie: string = this.authService.buildCookie(conn, true, true);
 
 		res.setHeader('Set-Cookie', cookie);
 		res.status(200).send('2fa disabled (DEBUG ONLY)');

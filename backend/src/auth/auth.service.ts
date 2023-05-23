@@ -21,7 +21,7 @@ export class AuthService {
 		console.log(`attempting signin for 42-user: ${payload.id}`);
 
 		// Get existing connection from the provided user42
-		let con = await this.connectionService.get({ user42ID: payload.id });
+		let con = await this.connectionService.get({ user42ID: payload.id }, ['user']);
 
 		// Create new one if not existant
 		if (!con) {
@@ -50,6 +50,13 @@ export class AuthService {
 		if (jwt.otp)
 			throw new HttpException('Already signed in', HttpStatus.CONFLICT);
 		return this.validateTwoFactor(jwt.id, code);
+	}
+
+	async validateName(conn: Connection, name: string) : Promise<boolean> {
+		const userWithName = await this.userService.setName(conn.user, name);
+		if (!userWithName)
+			return (false);
+		return (true);
 	}
 
 	async getTwoFactorEnabled(req: AuthRequest): Promise<boolean> {
@@ -102,25 +109,19 @@ export class AuthService {
 		connection.save();
 	}
 
-	// async generateQR(connection: Connection): Promise<string> {
-	// 	const secret = await this.generateTwoFactorSecret(connection);
-	// 	return toDataURL(secret.otpURL);
-	// }
-
 	validateOTP(_secret: string, code: string): boolean {
 		if (!_secret)
 			throw new HttpException('No Secret', HttpStatus.FORBIDDEN);
 		return authenticator.verify({ token: code, secret: _secret });
 	}
 
-	signConnection(connection: Connection, otp: boolean) : string {
-		console.log(`Signing payload with sub: ${connection.id}`);
-		return this.jwtService.sign({ sub: connection.id, otp });
+	signConnection(connection: Connection, otp: boolean, finished: boolean) : string {
+		return this.jwtService.sign({ sub: connection.id, otp, finished });
 	}
 
-	buildCookie(connection: Connection, otp : boolean) : string {
-		const token = this.signConnection(connection, otp);
-		console.log(`Building cookie with signed-token: ${token}, and otp: ${otp}`);
+	buildCookie(connection: Connection, otp : boolean, finished: boolean) : string {
+		const token = this.signConnection(connection, otp, finished);
+		console.log(`Building cookie with signed-token(42ID: ${connection.user42ID}, otp: ${otp}, finished: ${finished}`);
 		return `Authentication=${token}; HttpOnly; Path=/; Max-Age=100000`;
 	}
 

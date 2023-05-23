@@ -18,7 +18,12 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
 	}
 
 	validate(payload: Payload): any {
-		if (!payload || !payload.otp)
+		if (!payload)
+			throw new HttpException('No Payload Provided', HttpStatus.BAD_REQUEST);
+		// !: BEING IGNORED FOR NOW
+		if (!payload.finished)
+			throw new HttpException('Profile not yet finished', HttpStatus.FORBIDDEN);
+		if (!payload.otp)
 			throw new HttpException('OTP Token Required', HttpStatus.FORBIDDEN);
 		return payload;
 	}

@@ -31,29 +31,29 @@ export class User extends BaseEntity {
 
 	// Every user can own mutliple channels, every channel only has one owner
 	// ONE user has MANY channels
-	@OneToMany(type => Channel, channel => channel.owner)
+	@OneToMany(type => Channel, channel => channel.owner, { onDelete: 'CASCADE' })
 	channelsOwned: Channel[];
 
 	// Every user can be subscribed to multiple channels, and every channel can have multiple subscribers
 	// MANY users subscribe to MANY channels
-	@ManyToMany(type => Channel, channel => channel.members)
+	@ManyToMany(type => Channel, channel => channel.members, { onDelete: 'CASCADE' })
 	channelSubscribed: Channel[];
 
-	@ManyToMany(type => Achievement, achievement => achievement.members, { eager: true })
+	@ManyToMany(type => Achievement, achievement => achievement.members, { onDelete: 'CASCADE', eager: true })
 	@JoinTable()
 	achievements: Achievement[];
 
 	// Every user can have multiple friends
 	// ONE user, MANY friends
-	@ManyToMany(type => User)
+	@ManyToMany(type => User, { onDelete: 'CASCADE' })
 	@JoinTable({ joinColumn: { name: 'users_id_1' } })
 	friends: User[];
 
-	@OneToMany(type => Match, match => match.winner)
+	@OneToMany(type => Match, match => match.winner, { onDelete: 'CASCADE' })
 	@JoinTable()
 	wonMatches: Match[];
 
-	@OneToMany(type => Match, match => match.loser)
+	@OneToMany(type => Match, match => match.loser, { onDelete: 'CASCADE' })
 	@JoinTable()
 	lostMatches: Match[];
 
@@ -62,7 +62,7 @@ export class User extends BaseEntity {
 
 	// Every user can write multiple messages, every message only has a single author
 	// ONE user has MANY messages
-	@OneToMany(type => Message, message => message.author, { cascade: true })
+	@OneToMany(type => Message, message => message.author, { onDelete: 'CASCADE', cascade: true })
 	@JoinColumn()
 	messages: Message[];
 
