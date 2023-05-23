@@ -1,4 +1,4 @@
-import { BrowserRouter as Router, Route, Routes, Navigate, Outlet, useNavigate, redirect  } from 'react-router-dom'
+import {Route, Routes, useLocation, useNavigate } from 'react-router-dom'
 import ProfilePage from './views/profile/profile';
 import MySettingsPage from './views/settings/settings'
 import MyLoginPage from './views/login/login';
@@ -9,32 +9,31 @@ import { useEffect, useState } from 'react'
 function App(): React.ReactElement
 {
 	const [isLoading, setIsLoading] = useState(true)
-	const [isLogged, setLogged] = useState(false)
 	const navigate = useNavigate();
+	const location = useLocation();
 
 	useEffect(() => {
 		const fetchData = async () => {
-			const data = await isLoggedIn()
-			if (data >= 200 && data <= 299)
-				setLogged(true)
-			else
+			const data = await isLoggedIn();
+			if (!(data >= 200 && data <= 299))
 				navigate("/login");
-			setIsLoading(false)	
+			setIsLoading(false);
 		}
-		fetchData();
-	}, [])
+		if (location.pathname !== "/login" && location.pathname !== "/otp")
+			fetchData();
+		else
+			setIsLoading(false);
+	}, [location])
 	if (isLoading)
 	  return (<div> </div>);
 	return (
-    <div className="App">
-    		<Routes>
-				<Route path="/" element={<ProfilePage />} />
-				<Route path="/profile/*" element={<ProfilePage />} />
-    			<Route path="/setting" element={<ProfilePage />} />
-				<Route path="/temp" element={<Temp />}/>
-				<Route path="/login" element={<MyLoginPage />}/>
-    		</Routes>
-    </div>
+    	<Routes>
+			<Route path="/" element={<ProfilePage />} />
+			<Route path="/profile/*" element={<ProfilePage />} />
+    		<Route path="/setting" element={<ProfilePage />} />
+			<Route path="/temp" element={<Temp />}/>
+			<Route path="/login" element={<MyLoginPage />}/>
+    	</Routes>
   );
 }
 export default App	
