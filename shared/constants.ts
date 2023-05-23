@@ -18,5 +18,9 @@ export class Constants {
 
 	public static FRONTEND_QR_REDIRECT = `${Constants.FRONTEND_URL}/qr`;
 
+	public static FETCH_SELF = `${Constants.BACKEND_URL}/self`
+	public static FETCH_SELF_PFP = `${Constants.BACKEND_URL}/self/pfp`
+	public static FETCH_USERS = `${Constants.BACKEND_URL}/users/`
+
 }
 

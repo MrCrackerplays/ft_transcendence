@@ -1,6 +1,8 @@
-async function FetchSelf() {;
+import { Constants } from "../../../../shared/constants"
 
-	const res = await fetch('http://localhost:3000/self', {
+async function FetchSelf() {
+
+	const res = await fetch(Constants.FETCH_SELF, {
 		credentials: 'include'
 	});
 	if (!res.ok || res.status == 401) 
