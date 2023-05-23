@@ -1,6 +1,4 @@
 import React, {useState} from 'react'
-
-
 import FetchSelf from '../../../hooks/fetch/fetchSelf';
 import './temp.css'
 import { CreateMatchDTO } from '../../../../../shared/dto/create-match.dto'
@@ -83,7 +81,8 @@ function Temp() {
 		const response = await fetch('http://localhost:3000/2fa',{
 			credentials: 'include'
 		});
-		const responseBody = await response.text();
+		const body = await response.json();
+		const responseBody = body.qr;
 		setTwofa(responseBody)
 	}
 	return (
