@@ -12,12 +12,7 @@ export class AchievementService {
 		) { }
 
 	async create(dto: CreateAchievementDTO) : Promise<Achievement> {
-		const ach : Achievement = new Achievement();
-		ach.name = dto.name;
-		ach.description = dto.description;
-		ach.imageURL = dto.imageURL;
-
-		return this.achievementRepository.save(ach);
+		return this.achievementRepository.save(Achievement.createFromDTO(dto));
 	}
 
 	async getAll(): Promise<Achievement[]> {
