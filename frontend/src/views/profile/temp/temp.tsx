@@ -1,6 +1,4 @@
 import React, {useState} from 'react'
-
-
 import FetchSelf from '../../../hooks/fetch/fetchSelf';
 import './temp.css'
 import { CreateMatchDTO } from '../../../../../shared/dto/create-match.dto'
@@ -83,7 +81,8 @@ function Temp() {
 		const response = await fetch('http://localhost:3000/2fa',{
 			credentials: 'include'
 		});
-		const responseBody = await response.text();
+		const body = await response.json();
+		const responseBody = body.qr;
 		setTwofa(responseBody)
 	}
 	return (
@@ -125,6 +124,11 @@ function Temp() {
 				<button onClick={handle2fa}>Enable 2fa!</button>
 				<img src={twofa} alt="Not found!"	/>
 			</div>
+			<form method="POST" encType="multipart/form-data" action="http://localhost:3000/self/pfp">
+  				<input type="file" id="file" name="file" accept='image/*'/>
+  				<input type="submit" />
+			</form>
+			<img src="http://localhost:3000/self/pfp" alt="Not found!"	/>
 		</div>
 	)
 }

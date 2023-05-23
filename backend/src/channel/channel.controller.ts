@@ -29,7 +29,6 @@ export class ChannelController {
 		return this.channelService.findOne(id);
 	}
 
-	//? Should this be behind security?
 	@Get(':name')
 	async findFromName(@Param('name') name: string): Promise<PublicChannel> {
 		return this.channelService.findFromName(name);
@@ -46,7 +45,6 @@ export class ChannelController {
 		return this.channelService.createMessage(channel, createMessageDTO);
 	}
 
-	// TODO: Obviously should be behind some security
 	@Delete(':id')
 	removeOne(@Param('id') id: string): Promise<void> {
 		return this.channelService.removeOne(id);
