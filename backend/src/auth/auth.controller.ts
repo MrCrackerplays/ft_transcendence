@@ -53,7 +53,7 @@ export class AuthController {
 		const cookie: string = this.authService.buildCookie(conn, true);
 
 		res.setHeader('Set-Cookie', cookie);
-		res.status(302).redirect(Constants.FRONTEND_LOGIN_REDIRECT);
+		res.status(200).send();
 	}
 
 	// !: DEBUG ONLY
