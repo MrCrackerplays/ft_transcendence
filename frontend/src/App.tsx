@@ -6,6 +6,7 @@ import Temp from './views/profile/temp/temp';
 import isLoggedIn from './hooks/isLoggedIn/isLoggedIn'
 import LoginOTP from './views/loginotp/loginotp';
 import { useEffect, useState } from 'react'
+import MyNavBar from './hooks/navbar/navbar';
 
 function App(): React.ReactElement
 {
@@ -29,8 +30,8 @@ function App(): React.ReactElement
 	  return (<div> </div>);
 	return (
     	<Routes>
-			<Route path="/" element={<ProfilePage />} />
-			<Route path="/profile/*" element={<ProfilePage />} />
+			<Route path="/" element={<><ProfilePage /> <MyNavBar /></>} />
+			<Route path="/profile/*" element={<><MyNavBar /> <ProfilePage /></>} />
     		<Route path="/setting" element={<ProfilePage />} />
 			<Route path="/temp" element={<Temp />}/>
 			<Route path="/login" element={<MyLoginPage />}/>

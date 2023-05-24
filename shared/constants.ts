@@ -20,7 +20,7 @@ export class Constants {
 
 	public static FETCH_SELF = `${Constants.BACKEND_URL}/self`
 	public static FETCH_SELF_PFP = `${Constants.BACKEND_URL}/self/pfp`
-	public static FETCH_USERS = `${Constants.BACKEND_URL}/users/`
+	public static FETCH_USERS = `${Constants.BACKEND_URL}/users`
 
 }
 

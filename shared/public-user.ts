@@ -8,3 +8,17 @@ export class PublicUser {
 	active: boolean;
 	imageURL: string;
 }
+
+function DefaultProfile()
+{
+	let retValue : PublicUser = new PublicUser;
+	retValue.id = "";
+	retValue.userName = "N/A";
+	retValue.gamesPlayed = 0;
+	retValue.gamesWon = 0;
+	retValue.active = false;
+	retValue.imageURL = "N/A"
+	return (retValue);
+}
+
+export default DefaultProfile

@@ -1,13 +1,16 @@
-.main-stats
+.profilebox
 {
-	position: fixed;
-	top: 10%;
-	left: 10%;
-}
-
-.btn-temp
-{
-	position:absolute;
-	top: 50%;
-	left: 5%;
+	border: 5px solid white;
+	/* display: grid; */
+	margin-top: 5%;
+	margin-left: 5%;
+    /* height: 1000px; */
+    /* width: 2000px; */
+	height: 75%;
+	width: 75%;
+	/* grid-template-columns: repeat(4, 1fr); */
+  	/* grid-template-rows: repeat(6, 1fr); */
+	row-gap: 0px;
+	column-gap: 0px;
+	/* color:red */
 }
