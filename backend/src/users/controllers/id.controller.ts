@@ -4,6 +4,7 @@ import { User } from '../user.entity';
 
 import { CreateUserDTO } from '../../../../shared/dto/create-user.dto';
 import { Public } from 'src/auth/decorators/public.decorator';
+import { Achievement } from 'src/achievements/achievement.entity';
 
 // !: This is a controller made for DEBUGGING
 
@@ -66,6 +67,18 @@ export class IDController {
 			throw new HttpException('User not found', HttpStatus.NOT_FOUND);
 
 		return this.userService.setName(user, name.name as string);
+	}
+
+	@Public()
+	@Post(':idn/achievements')
+	// Promises a single user found from id
+	// body: { id: number }
+	async addAchievements(@Param('idn') idn: string, @Body() achievement : any): Promise<User> {
+		const user = await this.userService.getOne({id: idn});
+		if (!user)
+			throw new HttpException('User not found', HttpStatus.NOT_FOUND);
+
+		return this.userService.addAchievement(user, achievement.id);
 	}
 
 	// !: DEBUG only

@@ -10,6 +10,7 @@ import { ChannelModule } from './channel/channel.module';
 import { MatchModule } from './matches/match.module';
 import { AuthModule } from './auth/auth.module';
 import { ChatModule } from './chat/chat.module';
+import { AchievementModule } from './achievements/achievement.module';
 
 @Module({
 
@@ -18,24 +19,26 @@ import { ChatModule } from './chat/chat.module';
 		ConfigModule.forRoot({
 			envFilePath: '.env',
 			validationSchema: Joi.object({
-				POSTGRES_HOST: Joi.string().required(),
-				POSTGRES_PORT: Joi.number().required(),
-				POSTGRES_USER: Joi.string().required(),
-				POSTGRES_PASSWORD: Joi.string().required(),
-				POSTGRES_DB: Joi.string().required(),
+				POSTGRES_HOST: 		Joi.string().required(),
+				POSTGRES_PORT: 		Joi.number().required(),
+				POSTGRES_USER: 		Joi.string().required(),
+				POSTGRES_PASSWORD: 	Joi.string().required(),
+				POSTGRES_DB: 		Joi.string().required(),
 
-				JWT_SECRET: Joi.string().required(),
-				ID42: Joi.string().required(),
-				SECRET42: Joi.string().required(),
-				CALLBACK42: Joi.string().required()
+				JWT_SECRET: 		Joi.string().required(),
+				ID42: 				Joi.string().required(),
+				SECRET42: 			Joi.string().required(),
+				CALLBACK42: 		Joi.string().required()
 			})
 		}),
 
+		// Register all modules
 		DatabaseModule,
 		UserModule,
 		ChannelModule,
 		MatchModule,
 		AuthModule,
+		AchievementModule,
 		ChatModule
 	],
 

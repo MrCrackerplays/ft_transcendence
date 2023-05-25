@@ -29,33 +29,22 @@ function ProfilePage()
 	const [loginChecked, setLoginChecked] = useState(false);
 	const [jsonData, setJsonData] = useState([] as any);
 	useEffect(() => {
-    async function checkLogin() {
-    	const loggedIn = await isLoggedIn();
-    	if (loggedIn == true)
-    	{
-    		setLoginChecked(true);
+		async function checkLogin() {
     		const value = await FetchSelf();
     		if (value)
 				setJsonData(value);
     	}
-    }
     checkLogin();
-  }, []);
+	}, []);
   
 	console.log(jsonData)
 	return(
-		<>
-		{
-			loginChecked ? (
-				<div>
-					<MyNavBar name={jsonData.userName} imgsrc={jsonData.imageURL} />
-					<TestSidebar name={jsonData.userName} />
-					<Userbar name={jsonData.userName}/>
-					<MatchHistory />
-				</div> 				
-				) : (<></>)
-		} 
-		</>
+		<div>
+			<MyNavBar name={jsonData.userName} imgsrc={jsonData.imageURL} />
+			<TestSidebar name={jsonData.userName} />
+			<Userbar name={jsonData.userName}/>
+			<MatchHistory />
+		</div> 				
 	)
 }
 

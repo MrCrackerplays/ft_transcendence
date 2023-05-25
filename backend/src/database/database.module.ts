@@ -7,6 +7,7 @@ import { Channel } from "src/channel/channel.entity";
 import { Message } from "src/message/message.entity";
 import { Match } from "src/matches/match.entity";
 import { Connection } from "src/auth/connection.entity";
+import { Achievement } from "src/achievements/achievement.entity";
 
 @Module({
 	imports: [
@@ -21,12 +22,15 @@ import { Connection } from "src/auth/connection.entity";
 				username: configService.get('POSTGRES_USER'),
 				password: configService.get('POSTGRES_PASSWORD'),
 				database: configService.get('POSTGRES_DB'),
+
+				// All entities need to be registered in the database module
 				entities: [
 					User,
 					Channel,
 					Message,
 					Match,
-					Connection
+					Connection,
+					Achievement
 				],
 				synchronize: true
 			})			

@@ -10,9 +10,10 @@ import { Connection } from "src/auth/connection.entity";
 import { SelfController } from "./controllers/self.controller";
 import { Match } from "src/matches/match.entity";
 import { IDController } from "./controllers/id.controller";
+import { Achievement } from "src/achievements/achievement.entity";
 
 @Module({
-	imports: [ TypeOrmModule.forFeature([User, Connection, Match]) ],
+	imports: [ TypeOrmModule.forFeature([User, Connection, Match, Achievement]) ],
 	providers: [ UserService, AuthService, ConnectionService ],
 	controllers: [ UserController, SelfController, IDController],
 	exports: [ UserService ]

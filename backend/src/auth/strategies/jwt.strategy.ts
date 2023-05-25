@@ -1,7 +1,9 @@
 import { HttpException, HttpStatus, Injectable } from "@nestjs/common";
 import { PassportStrategy } from "@nestjs/passport";
 import { ExtractJwt, Strategy } from "passport-jwt"
-import { AuthRequest, UserPayload } from "src/interfaces/authrequest.interface";
+
+import { AuthRequest } from "src/interfaces/authrequest.interface";
+import { Payload } from "../interfaces/payload.interface";
 
 @Injectable()
 export class JwtStrategy extends PassportStrategy(Strategy) {
@@ -15,9 +17,11 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
 		});
 	}
 
-	validate(payload: any): any {
-		// if (!payload.otp)
-		// 	throw new HttpException('OTP Token Required', HttpStatus.FORBIDDEN);
-		return { id: payload.sub };
+	validate(payload: Payload): any {
+		if (payload == undefined || payload.id == undefined)
+			throw new HttpException('Payload not valid', HttpStatus.BAD_REQUEST);
+		if (!payload.otp)
+			throw new HttpException('OTP Token Required', HttpStatus.FORBIDDEN);
+		return payload;
 	}
 }
