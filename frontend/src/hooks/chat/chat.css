@@ -1,0 +1,45 @@
+
+.history {
+	overflow: auto;
+	min-height: 3rem;
+
+	scrollbar-color: lightslategray transparent;
+	scrollbar-width: thin;
+}
+
+.history::-webkit-scrollbar {
+    height: 12px;
+    width: 12px;
+}
+
+.history::-webkit-scrollbar-thumb {
+    background: lightslategray;
+	border-radius: 6px;
+}
+
+.chat-area {
+	top: 100%;
+	position: sticky;
+}
+
+.message {
+	box-shadow: 0 1px 0 lightblue ;
+	padding-top: 0.5rem;
+	padding-bottom: 0.5rem;
+}
+
+.join-message {
+	text-align: center;
+}
+
+.join-message > p {
+	margin: auto;
+}
+
+.leftalign{
+	text-align: left;;
+}
+
+.rightalign{
+	text-align: right;
+}
