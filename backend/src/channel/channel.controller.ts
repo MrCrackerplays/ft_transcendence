@@ -29,10 +29,10 @@ export class ChannelController {
 	// 	return this.channelService.findFromName(name);
 	// }
 
-	// @Get(':id/messages')
-	// async findAllMessages(@Param('id') id: string): Promise<Message[]> {
-	// 	return this.channelService.findAllMessages(id);
-	// }
+	@Get(':id/messages')
+	async findAllMessages(@Param('id') id: string): Promise<Message[]> {
+		return this.channelService.findAllMessages(id);
+	}
 
 	// @Post(':id/messages')
 	// async createMessage(@Param('id') id: string, @Body() createMessageDTO: CreateMessageDTO): Promise<Channel> {
@@ -41,7 +41,7 @@ export class ChannelController {
 	// }
 
 	// !: DEBUG
-	@Delete(':id')
+	@Get(':id/delete')
 	removeOne(@Param('id') id: string): Promise<void> {
 		return this.channelService.removeOne(id);
 	}

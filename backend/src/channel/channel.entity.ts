@@ -9,7 +9,7 @@ export class Channel extends BaseEntity {
 	@PrimaryGeneratedColumn("uuid")
 	id: string;
 
-	@Column()
+	@Column({ unique: true })
 	name: string;
 
 	// public, private or DM
@@ -17,7 +17,7 @@ export class Channel extends BaseEntity {
 	visibility: Visibility;
 
 	// only applicable to public channels
-	@Column()
+	@Column({ nullable: true })
 	password: string;
 
 	// A channel can only have one owner

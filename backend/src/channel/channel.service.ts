@@ -14,7 +14,32 @@ export class ChannelService {
 	constructor(
 		@InjectRepository(Channel) private channelRepository: Repository<Channel>,
 		private readonly messageService: MessageService
-		) { }
+		) {
+			// Spawn global public channel
+			this.init();
+		}
+	
+	async init() {
+		const globalChannel = await this.get({ name: 'Codam'});
+		if (!globalChannel) {
+			console.log('Creating Codam channel');
+			const newGlobalChannel = await this.create(null, {
+				name: 'Codam',
+				visibility: Visibility.PUBLIC,
+				password: null
+			})
+			if (newGlobalChannel) {
+				console.log('Adding initial Codam welcome message');
+				const msg = new Message();
+				msg.author = null;
+				msg.channel = newGlobalChannel;
+				msg.content = 'Welcome to Codam!';
+				msg.save();
+				// newGlobalChannel.messages.push(msg);
+				// newGlobalChannel.save();
+			}
+		}
+	}
 
 	async create(owner: User, dto: CreateChannelDTO): Promise<Channel> {
 		const channel = new Channel();
@@ -75,7 +100,7 @@ export class ChannelService {
 		const channel = await this.channelRepository.findOne({ where, relations });
 
 		if (!channel)
-			throw new HttpException('Not found', HttpStatus.NOT_FOUND);
+			return null;
 
 		// Strip password
 		channel.password = null;
@@ -97,9 +122,9 @@ export class ChannelService {
 		return (channels);
 	}
 
-	// async findAllMessages(channelID: string): Promise<Message[]> {
-	// 	return this.messageService.getWithChannelID(channelID) as Promise<Message[]>;
-	// }
+	async findAllMessages(channelID: string): Promise<Message[]> {
+		return this.messageService.getWithChannelID(channelID, 100) as Promise<Message[]>;
+	}
 
 	async createMessage(channel: Channel, author: User, createMessageDTO: CreateMessageDTO): Promise<Message> {
 		const msg = await this.messageService.createMessage(channel, author, createMessageDTO.content);
