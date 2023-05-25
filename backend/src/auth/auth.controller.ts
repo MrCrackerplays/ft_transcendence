@@ -7,7 +7,7 @@ import { Payload } from "./interfaces/payload.interface";
 import { Public } from "./decorators/public.decorator";
 import { AuthGuard42 } from "./guards/auth42.guard";
 import { Connection } from "./connection.entity";
-import { AuthRequest } from "src/interfaces/authrequest.interface";
+import { AuthRequest } from "src/auth/interfaces/authrequest.interface";
 import { ConnectionService } from "./connection.service";
 import { JwtAuthGuard } from "./guards/jwt.guard";
 

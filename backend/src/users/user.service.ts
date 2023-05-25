@@ -5,12 +5,15 @@ import { User } from "./user.entity";
 import { Any, ArrayContains, In, Repository } from "typeorm";
 import { CreateUserDTO } from "../../../shared/dto/create-user.dto";
 import { ConnectionService } from "src/auth/connection.service";
-import { AuthRequest } from "src/interfaces/authrequest.interface";
+import { AuthRequest } from "src/auth/interfaces/authrequest.interface";
 import { Connection } from "src/auth/connection.entity";
 import { Match } from "src/matches/match.entity";
 import { Channel } from "src/channel/channel.entity";
-import { Message } from "src/message/message.entity";
+import { Message } from "src/channel/message/message.entity";
 import { Achievement } from "src/achievements/achievement.entity";
+import { ChannelService } from "src/channel/channel.service";
+import { CreateChannelDTO } from "../../../shared/dto/channel.dto";
+import { CreateMessageDTO } from "../../../shared/dto/create-message.dto";
 
 @Injectable()
 export class UserService {
@@ -19,7 +22,8 @@ export class UserService {
 		@InjectRepository(Match) private matchRepository: Repository<Match>,
 		@InjectRepository(Achievement) private achievementRepository: Repository<Achievement>,
 
-		private readonly connectionService: ConnectionService
+		private readonly connectionService: ConnectionService,
+		private readonly channelService: ChannelService
 		) { }
 
 	async createOne(createUserDTO: CreateUserDTO) {
@@ -153,7 +157,19 @@ export class UserService {
 
 	async getChannels(user: User): Promise<Channel[]> {
 		user = await this.get(user.id, ['channelSubscribed']);
-		return (user.channelSubscribed);
+		return user.channelSubscribed;
+	}
+
+	async createChannel(user: User, dto: CreateChannelDTO): Promise<Channel> {
+		return this.channelService.create(user, dto);
+	}
+
+	async getChannelMessages(channelID: string, user: User): Promise<Message[]> {
+		return this.channelService.getMessagesProtected(channelID, user);
+	}
+
+	async createChannelMessage(channelID: string, user: User, dto: CreateMessageDTO): Promise<Message> {
+		return this.channelService.createMessageProtected(channelID, user, dto);
 	}
 
 	async getMessages(user: User): Promise<Message[]> {

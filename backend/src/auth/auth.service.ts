@@ -5,7 +5,7 @@ import { Payload } from "./interfaces/payload.interface";
 import { ConnectionService } from "./connection.service";
 import { Connection } from "./connection.entity";
 import { User } from "src/users/user.entity";
-import { AuthRequest } from "src/interfaces/authrequest.interface";
+import { AuthRequest } from "src/auth/interfaces/authrequest.interface";
 import { authenticator } from "otplib";
 import { toDataURL } from "qrcode";
 

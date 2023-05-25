@@ -1,6 +1,6 @@
 import { Entity, Column, PrimaryGeneratedColumn, OneToMany, ManyToMany, BaseEntity, JoinColumn, JoinTable, OneToOne } from "typeorm";
 
-import { Message } from "src/message/message.entity";
+import { Message } from "src/channel/message/message.entity";
 import { Channel } from "src/channel/channel.entity";
 import { Match } from "src/matches/match.entity";
 import { Connection } from "src/auth/connection.entity";
@@ -32,11 +32,13 @@ export class User extends BaseEntity {
 	// Every user can own mutliple channels, every channel only has one owner
 	// ONE user has MANY channels
 	@OneToMany(type => Channel, channel => channel.owner)
+	@JoinColumn()
 	channelsOwned: Channel[];
 
 	// Every user can be subscribed to multiple channels, and every channel can have multiple subscribers
 	// MANY users subscribe to MANY channels
 	@ManyToMany(type => Channel, channel => channel.members)
+	@JoinTable()
 	channelSubscribed: Channel[];
 
 	@ManyToMany(type => Achievement, achievement => achievement.members, { eager: true })
@@ -50,11 +52,11 @@ export class User extends BaseEntity {
 	friends: User[];
 
 	@OneToMany(type => Match, match => match.winner)
-	@JoinTable()
+	@JoinColumn()
 	wonMatches: Match[];
 
 	@OneToMany(type => Match, match => match.loser)
-	@JoinTable()
+	@JoinColumn()
 	lostMatches: Match[];
 
 	@OneToOne( type => Connection, connection => connection.user )

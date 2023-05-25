@@ -15,7 +15,7 @@ export class Message extends BaseEntity {
 	@CreateDateColumn({ type: "timestamp", default: () => "CURRENT_TIMESTAMP(6)" })
 	date: Date;
 
-	@ManyToOne(type => User, user => user.messages)
+	@ManyToOne(type => User, user => user.messages, { eager: true })
 	author: User;
 
 	@ManyToOne(type => Channel, channel => channel.messages)

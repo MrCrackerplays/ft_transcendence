@@ -7,7 +7,7 @@ import { AddFriendDTO } from '../../../../shared/dto/add-friend.dto';
 import { PublicUser } from '../../../../shared/public-user';
 import { PublicMatch } from '../../../../shared/public-match';
 import { AuthService } from 'src/auth/auth.service';
-import { AuthRequest } from 'src/interfaces/authrequest.interface';
+import { AuthRequest } from 'src/auth/interfaces/authrequest.interface';
 import { ConnectionService } from 'src/auth/connection.service';
 import { Connection } from 'src/auth/connection.entity';
 import { Match } from 'src/matches/match.entity';

@@ -1,24 +1,67 @@
-import { Injectable } from "@nestjs/common";
+import { HttpException, HttpStatus, Injectable } from "@nestjs/common";
 import { InjectRepository } from "@nestjs/typeorm";
-import { Repository } from "typeorm";
+import { In, Repository } from "typeorm";
 
-import { CreateChannelDTO } from "../../../shared/dto/create-channel.dto";
+import { CreateChannelDTO, Visibility } from "../../../shared/dto/channel.dto";
 import { CreateMessageDTO } from "../../../shared/dto/create-message.dto";
 import { Channel } from "./channel.entity";
-import { UserService } from "src/users/user.service";
-import { PublicChannel } from "../../../shared/public-channel";
-import { Message } from "src/message/message.entity";
-import { MessageService } from "src/message/message.service";
+import { Message } from "src/channel/message/message.entity";
+import { MessageService } from "src/channel/message/message.service";
+import { User } from "src/users/user.entity";
 
 @Injectable()
 export class ChannelService {
 	constructor(
 		@InjectRepository(Channel) private channelRepository: Repository<Channel>,
-		private readonly userService: UserService,
 		private readonly messageService: MessageService
 		) { }
 
-	async createOne(createChannelDTO: CreateChannelDTO) {
+	async create(owner: User, dto: CreateChannelDTO): Promise<Channel> {
+		const channel = new Channel();
+		channel.name = dto.name;
+		channel.messages = [];
+		channel.visibility = dto.visibility;
+		channel.password = dto.password;
+		channel.owner = owner;
+		channel.members = [ owner ];
+		channel.save();
+
+		// Strip password and return
+		channel.password = null;
+		return channel;
+	}
+
+	async createDM(userA: User, userB: User): Promise<Channel> {
+
+		// EXISTING DMs
+		const channelAlreadyExist = await this.channelRepository.findOne({
+			relations : ['owner', 'members'],
+			where: {
+				visibility: Visibility.DM,
+				owner: {
+					id: In([userA.id, userB.id])
+				},
+				members: {
+					id: In([userA.id, userB.id])
+				}
+			}
+		});
+		if (channelAlreadyExist != null)
+			return (channelAlreadyExist);
+
+		// NEW DMs
+		const channel = new Channel();
+		channel.name = `${userA.userName} : ${userB.userName}`;
+		channel.messages = [];
+		channel.visibility = Visibility.DM;
+		channel.owner = userA;
+		channel.password = null;
+		channel.members = [ userA, userB ];
+
+		return channel.save();
+	}
+
+	/* async createOne(createChannelDTO: CreateChannelDTO) {
 		const channel = new Channel();
 		channel.name = createChannelDTO.name;
 		channel.messages = [];
@@ -26,44 +69,76 @@ export class ChannelService {
 		channel.owner = await this.userService.findOne(createChannelDTO.ownerID);
 
 		return this.channelRepository.save(channel);
+	} */
+
+	async get(where: any, relations = [] as string[]): Promise<Channel> {
+		const channel = await this.channelRepository.findOne({ where, relations });
+
+		if (!channel)
+			throw new HttpException('Not found', HttpStatus.NOT_FOUND);
+
+		// Strip password
+		channel.password = null;
+		return channel;
 	}
 
-	async findAll(): Promise<PublicChannel[]> {
-		const query = {
-			select : {
-				id: true,
-				name: true,
-				visibility: true
+	async getAllPublic(): Promise<Channel[]> {
+		const channels = await this.channelRepository.find({
+			where: {
+				visibility: Visibility.PUBLIC
 			}
-		};
-		return this.channelRepository.find(query) as Promise<PublicChannel[]>;
+		});
+
+		// Strip passwords
+		for (var c of channels) {
+			c.password = null;
+		}
+
+		return (channels);
 	}
 
-	findFromName(name: string): Promise<PublicChannel | null> {
-		const query = {
-			select : {
-				id: true,
-				name: true,
-				visibility: true
-			},
+	// async findAllMessages(channelID: string): Promise<Message[]> {
+	// 	return this.messageService.getWithChannelID(channelID) as Promise<Message[]>;
+	// }
+
+	async createMessage(channel: Channel, author: User, createMessageDTO: CreateMessageDTO): Promise<Message> {
+		const msg = await this.messageService.createMessage(channel, author, createMessageDTO.content);
+		return msg.save();
+	}
+
+	// This one first checks if user is subscribed to the channel before sending back messages
+	async getMessagesProtected(channelID: string, user: User): Promise<Message[]> {
+		const channel = await this.channelRepository.findOne({
+			relations: ['members'],
 			where : {
-				name: name
+				members: {
+					id: user.id
+				}
 			}
-		};
-		return this.channelRepository.findOne(query) as Promise<PublicChannel | null>;
+		});
+
+		if (!channel)
+			throw new HttpException('Not part of channel', HttpStatus.UNAUTHORIZED);
+
+		// Load the messages
+		// TODO: Remove magic number
+		return this.messageService.getWithChannelID(channelID, 10);
 	}
 
-	async findAllMessages(channelID: string): Promise<Message[]> {
-		return this.messageService.getWithChannelID(channelID) as Promise<Message[]>;
-	}
+	async createMessageProtected(channelID: string, user: User, dto: CreateMessageDTO): Promise<Message> {
+		const channel = await this.channelRepository.findOne({
+			relations: ['members'],
+			where : {
+				members: {
+					id: user.id
+				}
+			}
+		});
 
-	async createMessage(channel: Channel, createMessageDTO: CreateMessageDTO): Promise<Channel> {
-		const user = await this.userService.findOne(createMessageDTO.authorID);
-		const msg = await this.messageService.createMessage(channel, user, createMessageDTO.content);
-		await user.save();
-		await msg.save();
-		return channel.save();
-		// return this.messageService.createMessage(channel, user, createMessageDTO.content);
+		if (!channel)
+			throw new HttpException('Not part of channel', HttpStatus.UNAUTHORIZED);
+		
+		return this.createMessage(channel, user, dto);
 	}
 
 	findOne(id: string): Promise<Channel | null> {

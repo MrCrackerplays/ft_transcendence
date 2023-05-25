@@ -11,9 +11,13 @@ import { SelfController } from "./controllers/self.controller";
 import { Match } from "src/matches/match.entity";
 import { IDController } from "./controllers/id.controller";
 import { Achievement } from "src/achievements/achievement.entity";
+import { ChannelModule } from "src/channel/channel.module";
 
 @Module({
-	imports: [ TypeOrmModule.forFeature([User, Connection, Match, Achievement]) ],
+	imports: [
+		TypeOrmModule.forFeature([User, Connection, Match, Achievement]),
+		ChannelModule
+	],
 	providers: [ UserService, AuthService, ConnectionService ],
 	controllers: [ UserController, SelfController, IDController],
 	exports: [ UserService ]

@@ -10,10 +10,16 @@ import { User } from "src/users/user.entity";
 export class MessageService {
 	constructor(@InjectRepository(Message) private messageRepository: Repository<Message>) { }
 	
-	async getWithChannelID(channelID: string): Promise<Message[]> {
+	async get(where: any, relations = [] as string[], count: number): Promise<Message[]> {
+		const messages = this.messageRepository.find({where, relations, take: count});
+		return messages;
+	}
+
+	async getWithChannelID(channelID: string, count: number): Promise<Message[]> {
 		return await this.messageRepository.createQueryBuilder("message")
 			.innerJoinAndSelect("message.channel", "channel")
 			.where("channel.id = :channelID", { channelID })
+			.take(count)
 			.getMany();
 	}
 
