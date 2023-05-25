@@ -33,7 +33,7 @@ export class AuthController {
 		}
 
 
-		const cookie: string = this.authService.buildCookie(conn, otp);
+		const cookie: string = this.authService.signAndGetCookie(conn, otp);
 
 		res.setHeader('Set-Cookie', cookie);
 		res.status(302).redirect(redirectURL);
@@ -50,7 +50,7 @@ export class AuthController {
 			return ;
 		}
 
-		const cookie: string = this.authService.buildCookie(conn, true);
+		const cookie: string = this.authService.signAndGetCookie(conn, true);
 
 		res.setHeader('Set-Cookie', cookie);
 		res.status(200).send();
@@ -88,7 +88,7 @@ export class AuthController {
 
 		const conn: Connection = await this.authService.getCurrentConnection(req);
 		// Cookie needs to be updated (otp = false; because with a new OTP it'll never be validated at this point)
-		const cookie: string = this.authService.buildCookie(conn, false);
+		const cookie: string = this.authService.signAndGetCookie(conn, false);
 
 		res.setHeader('Set-Cookie', cookie);
 		res.json({ qr: qrcode });
@@ -115,7 +115,7 @@ export class AuthController {
 		await this.authService.disableTwoFactor(conn);
 
 		// Cookie needs to be updated, true because OTP is disabled
-		const cookie: string = this.authService.buildCookie(conn, true);
+		const cookie: string = this.authService.signAndGetCookie(conn, true);
 
 		res.setHeader('Set-Cookie', cookie);
 		res.status(200).send('2fa disabled (DEBUG ONLY)');
