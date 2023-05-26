@@ -2,11 +2,11 @@ import { HttpException, HttpStatus, Injectable } from "@nestjs/common";
 import { InjectRepository } from "@nestjs/typeorm";
 
 import { User } from "./user.entity";
-import { Any, ArrayContains, In, Repository } from "typeorm";
+import { Repository } from "typeorm";
 import { CreateUserDTO } from "../../../shared/dto/create-user.dto";
-import { ConnectionService } from "src/auth/connection.service";
+import { ConnectionService } from "src/auth/connection/connection.service";
 import { AuthRequest } from "src/auth/interfaces/authrequest.interface";
-import { Connection } from "src/auth/connection.entity";
+import { Connection } from "src/auth/connection/connection.entity";
 import { Match } from "src/matches/match.entity";
 import { Channel } from "src/channel/channel.entity";
 import { Message } from "src/channel/message/message.entity";

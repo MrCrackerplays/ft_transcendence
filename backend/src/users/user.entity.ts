@@ -3,7 +3,7 @@ import { Entity, Column, PrimaryGeneratedColumn, OneToMany, ManyToMany, BaseEnti
 import { Message } from "src/channel/message/message.entity";
 import { Channel } from "src/channel/channel.entity";
 import { Match } from "src/matches/match.entity";
-import { Connection } from "src/auth/connection.entity";
+import { Connection } from "src/auth/connection/connection.entity";
 import { Achievement } from "src/achievements/achievement.entity";
 
 @Entity()

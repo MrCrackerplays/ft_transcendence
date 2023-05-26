@@ -1,6 +1,5 @@
 import { Body, Controller, Get, HttpException, HttpStatus, Param, Post, Req, Res, UploadedFile, UseInterceptors } from "@nestjs/common";
 import { UserService } from "../user.service";
-import { ConnectionService } from "src/auth/connection.service";
 import { AuthRequest } from "src/auth/interfaces/authrequest.interface";
 import { User } from "../user.entity";
 import { Match } from "src/matches/match.entity";
@@ -17,8 +16,7 @@ import { CreateMessageDTO } from "../../../../shared/dto/create-message.dto";
 @Controller('self')
 export class SelfController {
 	constructor(
-		private readonly userService: UserService,
-		private readonly connectionService: ConnectionService
+		private readonly userService: UserService
 		) {}
 
 	@Get()

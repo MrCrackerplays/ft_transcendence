@@ -3,13 +3,11 @@ import { Response } from "express";
 
 import { Constants } from "../../../shared/constants";
 import { AuthService } from "./auth.service";
-import { Payload } from "./interfaces/payload.interface";
 import { Public } from "./decorators/public.decorator";
 import { AuthGuard42 } from "./guards/auth42.guard";
-import { Connection } from "./connection.entity";
+import { Connection } from "./connection/connection.entity";
 import { AuthRequest } from "src/auth/interfaces/authrequest.interface";
-import { ConnectionService } from "./connection.service";
-import { JwtAuthGuard } from "./guards/jwt.guard";
+import { ConnectionService } from "./connection/connection.service";
 
 @Controller()
 export class AuthController {
