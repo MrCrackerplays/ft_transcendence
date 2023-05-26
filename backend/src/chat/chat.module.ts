@@ -14,14 +14,18 @@ import { ChannelService } from 'src/channel/channel.service';
 import { UserService } from 'src/users/user.service';
 import { User } from 'src/users/user.entity';
 import { Match } from 'src/matches/match.entity';
+import { AchievementService } from 'src/achievements/achievement.service';
+import { Achievement } from 'src/achievements/achievement.entity';
 
 @Module({
   imports: [TypeOrmModule.forFeature([Connection, Message,
-    Channel, User, Match
+    Channel, User, Match,
+    Achievement//only loaded because userservice got mad otherwise
   ])],
   providers: [ChatGateway, JwtService, ConnectionService, MessageService, 
     ChannelService,
-    UserService
+    UserService,
+    AchievementService//only loaded because userservice got mad otherwise
   ],
 })
 export class ChatModule {}
