@@ -2,6 +2,7 @@
 .history {
 	overflow: auto;
 	min-height: 3rem;
+	padding: 5px;
 
 	scrollbar-color: lightslategray transparent;
 	scrollbar-width: thin;
@@ -21,11 +22,33 @@
 	top: 100%;
 	position: sticky;
 }
+@-moz-document url-prefix() {
+	/* Firefox being dumb with position sticky and top within a flex */
+	.chat-area {
+		top: auto;
+	}
+}
+
+#message-input {
+	resize: none;
+	width: -webkit-fill-available;
+	width: -moz-available;
+}
 
 .message {
 	box-shadow: 0 1px 0 lightblue ;
 	padding-top: 0.5rem;
 	padding-bottom: 0.5rem;
+}
+
+.message sub {
+	font-size: x-small;
+}
+
+.message-header {
+	display: flex;
+	justify-content: space-between;
+	color: dodgerblue;
 }
 
 .join-message {

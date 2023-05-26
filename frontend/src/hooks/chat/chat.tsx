@@ -36,8 +36,8 @@ function Chat( {sender} : {sender: string}) {
 
 	const sendMessage = () => {
 		console.log("sendmessage")
-		if (messageBody) {//TODO: change channel_id to be dynamic
-			ws.current?.emit("message", {channel: currentChannel ,message: messageBody});
+		if (messageBody?.trim()) {//TODO: change channel_id to be dynamic
+			ws.current?.emit("message", {channel: currentChannel, message: messageBody.trim()});
 			setMessageBody("");
 		}
 	};
@@ -139,44 +139,44 @@ function ChannelList( { sender } ) {
 	)
 }
 
-function UserMessage({ message, index, sender } : { message: UserMessage; index: number; sender: string }) {
+function UserMessage({ message, sender } : { message: UserMessage; sender: string }) {
 	let alignment = "leftalign"
 	let message_top = (
-	<div style={{display:"flex", justifyContent:"space-between"}}>
-		<div style={{textAlign:"left"}}>
-			{message.sender}
-		</div>
-		<sub style={{textAlign:"right"}}>
-			{new Date(message.date).toLocaleString()}
-		</sub>
-	</div>);
+		<div className="message-header">
+			<span>
+				{message.sender}
+			</span>
+			<sub>
+				{new Date(message.date).toLocaleString()}
+			</sub>
+		</div>);
 
 	if (message.sender == sender) {
 		alignment = "rightalign";
 		message_top = (
-		<div style={{display:"flex", justifyContent:"space-between"}}>
-			<sub style={{textAlign:"left"}}>
-				{new Date(message.date).toLocaleString()}
-			</sub>
-			<div style={{textAlign:"right"}}>
-				{message.sender}
-			</div>
-		</div>)
+			<div className="message-header">
+				<sub>
+					{new Date(message.date).toLocaleString()}
+				</sub>
+				<span>
+					{message.sender}
+				</span>
+			</div>)
 	}
 
 	return (
-		<div className={`message ${alignment}`} key={index}>
+		<div className="message">
 			{message_top}
-			<div>
+			<div className={`message-content ${alignment}`}>
 				{message.content}
 			</div>
 		</div>
 	);
 }
-function Message({ message, index} : {message: Message, index: number}) {
+function Message({ message } : {message: Message}) {
 	
 	return (
-		<div className={`message join-message`} key={index}>
+		<div className="message join-message">
 			<p><i>
 				{message.content}
 			</i></p>
@@ -196,23 +196,29 @@ function ChatChannel( props: { isConnectionOpen: boolean; messages: UserMessage[
 			{messages.map((message: UserMessage | Message, index : number) => (
 				// message is Message ?
 				isUserMessage(message) ?
-				<UserMessage key={index} message={message} index={index} sender={props.sender}/>
+				<UserMessage key={index} message={message} sender={props.sender}/>
 				:
-				<Message key={index} message={message} index={index} />
+				<Message key={index} message={message} />
 			))}
 		</div>
 		<footer className="chat-area">
-			<p>
+			<p style={{margin:0}}>
 				You are chatting as Yourself
 			</p>
-			<div>
-				<input
+			<div style={{display:"flex"}}>
+				<textarea
 					id="message-input"
-					type="text"
 					className="message-box"
 					placeholder="Type your message here..."
 					value={messageBody}
-					onChange={(e) => setMessageBody(e.target.value)}
+					onKeyDown={(e) => {
+						if (e.key == "Enter" && e.shiftKey == false) {
+							e.preventDefault();
+							sendMessage();
+						}
+					}}
+					onChange={(e) => {setMessageBody(e.target.value)}}
+					autoComplete="off"
 					required
 				/>
 				<button
