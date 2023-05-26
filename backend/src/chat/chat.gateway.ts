@@ -43,7 +43,7 @@ export class ChatGateway {
 				const auth_cookie = parse(socket.handshake.headers.cookie).Authentication;
 				result = this.jwtService.verify(auth_cookie, { secret: process.env.JWT_SECRET })
 			}
-			return this.connectionService.get({ id: result.sub }, ['user']).then(connection => {
+			return this.connectionService.get({ id: result.id }, ['user']).then(connection => {
 				return connection.user;
 			});
 		} catch (e) {
