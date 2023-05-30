@@ -18,9 +18,8 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
 	}
 
 	validate(payload: Payload): any {
-		if (!payload)
-			throw new HttpException('No Payload Provided', HttpStatus.BAD_REQUEST);
-		// !: BEING IGNORED FOR NOW
+		if (payload == undefined || payload.id == undefined)
+			throw new HttpException('Payload not valid', HttpStatus.BAD_REQUEST);
 		if (!payload.finished)
 			throw new HttpException('Profile not yet finished', HttpStatus.FORBIDDEN);
 		if (!payload.otp)

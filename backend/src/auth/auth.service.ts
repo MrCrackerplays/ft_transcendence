@@ -134,14 +134,15 @@ export class AuthService {
 		return authenticator.verify({ token: code, secret: _secret });
 	}
 
-	signConnection(connection: Connection, otp: boolean, finished: boolean) : string {
-		return this.jwtService.sign({ sub: connection.id, otp, finished });
+	signPayload(conn: Connection, _otp: boolean, _finished : boolean) : string {
+		console.log(`Signing payload with id: ${conn.id}`);
+		return this.jwtService.sign({ id: conn.id, otp: _otp, finished: _finished });
 	}
 
-	buildCookie(connection: Connection, otp : boolean, finished: boolean) : string {
-		const token = this.signConnection(connection, otp, finished);
-		console.log(`Building cookie with signed-token(42ID: ${connection.user42ID}, otp: ${otp}, finished: ${finished}`);
-		return `Authentication=${token}; HttpOnly; Path=/; Max-Age=100000`;
+	signAndGetCookie(conn: Connection, otp : boolean, finished : boolean) : string {
+		const token = this.signPayload(conn, otp, finished);
+		console.log(`Building cookie with signed-token(42ID: ${conn.user42ID}, otp: ${otp}, finished: ${finished}`);
+		return (`Authentication=${token}; HttpOnly; Path=/; Max-Age=100000`);
 	}
 
 	async getCurrentConnection(req: AuthRequest): Promise<Connection> {

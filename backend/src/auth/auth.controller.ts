@@ -37,7 +37,7 @@ export class AuthController {
 			finished = false;
 		}
 		
-		const cookie: string = this.authService.buildCookie(conn, otp, finished);
+		const cookie: string = this.authService.signAndGetCookie(conn, otp, finished);
 
 		res.setHeader('Set-Cookie', cookie);
 		res.status(302);
@@ -54,7 +54,7 @@ export class AuthController {
 			throw new HttpException('User or username invalid', HttpStatus.NOT_ACCEPTABLE);
 
 		// name changed?
-		const cookie: string = this.authService.buildCookie(conn, true, true);
+		const cookie: string = this.authService.signAndGetCookie(conn, true, true);
 
 		res.setHeader('Set-Cookie', cookie);
 		res.status(200).send();
@@ -71,11 +71,7 @@ export class AuthController {
 			return ;
 		}
 
-		let finished = false;
-		if (conn.user.userName.length > 0)
-			finished = true;
-
-		const cookie: string = this.authService.buildCookie(conn, true, finished);
+		const cookie: string = this.authService.signAndGetCookie(conn, true, true);
 
 		res.setHeader('Set-Cookie', cookie);
 		res.status(200).send();
@@ -88,14 +84,7 @@ export class AuthController {
 		this.signInOTP(req, code, res);
 	}
 
-	/* LOGOUT will NOT be implemented
-	
-	"A JWT is self-contained and is not designed to be invalidated, it will be valid until it expires."
-
-	JWT tokens are not meant to be revoked or used to replace 'Sessions'
-
-	Users can 'log out' by removing the cookie
-
+	/*
 	@Get('logout')
 	async signOut(@Req() req: AuthRequest, @Res() res: Response): Promise<void> {
 		this.authService.signOut(req);
@@ -113,7 +102,7 @@ export class AuthController {
 
 		const conn: Connection = await this.authService.getCurrentConnection(req);
 		// Cookie needs to be updated (otp = false; because with a new OTP it'll never be validated at this point)
-		const cookie: string = this.authService.buildCookie(conn, false, true);
+		const cookie: string = this.authService.signAndGetCookie(conn, false, true);
 
 		res.setHeader('Set-Cookie', cookie);
 		res.json({ qr: qrcode });
@@ -140,7 +129,7 @@ export class AuthController {
 		await this.authService.disableTwoFactor(conn);
 
 		// Cookie needs to be updated, true because OTP is disabled
-		const cookie: string = this.authService.buildCookie(conn, true, true);
+		const cookie: string = this.authService.signAndGetCookie(conn, true, true);
 
 		res.setHeader('Set-Cookie', cookie);
 		res.status(200).send('2fa disabled (DEBUG ONLY)');
