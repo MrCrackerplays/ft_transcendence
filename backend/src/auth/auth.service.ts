@@ -51,8 +51,9 @@ export class AuthService {
 		console.log(`Attempting signin with setup username: ${name}`);
 
 		const conn = await this.connectionService.get({id: jwt.id});
-		this.validateName(conn, name);
-		return conn;
+		if (await this.validateName(conn, name) == true)
+			return conn;
+		return null;
 	}
 
 	async signInOTP(req: AuthRequest, code: string): Promise<Connection> {
@@ -72,7 +73,7 @@ export class AuthService {
 
 	async validateName(conn: Connection, name: string) : Promise<boolean> {
 		const userWithName = await this.userService.setName(conn.user, name);
-		if (!userWithName)
+		if (userWithName == null)
 			return (false);
 		return (true);
 	}

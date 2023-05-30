@@ -50,6 +50,9 @@ export class AuthController {
 	async signInSetup(@Req() req: AuthRequest, @Body('name') name : string, @Res() res: Response): Promise<void> {
 		const conn: Connection = await this.authService.signInSetup(req, name);
 
+		if (conn == null)
+			throw new HttpException('User or username invalid', HttpStatus.NOT_ACCEPTABLE);
+
 		// name changed?
 		const cookie: string = this.authService.buildCookie(conn, true, true);
 
