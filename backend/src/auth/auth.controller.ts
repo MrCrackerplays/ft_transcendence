@@ -5,9 +5,9 @@ import { Constants } from "../../../shared/constants";
 import { AuthService } from "./auth.service";
 import { Public } from "./decorators/public.decorator";
 import { AuthGuard42 } from "./guards/auth42.guard";
-import { Connection } from "./connection.entity";
-import { AuthRequest } from "src/interfaces/authrequest.interface";
-import { ConnectionService } from "./connection.service";
+import { Connection } from "./connection/connection.entity";
+import { AuthRequest } from "src/auth/interfaces/authrequest.interface";
+import { ConnectionService } from "./connection/connection.service";
 
 @Controller()
 export class AuthController {
