@@ -45,4 +45,10 @@ export class ConnectionService {
 		connection.save();
 	}
 
+	async removeOne(conn: Connection): Promise<void> {
+		console.log("removing connection from database");
+
+		this.connectionRepository.remove(conn);
+	}
+
 }
