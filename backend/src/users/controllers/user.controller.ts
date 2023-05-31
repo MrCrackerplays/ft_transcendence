@@ -3,14 +3,6 @@ import { UserService } from '../user.service';
 import { User } from '../user.entity';
 
 import { CreateUserDTO } from '../../../../shared/dto/create-user.dto';
-import { AddFriendDTO } from '../../../../shared/dto/add-friend.dto';
-import { PublicUser } from '../../../../shared/public-user';
-import { PublicMatch } from '../../../../shared/public-match';
-import { AuthService } from 'src/auth/auth.service';
-import { AuthRequest } from 'src/interfaces/authrequest.interface';
-import { ConnectionService } from 'src/auth/connection.service';
-import { Connection } from 'src/auth/connection.entity';
-import { Match } from 'src/matches/match.entity';
 import { Public } from 'src/auth/decorators/public.decorator';
 import { join } from 'path';
 import { Response } from 'express';
@@ -19,8 +11,7 @@ import { STORAGE_DEFAULT_IMAGE, STORAGE_IMAGE_LOCATION } from 'src/storage';
 @Controller('users')
 export class UserController {
 	constructor(
-		private readonly userService: UserService,
-		// private readonly connectionService: ConnectionService
+		private readonly userService: UserService
 		) {}
 
 	// !: DEBUG only

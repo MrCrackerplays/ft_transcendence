@@ -4,14 +4,16 @@ import { TypeOrmModule } from "@nestjs/typeorm";
 import { Match } from "./match.entity";
 import { MatchService } from "./match.service";
 import { MatchController } from "./match.controller";
-import { UserModule } from "src/users/user.module";
-import { UserService } from "src/users/user.service";
-import { User } from "src/users/user.entity";
 
 @Module({
-	imports: [ TypeOrmModule.forFeature([Match, User]), UserModule ],
+	imports: [
+		TypeOrmModule.forFeature([ Match ])
+	],
 	providers: [ MatchService ],
 	controllers: [ MatchController ],
-	exports: [ MatchService ]
+	exports: [
+		TypeOrmModule.forFeature([ Match ]),
+		MatchService
+	]
 })
 export class MatchModule {}
