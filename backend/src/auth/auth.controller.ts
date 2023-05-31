@@ -30,11 +30,34 @@ export class AuthController {
 			otp = false;
 		}
 
-
-		const cookie: string = this.authService.signAndGetCookie(conn, otp);
+		let finished = true;
+		console.log(`username: ${conn.user.userName}`);
+		if (!conn.user.userName) {
+			redirectURL = Constants.FRONTEND_SETUP_REDIRECT;
+			finished = false;
+		}
+		
+		const cookie: string = this.authService.signAndGetCookie(conn, otp, finished);
 
 		res.setHeader('Set-Cookie', cookie);
-		res.status(302).redirect(redirectURL);
+		res.status(302);
+		res.redirect(redirectURL);
+	}
+
+	@Public()
+	@Post('setup')
+	// Profile setup, to make sure user's set their profile name before being validated
+	async signInSetup(@Req() req: AuthRequest, @Body('name') name : string, @Res() res: Response): Promise<void> {
+		const conn: Connection = await this.authService.signInSetup(req, name);
+
+		if (conn == null)
+			throw new HttpException('User or username invalid', HttpStatus.NOT_ACCEPTABLE);
+
+		// name changed?
+		const cookie: string = this.authService.signAndGetCookie(conn, true, true);
+
+		res.setHeader('Set-Cookie', cookie);
+		res.status(200).send();
 	}
 
 	@Public()
@@ -48,7 +71,7 @@ export class AuthController {
 			return ;
 		}
 
-		const cookie: string = this.authService.signAndGetCookie(conn, true);
+		const cookie: string = this.authService.signAndGetCookie(conn, true, true);
 
 		res.setHeader('Set-Cookie', cookie);
 		res.status(200).send();
@@ -61,14 +84,7 @@ export class AuthController {
 		this.signInOTP(req, code, res);
 	}
 
-	/* LOGOUT will NOT be implemented
-	
-	"A JWT is self-contained and is not designed to be invalidated, it will be valid until it expires."
-
-	JWT tokens are not meant to be revoked or used to replace 'Sessions'
-
-	Users can 'log out' by removing the cookie
-
+	/*
 	@Get('logout')
 	async signOut(@Req() req: AuthRequest, @Res() res: Response): Promise<void> {
 		this.authService.signOut(req);
@@ -86,7 +102,7 @@ export class AuthController {
 
 		const conn: Connection = await this.authService.getCurrentConnection(req);
 		// Cookie needs to be updated (otp = false; because with a new OTP it'll never be validated at this point)
-		const cookie: string = this.authService.signAndGetCookie(conn, false);
+		const cookie: string = this.authService.signAndGetCookie(conn, false, true);
 
 		res.setHeader('Set-Cookie', cookie);
 		res.json({ qr: qrcode });
@@ -113,7 +129,7 @@ export class AuthController {
 		await this.authService.disableTwoFactor(conn);
 
 		// Cookie needs to be updated, true because OTP is disabled
-		const cookie: string = this.authService.signAndGetCookie(conn, true);
+		const cookie: string = this.authService.signAndGetCookie(conn, true, true);
 
 		res.setHeader('Set-Cookie', cookie);
 		res.status(200).send('2fa disabled (DEBUG ONLY)');

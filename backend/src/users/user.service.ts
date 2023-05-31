@@ -101,8 +101,8 @@ export class UserService {
 		return this.usersRepository.findOneBy({ id });
 	}
 
-	async removeOne(id: string): Promise<void> {
-		await this.usersRepository.delete(id);
+	async removeOne(user: User): Promise<void> {
+		await this.usersRepository.remove(user);
 	}
 
 	// ### USER IS KNOWN ###
@@ -135,7 +135,7 @@ export class UserService {
 
 	async setName(user: User, name: string): Promise<User> {
 		if (!name || name.length == 0)
-			throw new HttpException('Provide an actual name', HttpStatus.FORBIDDEN);
+			return null;
 		
 		const userWithName = await this.usersRepository.findOne({
 			where: {
@@ -144,7 +144,7 @@ export class UserService {
 		});
 
 		if (userWithName)
-			throw new HttpException('Username taken', HttpStatus.FORBIDDEN);
+			return null;
 		user.userName = name;
 		return user.save();
 	}

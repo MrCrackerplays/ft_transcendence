@@ -80,7 +80,10 @@ export class SelfController {
 		if (!nameDTO || !nameDTO.name)
 			throw new HttpException('No name provided', HttpStatus.NOT_ACCEPTABLE);
 
-		return this.userService.setName(currentUser, nameDTO.name);
+		const user = await this.userService.setName(currentUser, nameDTO.name);
+		if (user == null)
+			throw new HttpException('Username can not be accepted', HttpStatus.NOT_ACCEPTABLE);
+		return user;
 	}
 
 	@Get('achievements')

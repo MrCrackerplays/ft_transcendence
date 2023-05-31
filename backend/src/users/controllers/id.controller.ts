@@ -4,13 +4,22 @@ import { UserService } from '../user.service';
 import { User } from '../user.entity';
 import { CreateUserDTO } from '../../../../shared/dto/create-user.dto';
 import { Public } from 'src/auth/decorators/public.decorator';
+<<<<<<< HEAD
+import { ConnectionService } from 'src/auth/connection.service';
+=======
+>>>>>>> main
 
 // !: This is a controller made for DEBUGGING
 
 @Controller('id/')
 export class IDController {
 	constructor(
+<<<<<<< HEAD
+		private readonly userService: UserService,
+		private readonly connectionService: ConnectionService
+=======
 		private readonly userService: UserService
+>>>>>>> main
 		) {}
 
 	// !: DEBUG only
@@ -81,9 +90,27 @@ export class IDController {
 
 	// !: DEBUG only
 	@Public()
-	@Delete(':id')
+	@Get(':idn/delete')
 	// Delete a single user found from id
-	removeOne(@Param('id') id: string): Promise<void> {
-		return this.userService.removeOne(id);
+	async removeOne(@Param('idn') idn: string): Promise<void> {
+		console.log("removing user from database");
+
+		const conn = await this.connectionService.get({
+				user: {
+					id: idn
+				}
+			},
+		['user']);
+
+		if (!conn)
+		{
+			const u = await this.userService.get(idn);
+			u.remove();
+			return ;
+			// throw new HttpException('Connection not found', HttpStatus.NOT_FOUND);
+		}
+
+		await this.connectionService.removeOne(conn);
+		return this.userService.removeOne(conn.user);
 	}
 }
