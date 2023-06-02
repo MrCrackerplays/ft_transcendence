@@ -7,6 +7,7 @@ import isLoggedIn from './hooks/isLoggedIn/isLoggedIn'
 import LoginOTP from './views/loginotp/loginotp';
 import SetUp from './views/newuser/newuser';
 import { useEffect, useState } from 'react'
+import SettingsPage from './views/settings/settings';
 
 function App(): React.ReactElement
 {
@@ -32,7 +33,7 @@ function App(): React.ReactElement
     	<Routes>
 			<Route path="/" element={<ProfilePage />} />
 			<Route path="/profile/*" element={<ProfilePage />} />
-    		<Route path="/setting" element={<ProfilePage />} />
+    		<Route path="/settings" element={<SettingsPage />} />
 			<Route path="/temp" element={<Temp />}/>
 			<Route path="/login" element={<MyLoginPage />}/>
 			<Route path="/loginOTP" element={<LoginOTP />}/>

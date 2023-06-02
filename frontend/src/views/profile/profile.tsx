@@ -1,12 +1,13 @@
 import React, {useEffect, useState} from 'react';
 import MyNavBar from "../../hooks/navbar/navbar";
-import QueryTest from "./mainstats";
+// import QueryTest from "./mainstats";
 import { Router } from 'react-router-dom';
 import { QueryClient, QueryClientProvider, useQuery } from 'react-query'
 import isLoggedIn from '../../hooks/isLoggedIn/isLoggedIn';
 import MatchHistory from './components/matchhistory/matchhistory';
 import Userbar from './components/userbar/userbar';
 import FetchSelf from '../../hooks/fetch/FetchSelf';
+import FriendList from './components/friendlist/friendlist'
 const queryClient = new QueryClient();
 
 function ProfilePage()

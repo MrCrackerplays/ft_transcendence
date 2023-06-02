@@ -44,4 +44,4 @@ function QueryTest()
 	);
 }
 
-export default QueryTest
+// export default QueryTest
