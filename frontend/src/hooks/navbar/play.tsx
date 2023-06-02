@@ -1,4 +1,5 @@
 import { Popover } from '@headlessui/react'
+import { Link } from "react-router-dom"
 import React, {useState} from 'react'
 import './navbar.css'
 
@@ -15,11 +16,10 @@ function MyLink({ label, link }: { label: string, link: string })
 	};
   
 	const className = `my-link a ${hovered ? 'hovered' : ''}`;
-  
 	return (
-	  <a href={link} className={className} onMouseOver={handleMouseOver} onMouseOut={handleMouseOut}>
+	  <Link to={link} className={className} onMouseOver={handleMouseOver} onMouseOut={handleMouseOut}>
 		{label}
-	  </a>
+	  </Link>
 	);
 }
   

@@ -1,4 +1,4 @@
-import {Route, Routes, useLocation, useNavigate } from 'react-router-dom'
+import { Route, Routes, useLocation, useNavigate } from 'react-router-dom'
 import ProfilePage from './views/profile/profile';
 import MySettingsPage from './views/settings/settings'
 import MyLoginPage from './views/login/login';
@@ -12,6 +12,7 @@ import MyNavBar from './hooks/navbar/navbar';
 function App(): React.ReactElement
 {
 	const [isLoading, setIsLoading] = useState(true)
+	const [isVerified, setIsVerified] = useState(false);
 	const navigate = useNavigate();
 	const location = useLocation();
 
@@ -20,6 +21,8 @@ function App(): React.ReactElement
 			const data = await isLoggedIn();
 			if (!(data >= 200 && data <= 299))
 				navigate("/login");
+			else
+				setIsVerified(true);
 			setIsLoading(false);
 		}
 		if (location.pathname !== "/login" && location.pathname !== "/loginOTP" && location.pathname !== "/setup")
@@ -28,17 +31,25 @@ function App(): React.ReactElement
 			setIsLoading(false);
 	}, [location])
 	if (isLoading)
-	  return (<div> </div>);
+		return (<div> </div>);
+	if (!isVerified)
+		return (
+				<Routes>
+					<Route path="/login" element={<MyLoginPage />}/>
+					<Route path="/loginOTP" element={<LoginOTP />}/>
+					<Route path="/setup" element={<SetUp />} />
+				</Routes>
+		)
 	return (
-    	<Routes>
-			<Route path="/" element={<><ProfilePage /> <MyNavBar /></>} />
-			<Route path="/profile/*" element={<><MyNavBar /> <ProfilePage /></>} />
-    		<Route path="/setting" element={<ProfilePage />} />
-			<Route path="/temp" element={<Temp />}/>
-			<Route path="/login" element={<MyLoginPage />}/>
-			<Route path="/loginOTP" element={<LoginOTP />}/>
-			<Route path="/setup" element={<SetUp />} />
-    	</Routes>
+		<div>
+			<MyNavBar/>
+    		<Routes>
+				<Route path="/" element={<ProfilePage />}/>
+				<Route path="/profile/*" element={<ProfilePage />} />
+    			<Route path="/setting" element={<ProfilePage />} />
+				<Route path="/temp" element={<Temp />}/>
+    		</Routes>
+		</div>
   );
 }
 export default App	

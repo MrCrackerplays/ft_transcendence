@@ -23,6 +23,6 @@ export class Constants {
 	public static FETCH_USERS = `${Constants.BACKEND_URL}/users`
 	public static FRONTEND_SETUP_REDIRECT = `${Constants.FRONTEND_URL}/setup`;
 	public static BACKEND_SETUP_REDIRECT = `${Constants.BACKEND_URL}/setup`;
-
+	public static POST_ADDFRIEND = `${Constants.BACKEND_URL}/self/friends`;
 }
 
