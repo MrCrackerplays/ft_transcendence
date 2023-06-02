@@ -1,13 +1,27 @@
-import React from "react"
 import MyPopover from "./play";
-import './home.css'
-import { AppBar, Toolbar, Typography, Button, Popover } from '@mui/material';
+import './navbar.css'
+import { useEffect, useState } from "react";
+import FetchSelf from "../fetch/FetchSelf";
+import DefaultProfile, { PublicUser } from '../../../../shared/public-user';
+import { Constants } from "../../../../shared/constants";
 
-function MyNavBar( {name, imgsrc} )
+function MyNavBar()
 {
+	const [profile, setProfile] = useState<PublicUser>(DefaultProfile());
+	const [isLoading, setIsLoading] = useState(true);
+	useEffect(() => {
+		async function getSelf() {
+			setProfile(await FetchSelf())
+			setIsLoading(false)
+    	}
+    getSelf();
+	}, []);
+	if (isLoading)
+		return (<div />);
 	return (
 		<div className="my-navbar">
-			<MyPopover name={name} imgsrc={imgsrc}/>
+			<p className="website">Ball Busters</p>
+			<MyPopover name={profile.userName} imgsrc={Constants.FETCH_SELF_PFP}/>
 		</div>
 	)
 }

@@ -1,7 +1,7 @@
-import { Menu, Transition } from '@headlessui/react'
 import { Popover } from '@headlessui/react'
+import { Link } from "react-router-dom"
 import React, {useState} from 'react'
-import './home.css'
+import './navbar.css'
 
 function MyLink({ label, link }: { label: string, link: string })
 {
@@ -16,11 +16,10 @@ function MyLink({ label, link }: { label: string, link: string })
 	};
   
 	const className = `my-link a ${hovered ? 'hovered' : ''}`;
-  
 	return (
-	  <a href={link} className={className} onMouseOver={handleMouseOver} onMouseOut={handleMouseOut}>
+	  <Link to={link} className={className} onMouseOver={handleMouseOver} onMouseOut={handleMouseOut}>
 		{label}
-	  </a>
+	  </Link>
 	);
 }
   
@@ -28,10 +27,10 @@ function MyLinks()
 {
 	return (
 	  <div className='pfp-popover-content a'>
-		<MyLink label="Play" link="/Play"/>
-		<MyLink label="Profile" link="/Profile" />
+		<MyLink label="Play" link="/play"/>
+		<MyLink label="Profile" link="/profile" />
 		<MyLink label="Settings" link="/settings" />
-		<MyLink label="Logout" link="/Logout" />
+		<MyLink label="Logout" link="/logout" />
 	  </div>
 	);
 }

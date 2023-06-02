@@ -1,13 +1,87 @@
-.main-stats
-{
-	position: fixed;
-	top: 10%;
-	left: 10%;
-}
+.container {  display: grid;
+	grid-template-columns: 1.3fr 0.7fr 1.1fr 0.9fr 1fr 1fr 1fr;
+	grid-template-rows: 0.4fr 0.6fr 1.5fr 0.3fr 2.2fr;
+	gap: 0px 0px;
+	grid-auto-flow: row;
+	grid-template-areas:
+	  "NA Name Name Name Name Name Search"
+	  "NA SelectBar SelectBar SelectBar SelectBar SelectBar SelectBar"
+	  "Profile FLEXBOX FLEXBOX FLEXBOX FLEXBOX FLEXBOX FLEXBOX"
+	  "Add-Friend FLEXBOX FLEXBOX FLEXBOX FLEXBOX FLEXBOX FLEXBOX"
+	  "Stats FLEXBOX FLEXBOX FLEXBOX FLEXBOX FLEXBOX FLEXBOX";
+	margin-left: 5%;
+	width: 80%;
+	height: 80%;
+  }
+  
+  .SelectBar {
+	justify-self: center;
+	align-self: center;
+	grid-area: SelectBar;
+  }
+  
+  .Name {
+	justify-self: center;
+	align-self: end;
+	grid-area: Name;
+  }
+  
+  .Profile {
+	justify-self: stretch;
+	align-self: stretch;
+	grid-area: Profile;
+	position: relative;
+  }
 
-.btn-temp
-{
+  .PFP {
+	min-height: 100%;
+	min-width: 100%;
+	max-height: 100%;
+	max-width: 100%;
+	/* border: 1px white solid;
+	overflow: hidden */
+  }
+
+  .PFP-Border{
 	position:absolute;
-	top: 50%;
-	left: 5%;
-}
+	left: 0px;
+	right: 0px;
+	bottom: 0px;
+	top: 0px;
+
+	border: 1px solid white;
+  }
+  
+  .Add-Friend { grid-area: Add-Friend; }
+  
+  .add-friend-btn{
+	height:100%;
+	width:100%;
+	font-size: 1rem;
+	color: white;
+	font-weight:bold;
+  }
+
+  .self-friend{
+	background-color: rgb(63, 61, 64);
+  }
+  .add-friend{
+	background-color: rgb(43, 166, 194);
+  }
+
+  .remove-friend{
+	background-color: rgb(168, 10, 18);
+  }
+
+  .Stats { grid-area: Stats; }
+  
+  .FLEXBOX { grid-area: FLEXBOX; }
+  
+  .Search {
+	justify-self: end;
+	align-self: start;
+	grid-area: Search;
+  }
+  
+  .NA { grid-area: NA; }
+  

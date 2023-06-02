@@ -1,11 +1,9 @@
 import React, {useState} from 'react';
 import { useNavigate } from 'react-router-dom';
 import MyNavBar from "../../hooks/navbar/navbar";
-import MyButton from "./volume";
 import muteImg from './mute.png'
 import unmuteImg from './unmute.png'
-import Userbar from "../profile/components/userbar/userbar";
-import MyFriendsList from "../profile/components/friendlist/friendlist";
+import MyFriendsList from "../profile/flexbox/friendlist/friendlist";
 
 function NavButton({label}) {
 	const navigate = useNavigate();
@@ -16,7 +14,7 @@ function NavButton({label}) {
 
 	return (
 		<button
-			className="button default"
+			className="button"
 			onClick={handleClick}>
 				<p className="text">{label}</p>
 		</button>
@@ -29,7 +27,7 @@ function SettingsPage()
 	return (
     	<div>
 			<MyFriendsList />
-    		<MyNavBar name={jsonData.userName} imgsrc={jsonData.imageURL}/>
+    		{/* <MyNavBar name={jsonData.userName} imgsrc={jsonData.imageURL}/> */}
 			<NavButton label='profile' />
     	</div>
   );

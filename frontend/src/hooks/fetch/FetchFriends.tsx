@@ -1,8 +1,8 @@
 import { Constants } from "../../../../shared/constants"
 
-async function FetchSelf() {
+async function FetchFriends() {
 
-	const res = await fetch(Constants.FETCH_SELF, {
+	const res = await fetch(`${Constants.FETCH_SELF}/friends`, {
 		credentials: 'include'
 	});
 	if (!res.ok || res.status == 401) 
@@ -10,10 +10,11 @@ async function FetchSelf() {
 		console.log("something wrong redirect to login");
 		return false
 	}
+	// console.log(js);
 	const jsonData = await res.json();
-	// console.log(`User Score: ${jsonData.score}, User active: ${jsonData.active}`);
 	// console.log(jsonData);
+	// console.log(`User Score: ${jsonData.score}, User active: ${jsonData.active}`);
 	return jsonData;
 }
 
-export default FetchSelf
+export default FetchFriends
