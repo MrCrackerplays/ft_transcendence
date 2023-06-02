@@ -26,7 +26,6 @@ function SettingsPage()
 	const [jsonData, setJsonData] = useState([] as any);
 	return (
     	<div>
-			<MyFriendsList />
     		{/* <MyNavBar name={jsonData.userName} imgsrc={jsonData.imageURL}/> */}
 			<NavButton label='profile' />
     	</div>
