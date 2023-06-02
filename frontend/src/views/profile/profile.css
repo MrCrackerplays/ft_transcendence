@@ -63,6 +63,7 @@
 	/* max-width: 100%; */
 	font-size: 1rem;
 	color: white;
+	text-shadow: 0 1px 0 rgb(0, 0, 0);
 	font-weight:bold;
   }
 
@@ -91,5 +92,17 @@
 
   .searchform{
 	display:flex;
+	padding-right: 5rem;
+  }
+
+  .searchinput{
+	font-size: 1rem;
+	background-color: lightgray;
+  }
+
+  .searchbutton{
+	color:white;
+	font-size: 1rem;
+	background-color:rgb(10, 103, 143)
   }
   
