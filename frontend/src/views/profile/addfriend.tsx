@@ -4,13 +4,13 @@ import { useState, useEffect } from "react"
 import FetchSelf from "../../hooks/fetch/FetchSelf";
 import FetchFriends from "../../hooks/fetch/FetchFriends";
 import './profile.css'
+import { useParams } from "react-router-dom";
 
 function AddFriend( {UUID} : {UUID:string}) {
 	const [friendState, setfriendState] = useState('Loading');
 	const link = Constants.POST_ADDFRIEND;
 	const [jsonData, setJsonData] = useState<PublicUser>(DefaultProfile());
 	const [friendArray, setFriendArray] = useState<Array<PublicUser>>([]);
-
 	useEffect(() => {
 		async function getSelf()
 		{
@@ -21,11 +21,8 @@ function AddFriend( {UUID} : {UUID:string}) {
 	useEffect(() => {
 		async function getFriends()
 		{
-			// console.log(UUID)
-			// console.log(jsonData.id)
 			if (jsonData.id == UUID)
 			{
-				// console.log("self change");
 				setfriendState("Self");
 				return ;
 			}

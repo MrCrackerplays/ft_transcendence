@@ -47,6 +47,7 @@ function App(): React.ReactElement
     		<Routes>
 				<Route path="/" element={<ProfilePage />}/>
 				<Route path="/profile/*" element={<ProfilePage />} />
+					{/* <Route path=':profileId' element={<ProfilePage />}/> */}
     			<Route path="/settings" element={<SettingsPage />} />
 				<Route path="/temp" element={<Temp />}/>
     		</Routes>
