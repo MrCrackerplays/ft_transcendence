@@ -8,6 +8,7 @@ import LoginOTP from './views/loginotp/loginotp';
 import SetUp from './views/newuser/newuser';
 import { useEffect, useState } from 'react'
 import MyNavBar from './hooks/navbar/navbar';
+import MyFriendsList from './views/profile/flexbox/friendlist/friendlist';
 import SettingsPage from './views/settings/settings';
 
 function App(): React.ReactElement
@@ -44,6 +45,7 @@ function App(): React.ReactElement
 	return (
 		<div>
 			<MyNavBar/>
+			<MyFriendsList />
     		<Routes>
 				<Route path="/" element={<ProfilePage />}/>
 				<Route path="/profile/*" element={<ProfilePage />} />
