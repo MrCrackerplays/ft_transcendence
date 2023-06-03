@@ -8,8 +8,7 @@ import { Constants } from "../../../../../../shared/constants";
 function FriendCard({ friend }: {friend: PublicUser}){
 	const textcolor = "white";
 	const fetchPFP = Constants.FETCH_USERS;
-	
-	console.log('hello')
+
 	return (
 		<div className="friend-card">
 			<img src={`${fetchPFP}/${friend.userName}/pfp`} alt="pfp not found" />
@@ -23,7 +22,6 @@ function FriendCard({ friend }: {friend: PublicUser}){
 // 	name: string;
 // 	pfp: string;
 // 	status: string;
-
 // 	constructor() {
 // 		this.name = "Friend1"
 // 		this.pfp = pfp;
