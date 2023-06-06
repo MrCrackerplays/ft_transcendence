@@ -11,8 +11,8 @@ import { from, Observable } from 'rxjs';
 import { map } from 'rxjs/operators';
 import { Server, Socket } from 'socket.io';
 import { JwtService } from "@nestjs/jwt";
-import { ConnectionService } from 'src/auth/connection.service';
-import { MessageService } from 'src/message/message.service';
+import { ConnectionService } from 'src/auth/connection/connection.service';
+import { MessageService } from 'src/channel/message/message.service';
 import { ChannelService } from 'src/channel/channel.service';
 import { WsGuard } from 'src/auth/guards/wsguard.guard';
 import { User } from 'src/users/user.entity';
@@ -91,15 +91,14 @@ export class ChatGateway {
 
 	@UseGuards(WsGuard)
 	@SubscribeMessage('create')
-	createChannel(@ConnectedSocket() client: Socket, @MessageBody("channel") channel_id : string): void {
+	createChannel(@ConnectedSocket() client: Socket, @MessageBody("channel") channel_name : string): void {
 		this.userFromSocket(client).then(user => {
 			if (!user)
 				return;
-			this.channelService.createOne({ name: channel_id, ownerID: user.id });
+			this.channelService.create(user, { name: channel_name, visibility: 0, password: null });
 		});
 	}
 
-	//TEMPORARY WAY TO JOIN CHANNELS, REMOVE IF ANOTHER WAY TO JOIN CHANNELS GETS ADDED
 	@UseGuards(WsGuard)
 	@SubscribeMessage('join')
 	joinChannel(@ConnectedSocket() client: Socket, @MessageBody("channel") channel_id : string): Promise<boolean> {

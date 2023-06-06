@@ -1,4 +1,4 @@
-import { Dispatch, SetStateAction, forwardRef, useEffect, useRef, useState } from "react"
+import { Component, Dispatch, ReactNode, SetStateAction, forwardRef, useEffect, useLayoutEffect, useRef, useState } from "react"
 import { Socket, io } from "socket.io-client"
 import "./chat.css"
 import { type } from "os";
@@ -26,6 +26,8 @@ function Chat( {sender} : {sender: string}) {
 	// const [history, setHistory] = useState<Message[]>([]);
 	const [currentChannel, setCurrentChannel] = useState("");
 
+	const magic_channel = "3e809453-5734-482c-aa2a-8fc311f0cd4e";
+
 	const ws = useRef<Socket>();
 
 	const getMessageHistory = (channel_id : string) => {
@@ -48,7 +50,7 @@ function Chat( {sender} : {sender: string}) {
 		setHistory(
 			hist => new Map(hist.set(
 				channel,
-				(hist.has(channel) ? [...hist.get(channel)!, message] : [message])
+				(hist.has(channel) ? [message, ...hist.get(channel)!] : [message])
 			))
 		);
 	};
@@ -57,21 +59,23 @@ function Chat( {sender} : {sender: string}) {
 		let deb = false
 		deb = true;
 		if (deb)
-			setCurrentChannel("f4b0aae2-57d6-4569-b8c2-bfdc83ec535d");
+			setCurrentChannel(magic_channel);
 		else
 			setCurrentChannel("");
 		console.log("subscribed to events?")
 		if (!ws.current)
 			ws.current = io("http://localhost:3000", {withCredentials: true});
-
+		else if (ws.current.disconnected)
+			ws.current.connect();
+		// ws.current.emit("create", {channel: "coolerchannel"});
 		if (!ws.current.hasListeners("connect")) {
 			ws.current.on("connect", () => {
 				console.log("Connected to server");
 				setIsConnectionOpen(true);
-				ws.current?.emit("join", {channel: "f4b0aae2-57d6-4569-b8c2-bfdc83ec535d"});
-				getMessageHistory("f4b0aae2-57d6-4569-b8c2-bfdc83ec535d").then(res => res.json()).then(data => {
+				ws.current?.emit("join", {channel: magic_channel});
+				getMessageHistory(magic_channel).then(res => res.json()).then(data => {
 					console.log("data", data);
-					// setHistory(hist => new Map(hist.set("f4b0aae2-57d6-4569-b8c2-bfdc83ec535d", data)));
+					setHistory(hist => new Map(hist.set(magic_channel, data)));
 				});
 				console.log("smile")
 			});
@@ -136,32 +140,27 @@ function Chat( {sender} : {sender: string}) {
 function ChannelList( { sender } ) {
 	return (
 		<div>you are {sender} </div>
-	)
+	);
 }
 
 function UserMessage({ message, sender } : { message: UserMessage; sender: string }) {
-	let alignment = "leftalign"
+	let alignment = "leftalign";
+	let sender_element = <a href={`/profile/${message.sender}`}>{message.sender}</a>;
+	let date_element = <sub>{new Date(message.date).toLocaleString()}</sub>;
 	let message_top = (
 		<div className="message-header">
-			<span>
-				{message.sender}
-			</span>
-			<sub>
-				{new Date(message.date).toLocaleString()}
-			</sub>
-		</div>);
+			{sender_element}
+			{date_element}
+		</div>
+	);
 
 	if (message.sender == sender) {
 		alignment = "rightalign";
 		message_top = (
 			<div className="message-header">
-				<sub>
-					{new Date(message.date).toLocaleString()}
-				</sub>
-				<span>
-					{message.sender}
-				</span>
-			</div>)
+				{date_element}
+				{sender_element}
+			</div>);
 	}
 
 	return (
@@ -173,26 +172,28 @@ function UserMessage({ message, sender } : { message: UserMessage; sender: strin
 		</div>
 	);
 }
+
 function Message({ message } : {message: Message}) {
-	
 	return (
 		<div className="message join-message">
-			<p><i>
+			<i>
 				{message.content}
-			</i></p>
+			</i>
 		</div>
 	);
 }
 
-function ChatChannel( props: { isConnectionOpen: boolean; messages: UserMessage[] | Message[]; messageBody: string; sendMessage: () => void; setMessageBody: Dispatch<SetStateAction<string>>; sender: string } ) {
+function ChatChannel( props: { isConnectionOpen: boolean; messages: UserMessage[] | Message[]; messageBody: string; sendMessage: () => void; setMessageBody: (message: string) => void; sender: string; } ) {
 	const isConnectionOpen : boolean = props.isConnectionOpen;
 	const messages : UserMessage[] | Message[] = props.messages;
 	const messageBody : string = props.messageBody;
 	const sendMessage : () => void = props.sendMessage;
-	const setMessageBody : React.Dispatch<React.SetStateAction<string>>	= props.setMessageBody;
+	const setMessageBody : (message: string) => void = props.setMessageBody;
+
 	return (
 		<>
-		<div className="history">
+		<div id="chat-history">
+			<div id="history-anchor"></div>
 			{messages.map((message: UserMessage | Message, index : number) => (
 				// message is Message ?
 				isUserMessage(message) ?

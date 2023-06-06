@@ -3,11 +3,11 @@ import { ChatGateway } from './chat.gateway';
 import { JwtService } from "@nestjs/jwt";
 
 import { TypeOrmModule } from "@nestjs/typeorm";
-import { Connection } from "src/auth/connection.entity";
-import { ConnectionService } from 'src/auth/connection.service';
+import { Connection } from "src/auth/connection/connection.entity";
+import { ConnectionService } from 'src/auth/connection/connection.service';
 
-import { Message } from "src/message/message.entity";
-import { MessageService } from 'src/message/message.service';
+import { Message } from 'src/channel/message/message.entity';
+import { MessageService } from 'src/channel/message/message.service';
 
 import { Channel } from 'src/channel/channel.entity';
 import { ChannelService } from 'src/channel/channel.service';

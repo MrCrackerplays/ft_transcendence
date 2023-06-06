@@ -1,19 +1,21 @@
 
-.history {
+#chat-history {
 	overflow: auto;
 	min-height: 3rem;
 	padding: 5px;
 
 	scrollbar-color: lightslategray transparent;
 	scrollbar-width: thin;
+	display: flex;
+	flex-direction: column-reverse;
 }
 
-.history::-webkit-scrollbar {
+#chat-history::-webkit-scrollbar {
     height: 12px;
     width: 12px;
 }
 
-.history::-webkit-scrollbar-thumb {
+#chat-history::-webkit-scrollbar-thumb {
     background: lightslategray;
 	border-radius: 6px;
 }
@@ -50,13 +52,13 @@
 	justify-content: space-between;
 	color: dodgerblue;
 }
+.message-header > a {
+	color: dodgerblue;
+	text-decoration: none;
+}
 
 .join-message {
 	text-align: center;
-}
-
-.join-message > p {
-	margin: auto;
 }
 
 .leftalign{
