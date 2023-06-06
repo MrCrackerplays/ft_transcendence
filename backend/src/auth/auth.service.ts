@@ -2,10 +2,10 @@ import { HttpException, HttpStatus, Injectable, Req } from "@nestjs/common";
 import { JwtService } from "@nestjs/jwt";
 import { UserService } from "src/users/user.service";
 import { Payload } from "./interfaces/payload.interface";
-import { ConnectionService } from "./connection.service";
-import { Connection } from "./connection.entity";
+import { ConnectionService } from "./connection/connection.service";
+import { Connection } from "./connection/connection.entity";
 import { User } from "src/users/user.entity";
-import { AuthRequest } from "src/interfaces/authrequest.interface";
+import { AuthRequest } from "src/auth/interfaces/authrequest.interface";
 import { authenticator } from "otplib";
 import { toDataURL } from "qrcode";
 
@@ -21,7 +21,7 @@ export class AuthService {
 		console.log(`attempting signin for 42-user: ${payload.id}`);
 
 		// Get existing connection from the provided user42
-		let con = await this.connectionService.get({ user42ID: payload.id });
+		let con = await this.connectionService.get({ user42ID: payload.id }, ['user']);
 
 		// Create new one if not existant
 		if (!con) {
@@ -37,6 +37,25 @@ export class AuthService {
 		return con;
 	}
 
+	async signInSetup(req: AuthRequest, name: string): Promise<Connection> {
+		// verify the JWT token
+		let jwt = null;
+		try {jwt = this.jwtService.verify(req?.cookies?.Authentication);}
+		catch (err) {
+			console.log(err);
+			return null;
+		}
+		if (!jwt)
+			throw new HttpException('Invalid JWT', HttpStatus.FORBIDDEN);
+		
+		console.log(`Attempting signin with setup username: ${name}`);
+
+		const conn = await this.connectionService.get({id: jwt.id});
+		if (await this.validateName(conn, name) == true)
+			return conn;
+		return null;
+	}
+
 	async signInOTP(req: AuthRequest, code: string): Promise<Connection> {
 		// verify the JWT token
 		let jwt = null;
@@ -50,6 +69,13 @@ export class AuthService {
 		if (jwt.otp)
 			throw new HttpException('Already signed in', HttpStatus.CONFLICT);
 		return this.validateTwoFactor(jwt.id, code);
+	}
+
+	async validateName(conn: Connection, name: string) : Promise<boolean> {
+		const userWithName = await this.userService.setName(conn.user, name);
+		if (userWithName == null)
+			return (false);
+		return (true);
 	}
 
 	async getTwoFactorEnabled(req: AuthRequest): Promise<boolean> {
@@ -102,25 +128,20 @@ export class AuthService {
 		connection.save();
 	}
 
-	// async generateQR(connection: Connection): Promise<string> {
-	// 	const secret = await this.generateTwoFactorSecret(connection);
-	// 	return toDataURL(secret.otpURL);
-	// }
-
 	validateOTP(_secret: string, code: string): boolean {
 		if (!_secret)
 			throw new HttpException('No Secret', HttpStatus.FORBIDDEN);
 		return authenticator.verify({ token: code, secret: _secret });
 	}
 
-	signPayload(conn: Connection, _otp: boolean) : string {
+	signPayload(conn: Connection, _otp: boolean, _finished : boolean) : string {
 		console.log(`Signing payload with id: ${conn.id}`);
-		return this.jwtService.sign({ id: conn.id, otp: _otp });
+		return this.jwtService.sign({ id: conn.id, otp: _otp, finished: _finished });
 	}
 
-	signAndGetCookie(conn: Connection, otp : boolean) : string {
-		const token = this.signPayload(conn, otp);
-		console.log(`Building cookie with signed-token: ${token}, and otp: ${otp}`);
+	signAndGetCookie(conn: Connection, otp : boolean, finished : boolean) : string {
+		const token = this.signPayload(conn, otp, finished);
+		console.log(`Building cookie with signed-token(42ID: ${conn.user42ID}, otp: ${otp}, finished: ${finished}`);
 		return (`Authentication=${token}; HttpOnly; Path=/; Max-Age=100000`);
 	}
 

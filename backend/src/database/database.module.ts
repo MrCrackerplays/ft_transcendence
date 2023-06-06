@@ -4,17 +4,17 @@ import { ConfigModule, ConfigService } from "@nestjs/config";
 
 import { User } from "../users/user.entity";
 import { Channel } from "src/channel/channel.entity";
-import { Message } from "src/message/message.entity";
+import { Message } from "src/channel/message/message.entity";
 import { Match } from "src/matches/match.entity";
-import { Connection } from "src/auth/connection.entity";
+import { Connection } from "src/auth/connection/connection.entity";
 import { Achievement } from "src/achievements/achievement.entity";
 
 @Module({
 	imports: [
 		// TypeORM for databases
 		TypeOrmModule.forRootAsync({
-			imports: [ConfigModule],
-			inject: [ConfigService],
+			imports: [ ConfigModule ],
+			inject: [ ConfigService ],
 			useFactory: (configService: ConfigService) => ({
 				type: 'postgres',
 				host: configService.get('POSTGRES_HOST'),

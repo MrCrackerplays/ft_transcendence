@@ -10,21 +10,15 @@ import { User } from "src/users/user.entity";
 @Injectable()
 export class MatchService {
 	constructor(
-		@InjectRepository(Match) private matchRepository: Repository<Match>,
-		private readonly userService: UserService
+		@InjectRepository(Match) private matchRepository: Repository<Match>
 		) { }
 	
-	async createMatch(createMatchDTO: CreateMatchDTO): Promise<Match> {
+	async createMatch(winner: User, loser: User, winnerScore: number, loserScore: number): Promise<Match> {
 		const match = new Match();
-
-		const userWinner: User = await this.userService.findOne(createMatchDTO.winnerID);
-		const userLoser: User = await this.userService.findOne(createMatchDTO.loserID);
-		
-		match.winner = userWinner;
-		match.loser = userLoser;
-
-		match.winnerScore = createMatchDTO.winnerScore;
-		match.loserScore = createMatchDTO.loserScore;
+		match.winner = winner;
+		match.loser = loser;
+		match.winnerScore = winnerScore;
+		match.loserScore = loserScore;
 
 		return match.save();
 	}

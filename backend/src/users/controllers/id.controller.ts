@@ -1,18 +1,16 @@
 import { Body, Controller, Delete, Get, HttpException, HttpStatus, Param, Post, Req } from '@nestjs/common';
+
 import { UserService } from '../user.service';
 import { User } from '../user.entity';
-
 import { CreateUserDTO } from '../../../../shared/dto/create-user.dto';
 import { Public } from 'src/auth/decorators/public.decorator';
-import { Achievement } from 'src/achievements/achievement.entity';
 
 // !: This is a controller made for DEBUGGING
 
 @Controller('id/')
 export class IDController {
 	constructor(
-		private readonly userService: UserService,
-		// private readonly connectionService: ConnectionService
+		private readonly userService: UserService
 		) {}
 
 	// !: DEBUG only
@@ -82,10 +80,28 @@ export class IDController {
 	}
 
 	// !: DEBUG only
-	@Public()
-	@Delete(':id')
-	// Delete a single user found from id
-	removeOne(@Param('id') id: string): Promise<void> {
-		return this.userService.removeOne(id);
-	}
+	// @Public()
+	// @Get(':idn/delete')
+	// // Delete a single user found from id
+	// async removeOne(@Param('idn') idn: string): Promise<void> {
+	// 	console.log("removing user from database");
+
+	// 	const conn = await this.connectionService.get({
+	// 			user: {
+	// 				id: idn
+	// 			}
+	// 		},
+	// 	['user']);
+
+	// 	if (!conn)
+	// 	{
+	// 		const u = await this.userService.get(idn);
+	// 		u.remove();
+	// 		return ;
+	// 		// throw new HttpException('Connection not found', HttpStatus.NOT_FOUND);
+	// 	}
+
+	// 	await this.connectionService.removeOne(conn);
+	// 	return this.userService.removeOne(conn.user);
+	// }
 }

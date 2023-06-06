@@ -1,9 +1,9 @@
 import { Entity, Column, PrimaryGeneratedColumn, OneToMany, ManyToMany, BaseEntity, JoinColumn, JoinTable, OneToOne } from "typeorm";
 
-import { Message } from "src/message/message.entity";
+import { Message } from "src/channel/message/message.entity";
 import { Channel } from "src/channel/channel.entity";
 import { Match } from "src/matches/match.entity";
-import { Connection } from "src/auth/connection.entity";
+import { Connection } from "src/auth/connection/connection.entity";
 import { Achievement } from "src/achievements/achievement.entity";
 
 @Entity()
@@ -32,29 +32,31 @@ export class User extends BaseEntity {
 	// Every user can own mutliple channels, every channel only has one owner
 	// ONE user has MANY channels
 	@OneToMany(type => Channel, channel => channel.owner)
+	@JoinColumn()
 	channelsOwned: Channel[];
 
 	// Every user can be subscribed to multiple channels, and every channel can have multiple subscribers
 	// MANY users subscribe to MANY channels
 	@ManyToMany(type => Channel, channel => channel.members)
+	@JoinTable()
 	channelSubscribed: Channel[];
 
-	@ManyToMany(type => Achievement, achievement => achievement.members, { eager: true })
+	@ManyToMany(type => Achievement, achievement => achievement.members, { onDelete: 'CASCADE', eager: true })
 	@JoinTable()
 	achievements: Achievement[];
 
 	// Every user can have multiple friends
 	// ONE user, MANY friends
-	@ManyToMany(type => User)
+	@ManyToMany(type => User, { onDelete: 'CASCADE' })
 	@JoinTable({ joinColumn: { name: 'users_id_1' } })
 	friends: User[];
 
 	@OneToMany(type => Match, match => match.winner)
-	@JoinTable()
+	@JoinColumn()
 	wonMatches: Match[];
 
 	@OneToMany(type => Match, match => match.loser)
-	@JoinTable()
+	@JoinColumn()
 	lostMatches: Match[];
 
 	@OneToOne( type => Connection, connection => connection.user )
@@ -62,7 +64,7 @@ export class User extends BaseEntity {
 
 	// Every user can write multiple messages, every message only has a single author
 	// ONE user has MANY messages
-	@OneToMany(type => Message, message => message.author, { cascade: true })
+	@OneToMany(type => Message, message => message.author, { onDelete: 'CASCADE', cascade: true })
 	@JoinColumn()
 	messages: Message[];
 
