@@ -12,6 +12,7 @@ import { Response } from "express";
 import { join } from "path";
 import { CreateChannelDTO } from "../../../../shared/dto/channel.dto";
 import { CreateMessageDTO } from "../../../../shared/dto/create-message.dto";
+import { SubscribeToChannelDTO } from "../../../../shared/dto/subscribe-channel.dto";
 
 @Controller('self')
 export class SelfController {
@@ -49,6 +50,12 @@ export class SelfController {
 		return this.userService.getChannels(currentUser);
 	}
 
+	@Post('subscribe')
+	async subscribeToChannel(@Req() req: AuthRequest, @Body() dto: SubscribeToChannelDTO): Promise<Channel> {
+		const currentUser = await this.getCurrentUser(req);
+		return this.userService.subscribeToChannel(currentUser, dto)
+	}
+
 	@Post('channels')
 	async createChannel(@Req() req: AuthRequest, @Body() dto: CreateChannelDTO): Promise<Channel> {
 		const currentUser = await this.getCurrentUser(req);		
@@ -61,7 +68,7 @@ export class SelfController {
 		return this.userService.getChannelMessages(channelID, currentUser);
 	}
 
-	@Get('channels/:idn/messages')
+	@Post('channels/:idn/messages')
 	async createChannelMessage(@Req() req: AuthRequest, @Param('idn') channelID: string, @Body() dto: CreateMessageDTO): Promise<Message> {
 		const currentUser = await this.getCurrentUser(req);
 		return this.userService.createChannelMessage(channelID, currentUser, dto);
