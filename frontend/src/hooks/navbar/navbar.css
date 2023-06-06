@@ -1,10 +1,8 @@
 .my-navbar {
 	top: 0;
 	left: 0;
-	/* position: sticky; */
 	margin: 0px;
 	width: 100%;
-	/* height: %; */
 	min-height: 60px;
 	background: linear-gradient(to right, rgb(38, 37, 37) 25%, rgb(38, 37, 37), white);
 	border-image: linear-gradient(to right, white, rgba(56, 2, 155, 0) 25%);
@@ -14,27 +12,20 @@
 }
 
 .website {
-	position: sticky;
-	margin-left: 2%;
+	position: absolute;
 	font-size: 30px;
-	top: 100%;
-	margin: 0px;
 	color: white;
 	text-shadow: 1px;
 }
 
 .my-navbar-text {
 	position: flex;
-	/* margin-left: auto; */
-	/* bottom: 20%; */
 	font-size: 30px;
 	color: red;
-	/* background: linear-gradient(to right, red, pink); */
 }
 
 .pfp-flex-box {
 	display: flex;
-	/* flex-direction: row-reverse; */
 	align-items: center;
 }
 
@@ -58,37 +49,29 @@
 .pfp-circle-image {
 	position: absolute;
 	top: 48%;
-	/* left: 10%; */
 	transform: translate(-50%, -50%);
-	/* height: 50px; */
-	/* width: 50px; */
-	/* border-radius: 50%; */
-	/* border-color: lightgray; */
-	/* border: 1px solid black; */
-	/* object-fit: cover; */
 	width: 45px;
 	height: 45px;
 	border-radius: 50%;
-	/* margin-right: 10px; */
 }
 
 .pfp-popover {
-	position: fixed;
+	position: absolute;
+	top:3%;
 	right: 0;
-	top: 0%;
-	margin-top: 30px;
 	transform: translateY(-50%);
+<<<<<<< HEAD
+=======
 	/* background-color: white; */
 	/* box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1); */
 	padding: 1rem;
 	z-index: 8;
+>>>>>>> origin/menus
 }
 
 .pfp-popover-content {
-	/* display: none; */
 	position: absolute;
 	right: 2px;
-	/* top: 35px; must specify the top position */
 	background-color: white;
 	box-shadow: 0px 8px 16px 0px rgba(0, 0, 0, 0.2);
 	z-index: 1;
@@ -105,8 +88,6 @@
 }
 
 .pfp-popover-content a.hovered {
-	/* color: red; */
 	text-decoration: underline;
-	/* border-color: red; */
 	border-width: 2px;
 }

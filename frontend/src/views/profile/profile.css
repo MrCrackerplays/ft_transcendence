@@ -27,19 +27,16 @@
   }
   
   .Profile {
-	justify-self: stretch;
-	align-self: stretch;
+	justify-self: center;
+	align-self: center;
 	grid-area: Profile;
 	position: relative;
   }
 
   .PFP {
-	min-height: 100%;
-	min-width: 100%;
-	max-height: 100%;
-	max-width: 100%;
-	/* border: 1px white solid;
-	overflow: hidden */
+	max-height: 300px;
+	max-width: 500px;
+	object-fit: contain;
   }
 
   .PFP-Border{
@@ -48,17 +45,25 @@
 	right: 0px;
 	bottom: 0px;
 	top: 0px;
-
-	border: 1px solid white;
+	/* border-bottom: 4px solid gray; */
+	overflow: hidden;
   }
   
-  .Add-Friend { grid-area: Add-Friend; }
+  .Add-Friend { 
+
+	/* align-self: center; */
+	width:80%;
+	justify-self: center;
+	grid-area: Add-Friend; 
+  }
   
   .add-friend-btn{
 	height:100%;
 	width:100%;
+	/* max-width: 100%; */
 	font-size: 1rem;
 	color: white;
+	text-shadow: 0 1px 0 rgb(0, 0, 0);
 	font-weight:bold;
   }
 
@@ -79,9 +84,25 @@
   
   .Search {
 	justify-self: end;
-	align-self: start;
+	align-self: center;
 	grid-area: Search;
   }
   
   .NA { grid-area: NA; }
+
+  .searchform{
+	display:flex;
+	padding-right: 5rem;
+  }
+
+  .searchinput{
+	font-size: 1rem;
+	background-color: lightgray;
+  }
+
+  .searchbutton{
+	color:white;
+	font-size: 1rem;
+	background-color:rgb(10, 103, 143)
+  }
   
