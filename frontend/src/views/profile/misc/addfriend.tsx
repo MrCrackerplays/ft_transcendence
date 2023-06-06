@@ -1,9 +1,9 @@
-import { Constants } from "../../../../shared/constants"
-import DefaultProfile, { PublicUser } from '../../../../shared/public-user';
+import { Constants } from "../../../../../shared/constants"
+import DefaultProfile, { PublicUser } from '../../../../../shared/public-user';
 import { useState, useEffect } from "react"
-import FetchSelf from "../../hooks/fetch/FetchSelf";
-import FetchFriends from "../../hooks/fetch/FetchFriends";
-import './profile.css'
+import FetchSelf from "../../../hooks/fetch/FetchSelf";
+import FetchFriends from "../../../hooks/fetch/FetchFriends";
+import './addfriend.css'
 import { useParams } from "react-router-dom";
 
 function AddFriend( {UUID} : {UUID:string}) {

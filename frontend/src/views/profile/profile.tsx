@@ -7,8 +7,10 @@ import { Constants } from "../../../../shared/constants";
 import DefaultProfile, { PublicUser } from '../../../../shared/public-user';
 import { useLocation, useParams } from 'react-router-dom';
 import './profile.css'
-import AddFriend from './addfriend';
-import SearchBar from './search';
+import AddFriend from './misc/addfriend';
+import SearchBar from './misc/search';
+import MyStats
+ from './misc/stats';
 function ProfilePage() {
 	const [isLoading, setIsLoading] = useState(true);
 	const [jsonData, setJsonData] = useState<PublicUser>(DefaultProfile());
@@ -41,7 +43,7 @@ function ProfilePage() {
 					<div className='PFP-Border'></div>
 				</div>
 				<div className="Add-Friend"><AddFriend UUID={jsonData.id}/></div>
-				<div className="Stats">STATS GO HERE</div>
+				<div className="Stats"><MyStats user={jsonData}/></div>
 				<div className="FLEXBOX">FLEEEEEEEXBOX</div>
 				<div className="Search"><SearchBar /></div>
 				<div className="NA"></div>
