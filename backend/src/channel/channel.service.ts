@@ -153,7 +153,7 @@ export class ChannelService {
 				}
 			},
 			['channel'],
-			10);
+			50);
 	}
 
 	async createMessageProtected(channelID: string, user: User, dto: CreateMessageDTO): Promise<Message> {
