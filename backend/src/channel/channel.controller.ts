@@ -1,18 +1,15 @@
-import { Controller, Param, ParseIntPipe, Get, Post, Delete, Body } from "@nestjs/common";
+import { Controller, Param, Get } from "@nestjs/common";
 
 import { Channel } from "./channel.entity";
 import { ChannelService } from "./channel.service";
-import { CreateChannelDTO } from "../../../shared/dto/channel.dto";
-import { PublicChannel } from "../../../shared/public-channel";
 import { Message } from "src/channel/message/message.entity";
-import { CreateMessageDTO } from "../../../shared/dto/create-message.dto";
 
 
 @Controller('channels')
 export class ChannelController {
 	constructor(private readonly channelService: ChannelService) {}
 
-	// Gets are public channels
+	// Gets all public channels
 	@Get()
 	async getAllPublic(): Promise<Channel[]> {
 		return this.channelService.getAllPublic();

@@ -14,6 +14,7 @@ import { Achievement } from "src/achievements/achievement.entity";
 import { ChannelService } from "src/channel/channel.service";
 import { CreateChannelDTO } from "../../../shared/dto/channel.dto";
 import { CreateMessageDTO } from "../../../shared/dto/create-message.dto";
+import { SubscribeToChannelDTO } from "../../../shared/dto/subscribe-channel.dto";
 
 @Injectable()
 export class UserService {
@@ -158,6 +159,24 @@ export class UserService {
 	async getChannels(user: User): Promise<Channel[]> {
 		user = await this.get(user.id, ['channelSubscribed']);
 		return user.channelSubscribed;
+	}
+
+	async subscribeToChannel(user: User, dto: SubscribeToChannelDTO): Promise<Channel> {
+		const channel = await this.channelService.get({ id: dto.channelID }, ['members']);
+
+		if (channel == null) {
+			// channel non-existant
+			return null;
+		}
+
+		// TODO: hash stuff?
+		if (channel.password != null && channel.password == dto.password) {
+			// wrong password
+			return null;
+		}
+
+		channel.members.push(user);
+		return channel.save();
 	}
 
 	async createChannel(user: User, dto: CreateChannelDTO): Promise<Channel> {
