@@ -31,7 +31,7 @@ function Chat( {sender} : {sender: string}) {
 	const ws = useRef<Socket>();
 
 	const getMessageHistory = (channel_id : string) => {
-		return fetch("http://localhost:3000/channels/" + channel_id + "/messages", {
+		return fetch("http://localhost:3000/self/channels/" + channel_id + "/messages", {
 			credentials: 'include'
 		});
 	};
@@ -73,8 +73,18 @@ function Chat( {sender} : {sender: string}) {
 				console.log("Connected to server");
 				setIsConnectionOpen(true);
 				ws.current?.emit("join", {channel: magic_channel});
-				getMessageHistory(magic_channel).then(res => res.json()).then(data => {
+				getMessageHistory(magic_channel).then(res => res.json()).then((data) => {
 					console.log("data", data);
+					data = data.map((message) => {
+						return (
+							{
+								channel: message.channel.id,
+								content: message.content,
+								sender: message.author.userName,
+								date: message.date
+							}
+						);
+					});
 					setHistory(hist => new Map(hist.set(magic_channel, data)));
 				});
 				console.log("smile")
