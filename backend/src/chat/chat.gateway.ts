@@ -14,6 +14,7 @@ import { JwtService } from "@nestjs/jwt";
 import { ConnectionService } from 'src/auth/connection/connection.service';
 import { MessageService } from 'src/channel/message/message.service';
 import { ChannelService } from 'src/channel/channel.service';
+import { UserService } from 'src/users/user.service';
 import { WsGuard } from 'src/auth/guards/wsguard.guard';
 import { User } from 'src/users/user.entity';
 import { parse } from 'cookie';
@@ -33,7 +34,8 @@ export class ChatGateway {
 		private jwtService: JwtService,
 		private connectionService: ConnectionService,
 		private messageService: MessageService,
-		private channelService: ChannelService
+		private channelService: ChannelService,
+		private userService: UserService,
 		) { }
 	private incrementer: number = 0;
 
@@ -69,10 +71,14 @@ export class ChatGateway {
 			return;
 		}
 		this.userFromSocket(client, result).then(user => {
-			if (!user || !user.channelSubscribed)
+			console.log("trying to join to all subscribed channels");
+			if (!user || !user.channelSubscribed) {
+				console.log("failed to join to all subscribed channels");
 				return;
+			}
+			console.log("joining to all subscribed channels");
 			for (var i = 0; i < user.channelSubscribed.length; i++) {
-				client.join(user.channelSubscribed[i].id);
+				// client.join(user.channelSubscribed[i].id);
 			}
 		});
 		console.log(1, result);
@@ -100,20 +106,31 @@ export class ChatGateway {
 	}
 
 	@UseGuards(WsGuard)
+	@SubscribeMessage('subscribe')
+	async subscribeChannel(@ConnectedSocket() client: Socket, @MessageBody("channel") channel_id, @MessageBody("password") password : string): Promise<Boolean> {
+		const user = await this.userFromSocket(client);
+		if (!user)
+			return false;
+		const channel = await this.userService.subscribeToChannel(user, { channelID: channel_id, password: password });
+		if (!channel)
+			return false;
+		return true;
+	}
+
+	@UseGuards(WsGuard)
 	@SubscribeMessage('join')
-	joinChannel(@ConnectedSocket() client: Socket, @MessageBody("channel") channel_id : string): Promise<boolean> {
-		return this.userFromSocket(client).then(user => {
-			if (!user)
-				return false;
-			return this.channelService.findOne(channel_id).then(channel => {
-				if (!channel)
-					return false;
-				client.join(channel_id);
-				//TODO: if this function becomes the main way to join channels, add the channel to the User's subscribed channels
-				this.server.to(channel_id).emit("join", {channel: channel_id, content: user.userName + " has joined the channel"});
-				return true
-			});
-		});
+	async joinChannel(@ConnectedSocket() client: Socket, @MessageBody("channel") channel_id : string): Promise<boolean> {
+		const user = await this.userFromSocket(client);
+		if (!user)
+			return false;
+		console.log("user:", user);
+		const channel = await this.channelService.findOne(channel_id);
+		if (!channel)
+			return false;
+		//TODO: check if user is subscribed to channel, currently no way to do it
+		client.join(channel_id);
+		this.server.to(channel_id).emit("join", { channel: channel_id, content: user.userName + " has joined the channel" });
+		return true;
 	}
 
 	@UseGuards(WsGuard)

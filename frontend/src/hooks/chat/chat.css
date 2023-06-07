@@ -1,8 +1,10 @@
+#chat-history, #channel-list {
+	overflow: auto;
+	padding: 5px;
+}
 
 #chat-history {
-	overflow: auto;
 	min-height: 3rem;
-	padding: 5px;
 
 	scrollbar-color: lightslategray transparent;
 	scrollbar-width: thin;
