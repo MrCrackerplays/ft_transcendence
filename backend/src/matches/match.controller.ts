@@ -9,11 +9,12 @@ import { Public } from "src/auth/decorators/public.decorator";
 export class MatchController {
 	constructor(private readonly matchService: MatchService) {}
 
-	// @Public()
-	// @Post()
-	// async createOne(@Body() createMatchDTO: CreateMatchDTO) {
-	// 	return this.matchService.createMatch(createMatchDTO);
-	// }
+	// !: DEBUG ONLY
+	@Public()
+	@Post()
+	async createOne(@Body() createMatchDTO: CreateMatchDTO) {
+		return this.matchService.createMatchDebug(createMatchDTO);
+	}
 
 	@Public()
 	@Get()
