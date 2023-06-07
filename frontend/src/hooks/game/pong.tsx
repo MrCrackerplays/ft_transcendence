@@ -41,7 +41,7 @@ const getPaddlePositionStart = () => {
 const initialBallPosition = React.useMemo(() => {
 	const frameWidth = getFrameWidth();
 	const frameHeight = getFrameHeight();
-	const ballSize = 20; // Adjust the ball size if needed
+	const ballSize = 2; // Adjust the ball size if needed
 	const initialX = Math.floor((frameWidth - ballSize) / 2);
 	const initialY = Math.floor((frameHeight - ballSize) / 2);
 	return { x: initialX, y: initialY };
@@ -51,22 +51,7 @@ const getRandomDirection = () => {
 	const randomX = Math.random() < 0.5 ? -1 : 1;
 	const randomY = Math.random() < 0.5 ? -1 : 1;
 	return { x: randomX, y: randomY };
-};
-
-const moveBall = (state) => {
-	const { ballPosition, ballDirection, ballSpeed } = state;
-
-	// Calculate the new position of the ball based on the direction and speed
-	const newBallPosition = {
-		x: ballPosition.x + ballDirection.x * ballSpeed,
-		y: ballPosition.y + ballDirection.y * ballSpeed
-	};
-
-	// Return the updated state with the new ball position
-	return {
-		...state,
-		ballPosition: newBallPosition
-	};
+	// return { x: 0, y: 0 };
 };
 
 const PongGame = () => {
@@ -88,12 +73,15 @@ const PongGame = () => {
 				newState.paddlePosition = state.paddlePosition;
 				break;
 			case "MoveBall":
-				newState = moveBall(state);
+				//newState = moveBall(state);
 				//update
 				//	ballPosition: initialBallPosition, //array x,y
 				//	ballDirection: getRandomDirection(), //array x,y
 				//	ballSpeed: 10,
-
+				// x: ballPosition.x + ballDirection.x * ballSpeed,
+				// y: ballPosition.y + ballDirection.y * ballSpeed,
+				newState.ballPosition.x = state.ballPosition.x + state.ballDirection.x * state.ballSpeed;
+				newState.ballPosition.y = state.ballPosition.y + state.ballDirection.y * state.ballSpeed;
 
 
 
@@ -144,7 +132,7 @@ const PongGame = () => {
 	useEffect(() => {
 		const interval = setInterval(() => {
 			dispatch({ type: 'MoveBall' });
-		}, 50); //every 50ms ball moves
+		}, 50000); //every 50ms ball moves
 		return () => clearInterval(interval);
 	}, []);
 
