@@ -55,6 +55,18 @@ function AddFriend( {UUID} : {UUID:string}) {
 	}
 	async function handleRemove(){
 		window.event?.preventDefault();
+		const RESPONSE = await fetch(link, {
+			method: 'DELETE',
+			credentials: 'include',
+			headers: {
+				'content-type': "application/json"
+			},
+			body: JSON.stringify({
+				id : UUID
+			})
+		})
+		if (RESPONSE.status >= 200 && RESPONSE.status <= 299)
+			setfriendState('Add');
 	}
 	async function handleAdd()
 	{
@@ -88,6 +100,7 @@ function AddFriend( {UUID} : {UUID:string}) {
 			</form>
 		)
 	}
+	//CANT REMOVE SELF && Removing friend that doenst exist is fien
 	if (friendState == "Remove"){
 		return (
 			<form onSubmit={handleRemove}>

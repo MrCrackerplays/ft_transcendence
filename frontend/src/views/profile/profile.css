@@ -5,7 +5,7 @@
 	grid-auto-flow: row;
 	grid-template-areas:
 	  "NA Name Name Name Name Name Search"
-	  "NA SelectBar SelectBar SelectBar SelectBar SelectBar SelectBar"
+	  "NA NONE1 SelectBar SelectBar SelectBar SelectBar NONE2"
 	  "Profile FLEXBOX FLEXBOX FLEXBOX FLEXBOX FLEXBOX FLEXBOX"
 	  "Add-Friend FLEXBOX FLEXBOX FLEXBOX FLEXBOX FLEXBOX FLEXBOX"
 	  "Stats FLEXBOX FLEXBOX FLEXBOX FLEXBOX FLEXBOX FLEXBOX";
@@ -59,7 +59,11 @@
 
   .Stats { grid-area: Stats; }
   
-  .FLEXBOX { grid-area: FLEXBOX; }
+  .FLEXBOX { 
+	grid-area: FLEXBOX;
+	justify-self: start;
+  	align-self: start;
+}
   
   .Search {
 	justify-self: end;

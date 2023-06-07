@@ -9,13 +9,16 @@ import { useLocation, useParams } from 'react-router-dom';
 import './profile.css'
 import AddFriend from './misc/addfriend';
 import SearchBar from './misc/search';
-import MyStats
- from './misc/stats';
+import MyStats from './misc/stats';
+import SelectBar from './selectbar/selectbar';
+import { match } from 'assert';
+
 function ProfilePage() {
 	const [isLoading, setIsLoading] = useState(true);
 	const [jsonData, setJsonData] = useState<PublicUser>(DefaultProfile());
 	const profile = useLocation().pathname.replace("/profile", "")
 	const fetchPFP = Constants.FETCH_USERS;
+	const [matchhistory, setmatchhistory] = useState(true); // THIS IS SET TRUE OR FALSE IN SELECTBAR
 	const id = useParams();
 	useEffect(() => {
 		async function checkLogin() {
@@ -36,7 +39,7 @@ function ProfilePage() {
 	}
 	return (
 		<div className="container">
-				<div className="SelectBar">SELECTBAR</div>
+				<div className="SelectBar"><SelectBar matchhistory={matchhistory} setmatchhistory={setmatchhistory}/></div>
 				<div className="Name"><Userbar name={jsonData.userName} /></div>
 				<div className="Profile">
 					<img src={`${fetchPFP}/${jsonData.userName}/pfp`} className='PFP'/>
@@ -44,7 +47,7 @@ function ProfilePage() {
 				</div>
 				<div className="Add-Friend"><AddFriend UUID={jsonData.id}/></div>
 				<div className="Stats"><MyStats user={jsonData}/></div>
-				<div className="FLEXBOX">FLEEEEEEEXBOX</div>
+				<div className="FLEXBOX">{matchhistory ? <MatchHistory /> : "Achievements go here"}</div>
 				<div className="Search"><SearchBar /></div>
 				<div className="NA"></div>
 		</div>

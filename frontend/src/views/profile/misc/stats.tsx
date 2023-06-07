@@ -21,13 +21,14 @@ function MyStats({user} : {user:PublicUser})
 	}, []);
 	return (
 		<div className="stats">
-			<h1 className="title">Statistics</h1>
+			<h1 className="title">Statistics</h1>	
 			<div className="percentage">
 				<p className="win">Win : {winpercent}%</p>
 				<p className="loss">{lostpercent}% : Loss</p>
 			</div>
-			<p className="gwon">Games Won: {user.gamesWon}</p>
-			<p className="gplayed">Games Played: {user.gamesPlayed}</p>
+			<p>Games Played: {user.gamesPlayed}</p>
+			<p>Games Won: {user.gamesWon}</p>
+			<p>Games Lost: {user.gamesPlayed - user.gamesWon}</p>
 			{/* <p>User Score: {user.score}</p> */}
 		</div>
 	)
