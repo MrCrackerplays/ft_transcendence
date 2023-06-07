@@ -1,10 +1,9 @@
 import { Injectable } from "@nestjs/common";
 import { InjectRepository } from "@nestjs/typeorm";
-import { Repository } from "typeorm";
+import { Repository, getManager } from "typeorm";
 
 import { Match } from "./match.entity";
 import { CreateMatchDTO } from "../../../shared/dto/create-match.dto";
-import { UserService } from "src/users/user.service";
 import { User } from "src/users/user.entity";
 
 @Injectable()
@@ -19,6 +18,17 @@ export class MatchService {
 		match.loser = loser;
 		match.winnerScore = winnerScore;
 		match.loserScore = loserScore;
+
+		return match.save();
+	}
+
+	async createMatchDebug(dto: CreateMatchDTO): Promise<Match> {
+		const match = new Match();
+
+		match.winner = await User.findOneBy({id : dto.winnerID});
+		match.loser = await User.findOneBy({id : dto.loserID});
+		match.winnerScore = dto.winnerScore;
+		match.loserScore = dto.loserScore;
 
 		return match.save();
 	}
