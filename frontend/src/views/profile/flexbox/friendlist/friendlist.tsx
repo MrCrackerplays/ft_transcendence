@@ -12,22 +12,10 @@ function FriendCard({ friend }: {friend: PublicUser}){
 	return (
 		<div className="friend-card">
 			<img src={`${fetchPFP}/${friend.userName}/pfp`} alt="pfp not found" />
-			<p className={'ONLINE'}>{friend.userName}</p>
+			<p className={friend.status}>{friend.userName}</p>
 		</div>
 	)
 }
-
-// class FriendStatus
-// {
-// 	name: string;
-// 	pfp: string;
-// 	status: string;
-// 	constructor() {
-// 		this.name = "Friend1"
-// 		this.pfp = pfp;
-// 		this.status = "ONLINE";
-// 	}
-// }
 
 function MyFriendsList() {
 	const [friendArray, setFriendArray] = useState<Array<PublicUser>>([]);
