@@ -1,14 +1,18 @@
 
 import React from "react";
-import { useReducer } from 'react';
-import { updateBallPosition } from './ball';
-
+import { useReducer, useEffect } from 'react';
 import "./pong.css";
+// import {  getFrameHeight } from './utils'
+
 
 const getFrameHeight = () => {
 	const frameH = getComputedStyle(document.documentElement).getPropertyValue('--pong-frame-height-pixels');
 	return parseInt(frameH, 10);
-	//return frameH;
+};
+
+const getFrameWidth = () => {
+	const frameW = getComputedStyle(document.documentElement).getPropertyValue('--pong-frame-width-pixels');
+	return parseInt(frameW, 10);
 };
 
 const getPaddleHeight = () => {
@@ -31,15 +35,45 @@ const getPixelSizes = () => {
 };
 
 const getPaddlePositionStart = () => {
-	return ( getFrameHeight() - getPaddleHeight() ) / 2;
+	return (getFrameHeight() - getPaddleHeight()) / 2;
+};
+
+const initialBallPosition = React.useMemo(() => {
+	const frameWidth = getFrameWidth();
+	const frameHeight = getFrameHeight();
+	const ballSize = 20; // Adjust the ball size if needed
+	const initialX = Math.floor((frameWidth - ballSize) / 2);
+	const initialY = Math.floor((frameHeight - ballSize) / 2);
+	return { x: initialX, y: initialY };
+}, []);
+
+const getRandomDirection = () => {
+	const randomX = Math.random() < 0.5 ? -1 : 1;
+	const randomY = Math.random() < 0.5 ? -1 : 1;
+	return { x: randomX, y: randomY };
+};
+
+const moveBall = (state) => {
+	const { ballPosition, ballDirection, ballSpeed } = state;
+
+	// Calculate the new position of the ball based on the direction and speed
+	const newBallPosition = {
+		x: ballPosition.x + ballDirection.x * ballSpeed,
+		y: ballPosition.y + ballDirection.y * ballSpeed
+	};
+
+	// Return the updated state with the new ball position
+	return {
+		...state,
+		ballPosition: newBallPosition
+	};
 };
 
 const PongGame = () => {
-
-	// Call the function initially to set the initial value in pxls
+	//HELPER FUNCTIONS
 	getPixelSizes();
 
-	//STATE CHANGE SWITCH -----------------------------------------------------------------------------------------------------
+	//STATE CHANGE SWITCH 
 	const reducer = (state, action) => {
 		let newState = structuredClone(state);
 		switch (action.type) {
@@ -47,67 +81,97 @@ const PongGame = () => {
 				newState.paddlePosition = Math.max(state.paddlePosition - state.paddleSpeed, 0);
 				break;
 			case "ArrowDown":
-				const frameH = getFrameHeight();
-				const paddleH = getPaddleHeight();
-				const possibleMin = frameH - paddleH;
+				const possibleMin = getFrameHeight() - getPaddleHeight();
 				newState.paddlePosition = Math.min(state.paddlePosition + state.paddleSpeed, possibleMin);
 				break;
 			case "StopMovement":
 				newState.paddlePosition = state.paddlePosition;
 				break;
-			case 'UpdateBallPosition':
-				newState.ballPosition = updateBallPosition(newState);
+			case "MoveBall":
+				newState = moveBall(state);
+				//update
+				//	ballPosition: initialBallPosition, //array x,y
+				//	ballDirection: getRandomDirection(), //array x,y
+				//	ballSpeed: 10,
+
+
+
+
 				break;
-			}
+		}
 		return newState
 	};
 
-	//GAME STATE -----------------------------------------------------------------------------------------------------
 	const [state, dispatch] = useReducer(reducer, {
+
+		//paddle
 		paddlePosition: getPaddlePositionStart(),
-		paddleSpeed: 90,
-		ballPosition: { x: 0, y: 0 },
-		ballDirection: { x: 1, y: 1 }, // Initial direction of the ball
-	});	  
+		paddleSpeed: 10,
 
+		//ball
+		ballPosition: initialBallPosition, //array x,y
+		ballDirection: getRandomDirection(), //array x,y
+		ballSpeed: 10,
 
-	//KEYBOARD INPUT -----------------------------------------------------------------------------------------------------
-	React.useEffect(() => {
+		//score
+		playerScore: 0,
+		opponentScore: 0,
+	});
+
+	//KEYBOARD INPUT 
+	useEffect(() => {
 		const handleKeyDown = (event) => {
-		  if (event.key === "ArrowUp") {
-			// Move paddle up
-			dispatch({ type: 'ArrowUp' });
-		  } else if (event.key === "ArrowDown") {
-			// Move paddle down
-			dispatch({ type: 'ArrowDown' });
-		  }
+			if (event.key === "ArrowUp") {
+				dispatch({ type: 'ArrowUp' });
+			} else if (event.key === "ArrowDown") {
+				dispatch({ type: 'ArrowDown' });
+			}
 		};
 		const handleKeyUp = (event) => {
-		  if (event.key === "ArrowUp" || event.key === "ArrowDown") {
-			// Stop paddle movement
-			dispatch({ type: "StopMovement"});
-		  }
+			if (event.key === "ArrowUp" || event.key === "ArrowDown") {
+				dispatch({ type: "StopMovement" });
+			}
 		};
-
 		window.addEventListener("keydown", handleKeyDown);
 		window.addEventListener("keyup", handleKeyUp);
-		// Cleanup event listeners on component unmount
 		return () => {
-		  window.removeEventListener("keydown", handleKeyDown);
-		  window.removeEventListener("keyup", handleKeyUp);
+			window.removeEventListener("keydown", handleKeyDown);
+			window.removeEventListener("keyup", handleKeyUp);
 		};
-	  }, []);
-	  
+	}, []);
 
-	//RENDER -----------------------------------------------------------------------------------------------------
+	//BALL MOVEMENT
+	useEffect(() => {
+		const interval = setInterval(() => {
+			dispatch({ type: 'MoveBall' });
+		}, 50); //every 50ms ball moves
+		return () => clearInterval(interval);
+	}, []);
+
+
+
+	//RENDER 
 	return (
 		<div className="pong-frame">
 			<div className="centre-line"></div>
-			<div className="paddle-left" style={{top: state.paddlePosition}}></div>
+			<div className="paddle-left" style={{ top: state.paddlePosition }}></div>
 			<div className="paddle-right"></div>
-			<div className="pong-ball"></div>
+			<div className="pong-ball" style={{ left: state.ballPosition.x, top: state.ballPosition.y }}></div>
+			{/* <div className="pong-ball" style={{ left: `calc(${state.ballPosition.x}px - 10px)`, top: `calc(${state.ballPosition.y}px - 10px)` }}></div> */}
+
 		</div>
 	);
 };
 
 export default PongGame;
+
+
+	//GAME STATE
+	// 	const board = [...Array(PADDLE_BOARD_SIZE)].map((_, pos) => pos);
+	// 		/* Paddle Array */
+	// 		player:   board.map(x => (x  * COL_SIZE) + PADDLE_EDGE_SPACE),
+	// 		opponent: board.map(x => ((x+1) * COL_SIZE)-(PADLE_EDGE_SPACE+1)),
+	// 		/* ball */
+	// 		ball:     Math.round((ROW_SIZE * COL_SIZE)/2)+ ROW_SIZE,
+	// 		deltaY:   -COL_SIZE, // change ball in Y AXIS
+	// 		deltaX:   -1, // change ball in  X AXIS

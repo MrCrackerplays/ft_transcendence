@@ -7,7 +7,7 @@
 	--pong-frame-height: 600; */
 	--paddle-width: 2vW;
 	--paddle-height: 15vH;
-	
+
 
 	/* pixel values: */
 	--pong-frame-width-pixels: 0;
@@ -20,7 +20,7 @@
 	width: 85vw;
 	height: 85vh;
 	background-color: rgb(22, 72, 48);
- }
+}
 
 .centre-line {
 
@@ -28,9 +28,10 @@
 	width: 1px;
 	height: 85vh;
 	background-color: rgb(255, 255, 255);
-	left: calc(var(--pong-frame-width) / 2 - 1px); 
+	left: calc(var(--pong-frame-width) / 2 - 1px);
 	z-index: 2;
 }
+
 /* 
 .paddle {
 
