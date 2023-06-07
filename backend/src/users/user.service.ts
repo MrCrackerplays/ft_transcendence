@@ -133,6 +133,16 @@ export class UserService {
 			.loadMany();
 	}
 
+	async removeFriend(user: User, friend_id: string): Promise<void> {
+		if (friend_id == user.id)
+			throw new HttpException('Can not unfriend yourself', HttpStatus.FORBIDDEN);
+		
+		return this.usersRepository.createQueryBuilder()
+			.relation(User, "friends")
+			.of(user.id)
+			.remove(friend_id);
+	}
+
 	async setName(user: User, name: string): Promise<User> {
 		if (!name || name.length == 0)
 			return null;
