@@ -4,6 +4,7 @@ import "./chat.css"
 import { Message, UserMessage, isUserMessage } from "./messagetypes";
 import ChannelList from "./channellist";
 import ChatChannel from "./chatchannel";
+import { Channel } from "./channeltypes";
 
 function block_filter(message: UserMessage | Message) : UserMessage | Message {
 	if (isUserMessage(message)) {
@@ -20,10 +21,10 @@ function Chat( {sender} : {sender: string}) {
 	const [isConnectionOpen, setIsConnectionOpen] = useState(false);
 	const [history, setHistory] = useState<Map<string, UserMessage[] | Message[]>>(new Map());
 	const [messageBody, setMessageBody] = useState("");
-	const [channels, setChannels] = useState<string[]>([]);
+	const [channels, setChannels] = useState<Channel[]>([]);
+	const [joinedChannels, setJoinedChannels] = useState<string[]>([]);
 	const [currentChannel, setCurrentChannel] = useState("");
-
-	const magic_channel = "3e809453-5734-482c-aa2a-8fc311f0cd4e";
+	const [muted, setMuted] = useState<string[]>([]);
 
 	const ws = useRef<Socket>();
 
@@ -32,6 +33,28 @@ function Chat( {sender} : {sender: string}) {
 			credentials: 'include'
 		});
 	};
+
+	const joinChannel = (channel_id : string) => {
+		setCurrentChannel(channel_id);
+		if (joinedChannels.includes(channel_id))
+			return;
+		console.log("emitting join");
+		ws.current?.emit("join", {channel: channel_id});
+		getMessageHistory(channel_id).then(res => res.json()).then((data) => {
+			console.log("data", data);
+			data = data.map((message) => {
+				let formatted_message = {
+					channel: message.channel.id,
+					content: message.content,
+					sender: message.author ? message.author.userName : "null",
+					date: message.date
+				};
+				return (block_filter(formatted_message));
+			});
+			setHistory(hist => new Map(hist.set(channel_id, data)));
+		});
+		setJoinedChannels(joined => [...joined, channel_id]);
+	}
 
 	const sendMessage = () => {
 		console.log("sendmessage")
@@ -65,28 +88,6 @@ function Chat( {sender} : {sender: string}) {
 			ws.current.on("connect", () => {
 				console.log("Connected to server");
 				setIsConnectionOpen(true);
-				ws.current?.emit("join", {channel: magic_channel});
-				getMessageHistory(magic_channel).then(res => res.json()).then((data) => {//TODO: get history upon first joining a channel
-					console.log("data", data);
-					data = data.map((message) => {
-						let formatted_message = {
-							channel: message.channel.id,
-							content: message.content,
-							sender: message.author.userName,
-							date: message.date
-						};
-						return (block_filter(formatted_message));
-					});
-					setHistory(hist => new Map(hist.set(magic_channel, data)));
-				});
-				fetch("http://localhost:3000/channels/", {credentials: 'include'}).then(res => res.json()).then((data) => {
-					data = data.map((channel) => {
-						return channel.id;
-					});
-					setChannels(data);
-					console.log("channels", data);
-				});
-				console.log("smile")
 			});
 		}
 
@@ -117,6 +118,38 @@ function Chat( {sender} : {sender: string}) {
 			});
 		}
 
+		if (!ws.current.hasListeners("kick")) {
+			ws.current.on("kick", (channel) => {
+				console.log("Received kick from:", channel);
+				if (currentChannel === channel)
+					setCurrentChannel("");
+				if (joinedChannels.includes(channel))
+					setJoinedChannels(joined => joined.filter((id) => id !== channel));
+				if (history.has(channel))
+					setHistory(hist => {
+						hist.delete(channel);
+						return hist;
+					});
+				console.log("finished getting kicked");
+			});
+		}
+
+		if (!ws.current.hasListeners("mute")) {
+			ws.current.on("mute", (channel) => {
+				console.log("Received mute from:", channel);
+				setMuted(muted => [...muted, channel]);
+				console.log("finished getting muted");
+			});
+		}
+
+		if (!ws.current.hasListeners("unmute")) {
+			ws.current.on("unmute", (channel) => {
+				console.log("Received unmute from:", channel);
+				setMuted(muted => muted.filter((id) => id !== channel));
+				console.log("finished getting unmuted");
+			});
+		}
+
 		// return () => {
 		// 	console.log("Cleaning up...");
 		// 	ws.current?.close();
@@ -124,6 +157,9 @@ function Chat( {sender} : {sender: string}) {
 	}, []);
 
 	if (currentChannel) {
+		let shh = false;
+		if (muted.includes(currentChannel))
+			shh = true;
 		return (
 			<>
 			<button
@@ -138,7 +174,8 @@ function Chat( {sender} : {sender: string}) {
 				messageBody={messageBody}
 				setMessageBody={setMessageBody}
 				sendMessage={sendMessage}
-				sender={sender} />
+				sender={sender}
+				muted={shh} />
 			</>
 		)
 	}
@@ -147,7 +184,7 @@ function Chat( {sender} : {sender: string}) {
 			<>
 			<ChannelList
 				sender={sender}
-				setCurrentChannel={setCurrentChannel}
+				joinChannel={joinChannel}
 				isConnectionOpen={isConnectionOpen}
 				channels={channels}
 				setChannels={setChannels} />

@@ -1,35 +1,50 @@
 import { useEffect } from "react";
+import { Channel } from "./channeltypes";
 
-function ChannelList( { sender, setCurrentChannel, isConnectionOpen, channels, setChannels } : { sender: string, setCurrentChannel: (channel: string) => void, isConnectionOpen: boolean, channels: string[], setChannels: (channels: string[]) => void } ) {
+function ChannelList( { sender, joinChannel, isConnectionOpen, channels, setChannels } : { sender: string, joinChannel: (channel_id: string) => void, isConnectionOpen: boolean, channels: Channel[], setChannels: (channels: Channel[]) => void } ) {
 	const magic_channel = "3e809453-5734-482c-aa2a-8fc311f0cd4e";
 
 	useEffect(() => {
+		fetch("http://localhost:3000/channels/", {credentials: 'include'}).then(res => res.json()).then(async (data) => {
+			data = data.map((channel) => {
+				return {id: channel.id, name: channel.name, visibility: channel.visibility};
+			});
+			setChannels(data);
+			console.log("channels", data);
+		});
 		console.log("channellist rendered");
 	}, []);
+
+	let channelarea: JSX.Element[];
+	if (channels.length > 0) {
+		channelarea = channels.map((channel: Channel, index : number) => (
+			<ChannelComponent key={index} channel={channel} joinChannel={joinChannel} isConnectionOpen={isConnectionOpen} />
+		));
+	} else {
+		channelarea = [<div key={0}>No channels found!</div>];
+	}
 
 	return (
 		<div id="channel-list">
 		<button
 			aria-label="magic channel"
-			onClick={() => setCurrentChannel(magic_channel)}
+			onClick={() => joinChannel(magic_channel)}
 			className="open-button"
 			disabled={!isConnectionOpen}
 		>magic</button>
 		<div>you are {sender} </div>
-		{channels.map((channel: string, index : number) => (
-			<ChannelComponent key={index} channel={channel} setCurrentChannel={setCurrentChannel} isConnectionOpen={isConnectionOpen} />
-		))}
+		{channelarea}
 		</div>
 	);
 }
 
-function ChannelComponent({ channel, setCurrentChannel, isConnectionOpen } : {channel: string, setCurrentChannel: (channel: string) => void, isConnectionOpen: boolean}) {
+function ChannelComponent({ channel, joinChannel, isConnectionOpen } : {channel: Channel, joinChannel: (channel_id: string) => void, isConnectionOpen: boolean}) {
 	return (
 		<div className="channel">
-			{channel}
+			{channel.name}
 			<button
 			aria-label="open channel"
-			onClick={() => setCurrentChannel(channel)}
+			onClick={() => joinChannel(channel.id)}
 			className="open-button"
 			disabled={!isConnectionOpen}
 		>open</button>

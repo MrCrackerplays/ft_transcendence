@@ -40,7 +40,7 @@ function MessageComponent({ message } : {message: Message}) {
 	);
 }
 
-function ChatChannel( { isConnectionOpen, messages, messageBody, sendMessage, setMessageBody, sender } : { isConnectionOpen: boolean; messages: UserMessage[] | Message[]; messageBody: string; sendMessage: () => void; setMessageBody: (message: string) => void; sender: string; } ) {
+function ChatChannel( { isConnectionOpen, messages, messageBody, sendMessage, setMessageBody, sender, muted } : { isConnectionOpen: boolean; messages: UserMessage[] | Message[]; messageBody: string; sendMessage: () => void; setMessageBody: (message: string) => void; sender: string; muted: boolean; } ) {
 	return (
 		<>
 		<div id="chat-history">
@@ -76,7 +76,7 @@ function ChatChannel( { isConnectionOpen, messages, messageBody, sendMessage, se
 					aria-label="Send"
 					onClick={sendMessage}
 					className="send-button"
-					disabled={!isConnectionOpen}
+					disabled={!isConnectionOpen && !muted}
 				>Send</button>
 			</div>
 		</footer>
