@@ -1,13 +1,108 @@
-.main-stats
-{
-	position: fixed;
-	top: 10%;
-	left: 10%;
-}
+.container {  display: grid;
+	grid-template-columns: 1.3fr 0.7fr 1.1fr 0.9fr 1fr 1fr 1fr;
+	grid-template-rows: 0.4fr 0.6fr 1.5fr 0.3fr 2.2fr;
+	gap: 0px 0px;
+	grid-auto-flow: row;
+	grid-template-areas:
+	  "NA Name Name Name Name Name Search"
+	  "NA SelectBar SelectBar SelectBar SelectBar SelectBar SelectBar"
+	  "Profile FLEXBOX FLEXBOX FLEXBOX FLEXBOX FLEXBOX FLEXBOX"
+	  "Add-Friend FLEXBOX FLEXBOX FLEXBOX FLEXBOX FLEXBOX FLEXBOX"
+	  "Stats FLEXBOX FLEXBOX FLEXBOX FLEXBOX FLEXBOX FLEXBOX";
+	margin-left: 5%;
+	width: 80%;
+	height: 80%;
+  }
+  
+  .SelectBar {
+	justify-self: center;
+	align-self: center;
+	grid-area: SelectBar;
+  }
+  
+  .Name {
+	justify-self: center;
+	align-self: end;
+	grid-area: Name;
+  }
+  
+  .Profile {
+	justify-self: center;
+	align-self: center;
+	grid-area: Profile;
+	position: relative;
+  }
 
-.btn-temp
-{
+  .PFP {
+	max-height: 300px;
+	max-width: 500px;
+	object-fit: contain;
+  }
+
+  .PFP-Border{
 	position:absolute;
-	top: 50%;
-	left: 5%;
-}
+	left: 0px;
+	right: 0px;
+	bottom: 0px;
+	top: 0px;
+	/* border-bottom: 4px solid gray; */
+	overflow: hidden;
+  }
+  
+  .Add-Friend { 
+
+	/* align-self: center; */
+	width:80%;
+	justify-self: center;
+	grid-area: Add-Friend; 
+  }
+  
+  .add-friend-btn{
+	height:100%;
+	width:100%;
+	/* max-width: 100%; */
+	font-size: 1rem;
+	color: white;
+	text-shadow: 0 1px 0 rgb(0, 0, 0);
+	font-weight:bold;
+  }
+
+  .self-friend{
+	background-color: rgb(63, 61, 64);
+  }
+  .add-friend{
+	background-color: rgb(43, 166, 194);
+  }
+
+  .remove-friend{
+	background-color: rgb(168, 10, 18);
+  }
+
+  .Stats { grid-area: Stats; }
+  
+  .FLEXBOX { grid-area: FLEXBOX; }
+  
+  .Search {
+	justify-self: end;
+	align-self: center;
+	grid-area: Search;
+  }
+  
+  .NA { grid-area: NA; }
+
+  .searchform{
+	display:flex;
+	padding-right: 5rem;
+  }
+
+  .searchinput{
+	font-size: 1rem;
+	background-color: lightgray;
+  }
+
+  .searchbutton{
+	color:white;
+	font-size: 1rem;
+	background-color:rgb(10, 103, 143)
+  }
+  
