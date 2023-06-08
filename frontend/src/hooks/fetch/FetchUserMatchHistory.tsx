@@ -1,7 +1,7 @@
 import { Constants } from "../../../../shared/constants";
 
-async function FetchMatchHistory({username} : {username:string}) {
-	const res = await fetch(`${Constants.FETCH_SELF}/matches`, {
+async function FetchUserMatchHistory(username) {
+	const res = await fetch(`${Constants.FETCH_USERS}/${username}/matches`, {
 		credentials: 'include'
 	});
 	if (!res.ok || res.status == 401)
@@ -13,4 +13,4 @@ async function FetchMatchHistory({username} : {username:string}) {
 	return jsonData;
 }
 
-export default FetchMatchHistory
+export default FetchUserMatchHistory

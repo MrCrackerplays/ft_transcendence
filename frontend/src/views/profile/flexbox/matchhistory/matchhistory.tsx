@@ -1,31 +1,41 @@
-import './matchhistory2.css'
+import './matchhistory.css'
 import React, {useEffect, useState} from "react"
-import FetchMatchHistory from "../../../../hooks/fetch/FetchSelfMatchHistory"
 import { PublicMatch } from "../../../../../../shared/public-match"
 import { Constants } from '../../../../../../shared/constants';
+import FetchUserMatchHistory from '../../../../hooks/fetch/FetchUserMatchHistory';
+import { PublicUser } from '../../../../../../shared/public-user';
 
-function MatchCard({ match } : {match:PublicMatch}) {
-	const textcolor = match.winner ? "red" : "green";
-	const display = match.winner ? "Defeat" : "Victory";
+
+function MatchCard({ match, username } : {match:PublicMatch, username:string}) {
+	const leftside: PublicUser = (match.winner.userName === username) ? match.winner : match.loser;
+	console.log(leftside, username);
+	const leftsideScore: number = (match.winner.userName === username) ? match.winnerScore : match.loserScore; 
+	const rightside: PublicUser = (match.winner.userName !== username) ? match.winner : match.loser;
+	const rightsideScore: number = (match.winner.userName !== username) ? match.winnerScore : match.loserScore;
+	
+	// console.log(leftside)
+	const textcolor = (match.winner.userName == username) ? "red" : "green";
+	const display = (match.winner.userName == username) ? "Defeat" : "Victory";
 	const fetchPFP = Constants.FETCH_USERS;
+
 	return (
 		<div className={`match-card ${textcolor}border monospace`}>
 			<div className="left-player">
-				<img className="img" src={`${fetchPFP}/${match.winner.userName}/pfp`} alt="pfp not found"/>
-				<p className="names">{match.winner.userName}</p>
+				<img className="img" src={`${fetchPFP}/${leftside.userName}/pfp`} alt="pfp not found"/>
+				<p className="names">{leftside.userName}</p>
 			</div>
 			<div className="center-score"> 
 				<h1 className={`${textcolor}`}>{display}</h1>
 				<div className="center-row">
-					<p>{match.winnerScore}</p>
+					<p>{leftsideScore}</p>
 					<p>-</p>
-					<p>{match.loserScore}</p>
+					<p>{rightsideScore}</p>
 				</div>
 				<p className={"gamemode"}>{match.gameMode}</p>
 			</div>
 			<div className="right-player">
-				<img className="img" src={`${fetchPFP}/${match.loser.userName}/pfp`} alt="pfp not found"/>
-				<p className="names">{match.loser.userName}</p>
+				<img className="img" src={`${fetchPFP}/${rightside.userName}/pfp`} alt="pfp not found"/>
+				<p className="names">{rightside.userName}</p>
 			</div>
 		</div>
 	)
@@ -37,7 +47,7 @@ function MatchHistory({username}: {username:string}) {
 	const [isLoading, setisLoading] = useState(false);
 	useEffect(() => {
 		async function checkJson() {
-			const value = await FetchMatchHistory()
+			const value = await FetchUserMatchHistory(username)
 			// console.log(value)
 			if (value)
 				setJsonData(value);
@@ -51,10 +61,10 @@ function MatchHistory({username}: {username:string}) {
 		return (<div style={{color:"white"}}>no matches played</div>)
 	console.log(jsonData)
 	return (
-		<div className="all-matchs">
+		<div className="all-matches">
 			{ 
 				jsonData.map((user, index) => (
-					<MatchCard key={index} match={user} /> 
+					<MatchCard key={index} match={user} username={username}/> 
 				))
 			}
 		</div>

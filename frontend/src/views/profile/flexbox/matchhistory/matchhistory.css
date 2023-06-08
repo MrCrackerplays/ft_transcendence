@@ -1,10 +1,16 @@
-.all-matchs
+.all-matches
 {
-	position: fixed;
+	padding-left: 10%;
+	padding-right: 10%;
+	/* position: fixed; */
 	/* min-height: 100px; */
-	max-height:10%;
-	width: 50%;
+	max-height: 750px;
+	overflow-y: auto;
+	overflow-x: hidden;
+	width: 60%;
 	color: white;
+	font-size: 1.5rem;
+	color-scheme: dark;
 	/* font-size: 1rem; */
 }
 
@@ -16,7 +22,7 @@
 .match-card
 {
 	/* height:100%; */
-	/* width: 100%; */
+	max-width: 100%;
 	display: flex;
 	justify-content: space-between;
 	flex-direction: row;
@@ -107,11 +113,8 @@
 
 .left-player p
 {
-	font-size: 1rem;
-	overflow: hidden;
-	white-space: nowrap;
-	text-overflow: ellipsis;
-	position: relative;
+	text-align: center;
+	margin-top: auto;
 }
 
 .center-score
@@ -119,14 +122,16 @@
 	display: flex;
 	flex-direction: column;
 	align-items: center;
+	justify-content: space-between;
+	font-size: 2rem;
 	/* line-heig	ht: 0px; */
 }
 
 .center-score h1
 {
-	padding-top: 10px;
+	/* padding-top: 10px; */
 	margin: 0;
-	font-size: 20px;
+	/* font-size: 20px; */
 }
 
 .center-row

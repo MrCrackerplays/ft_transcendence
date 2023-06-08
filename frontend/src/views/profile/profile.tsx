@@ -16,17 +16,17 @@ import { match } from 'assert';
 function ProfilePage() {
 	const [isLoading, setIsLoading] = useState(true);
 	const [jsonData, setJsonData] = useState<PublicUser>(DefaultProfile());
-	const profile = useLocation().pathname.replace("/profile", "")
+	const url = useLocation().pathname.replace("/profile", "")
 	const fetchPFP = Constants.FETCH_USERS;
 	const [matchhistory, setmatchhistory] = useState(true); // THIS IS SET TRUE OR FALSE IN SELECTBAR
 	const id = useParams();
+
 	useEffect(() => {
 		async function checkLogin() {
-			console.log(id);
-			if (profile.length == 0 || profile.length == 1)
+			if (url.length == 0 || url.length == 1)
 				setJsonData(await FetchSelf())
 			else
-				setJsonData(await FetchUser(profile))
+				setJsonData(await FetchUser(url))
 			setIsLoading(false);
 		}
 		setIsLoading(true);
@@ -47,7 +47,7 @@ function ProfilePage() {
 				</div>
 				<div className="Add-Friend"><AddFriend UUID={jsonData.id}/></div>
 				<div className="Stats"><MyStats user={jsonData}/></div>
-				<div className="FLEXBOX">{matchhistory ? <MatchHistory /> : "Achievements go here"}</div>
+				<div className="FLEXBOX">{matchhistory ? <MatchHistory username={jsonData.userName}/> : "Achievements go here"}</div>
 				<div className="Search"><SearchBar /></div>
 				<div className="NA"></div>
 		</div>
