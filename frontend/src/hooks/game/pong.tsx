@@ -2,122 +2,138 @@
 import React from "react";
 import { useReducer, useEffect } from 'react';
 import "./pong.css";
-// import {  getFrameHeight } from './utils'
 
+enum PaddleAction {
+	Up,
+	Down,
+	None,
+}
 
-const getFrameHeight = () => {
-	const frameH = getComputedStyle(document.documentElement).getPropertyValue('--pong-frame-height-pixels');
-	return parseInt(frameH, 10);
+enum GameAction {
+	arrowUp,
+	arrowDown,
+	StopMovement,
+	updateTime,
 };
 
-const getFrameWidth = () => {
-	const frameW = getComputedStyle(document.documentElement).getPropertyValue('--pong-frame-width-pixels');
-	return parseInt(frameW, 10);
+type PaddleState = {
+	playerID: string,
+	paddlePosition: number,
+	action: PaddleAction,
+	score: number,
 };
 
-const getPaddleHeight = () => {
-	const paddleH = getComputedStyle(document.documentElement).getPropertyValue('--paddle-height-pixels');
-	return parseInt(paddleH, 10);
+type BallState = {
+	velocity: { x: number, y: number },
+	position: { x: number, y: number },
 };
 
-const getPixelSizes = () => {
-	const frameWidthPercent = getComputedStyle(document.documentElement).getPropertyValue('--pong-frame-width');
-	const frameWidthPixel = parseFloat(frameWidthPercent) / 100 * window.innerWidth;
-	document.documentElement.style.setProperty('--pong-frame-width-pixels', `${frameWidthPixel}px`);
-
-	const frameHeightPercent = getComputedStyle(document.documentElement).getPropertyValue('--pong-frame-height');
-	const frameHeightPixel = parseFloat(frameHeightPercent) / 100 * window.innerHeight;
-	document.documentElement.style.setProperty('--pong-frame-height-pixels', `${frameHeightPixel}px`);
-
-	const paddHeighthPercent = getComputedStyle(document.documentElement).getPropertyValue('--paddle-height');
-	const paddHeightPixel = parseFloat(paddHeighthPercent) / 100 * window.innerHeight;
-	document.documentElement.style.setProperty('--paddle-height-pixels', `${paddHeightPixel}px`);
+type GameState = {
+	leftPaddle: PaddleState,
+	rightPaddle: PaddleState,
+	ball: BallState,
+	time: number,
 };
 
-const getPaddlePositionStart = () => {
-	return (getFrameHeight() - getPaddleHeight()) / 2;
-};
+const paddleHeight = 0.15;
+const paddleSpeed = 1;
 
-const initialBallPosition = React.useMemo(() => {
-	const frameWidth = getFrameWidth();
-	const frameHeight = getFrameHeight();
-	const ballSize = 2; // Adjust the ball size if needed
-	const initialX = Math.floor((frameWidth - ballSize) / 2);
-	const initialY = Math.floor((frameHeight - ballSize) / 2);
-	return { x: initialX, y: initialY };
-}, []);
-
-const getRandomDirection = () => {
-	const randomX = Math.random() < 0.5 ? -1 : 1;
-	const randomY = Math.random() < 0.5 ? -1 : 1;
-	return { x: randomX, y: randomY };
-	// return { x: 0, y: 0 };
-};
-
-const PongGame = () => {
-	//HELPER FUNCTIONS
-	getPixelSizes();
-
-	//STATE CHANGE SWITCH 
-	const reducer = (state, action) => {
+function checkPaddleBoarder(paddlePosition) {
+	const paddleMaxUp = 1 - paddleHeight / 2;
+	const paddleMaxDown = -1 + paddleHeight / 2;
+	if (paddlePosition > paddleMaxUp) {
+		return paddleMaxUp;
+	} else if (paddlePosition < paddleMaxDown) {
+		return paddleMaxDown;
+	} else {
+		return paddlePosition;
+	}
+}
+const makeReducer = (playerID: string) => {
+	const reducer = (state: GameState, action: GameAction) => {
 		let newState = structuredClone(state);
-		switch (action.type) {
-			case "ArrowUp":
-				newState.paddlePosition = Math.max(state.paddlePosition - state.paddleSpeed, 0);
+		switch (action) {
+			case GameAction.arrowUp:
+				if (newState.leftPaddle.playerID == playerID) {
+					newState.leftPaddle.action = PaddleAction.Up;
+				} else {
+					newState.rightPaddle.action = PaddleAction.Up;
+				}
 				break;
-			case "ArrowDown":
-				const possibleMin = getFrameHeight() - getPaddleHeight();
-				newState.paddlePosition = Math.min(state.paddlePosition + state.paddleSpeed, possibleMin);
+			case GameAction.arrowDown:
+				if (newState.leftPaddle.playerID == playerID) {
+					newState.leftPaddle.action = PaddleAction.Down;
+				} else {
+					newState.rightPaddle.action = PaddleAction.Down;
+				}
 				break;
-			case "StopMovement":
-				newState.paddlePosition = state.paddlePosition;
+			case GameAction.StopMovement:
+				if (newState.leftPaddle.playerID == playerID) {
+					newState.leftPaddle.action = PaddleAction.None;
+				} else {
+					newState.rightPaddle.action = PaddleAction.None;
+				}
 				break;
-			case "MoveBall":
-				//newState = moveBall(state);
-				//update
-				//	ballPosition: initialBallPosition, //array x,y
-				//	ballDirection: getRandomDirection(), //array x,y
-				//	ballSpeed: 10,
-				// x: ballPosition.x + ballDirection.x * ballSpeed,
-				// y: ballPosition.y + ballDirection.y * ballSpeed,
-				newState.ballPosition.x = state.ballPosition.x + state.ballDirection.x * state.ballSpeed;
-				newState.ballPosition.y = state.ballPosition.y + state.ballDirection.y * state.ballSpeed;
-
-
-
+			case GameAction.updateTime:
+				const timeDlta = 0.1;
+				newState.time += timeDlta;
+				switch (newState.leftPaddle.action) {
+					case PaddleAction.Up:
+						newState.leftPaddle.paddlePosition += timeDlta * paddleSpeed;
+						break;
+					case PaddleAction.Down:
+						newState.leftPaddle.paddlePosition -= timeDlta * paddleSpeed;
+						break;
+					case PaddleAction.None:
+						break;
+				}
+				switch (newState.rightPaddle.action) {
+					case PaddleAction.Up:
+						newState.rightPaddle.paddlePosition += timeDlta * paddleSpeed;
+						break;
+					case PaddleAction.Down:
+						newState.rightPaddle.paddlePosition -= timeDlta * paddleSpeed;
+						break;
+					case PaddleAction.None:
+						break;
+				}
+				newState.leftPaddle.paddlePosition = checkPaddleBoarder(newState.leftPaddle.paddlePosition);
+				newState.rightPaddle.paddlePosition = checkPaddleBoarder(newState.rightPaddle.paddlePosition);
+				//ball movement
+				newState.ball.position.x += newState.ball.velocity.x * timeDlta;
+				newState.ball.position.y += newState.ball.velocity.y * timeDlta;
+				//ball collision : wall collision + paddle collision 
 				break;
 		}
 		return newState
 	};
+	return reducer;
+};
 
-	const [state, dispatch] = useReducer(reducer, {
+const PongGame = () => {
+	const playerID = "player1";
+	const opponentID = "player2";
 
-		//paddle
-		paddlePosition: getPaddlePositionStart(),
-		paddleSpeed: 10,
-
-		//ball
-		ballPosition: initialBallPosition, //array x,y
-		ballDirection: getRandomDirection(), //array x,y
-		ballSpeed: 10,
-
-		//score
-		playerScore: 0,
-		opponentScore: 0,
-	});
+	const initialState: GameState = {
+		leftPaddle: { playerID: playerID, paddlePosition: 0, action: PaddleAction.None, score: 0},
+		rightPaddle: { playerID: opponentID, paddlePosition: 0, action: PaddleAction.None, score: 0},
+		ball: { velocity: { x: 10, y: 0 }, position: { x: 0, y: 0 } },
+		time: 0,
+	};
+	const [state, dispatch] = useReducer(makeReducer(playerID), initialState);
 
 	//KEYBOARD INPUT 
 	useEffect(() => {
 		const handleKeyDown = (event) => {
 			if (event.key === "ArrowUp") {
-				dispatch({ type: 'ArrowUp' });
+				dispatch(GameAction.arrowUp);
 			} else if (event.key === "ArrowDown") {
-				dispatch({ type: 'ArrowDown' });
+				dispatch(GameAction.arrowDown);
 			}
 		};
 		const handleKeyUp = (event) => {
 			if (event.key === "ArrowUp" || event.key === "ArrowDown") {
-				dispatch({ type: "StopMovement" });
+				dispatch(GameAction.StopMovement);
 			}
 		};
 		window.addEventListener("keydown", handleKeyDown);
@@ -131,35 +147,43 @@ const PongGame = () => {
 	//BALL MOVEMENT
 	useEffect(() => {
 		const interval = setInterval(() => {
-			dispatch({ type: 'MoveBall' });
-		}, 50000); //every 50ms ball moves
+			dispatch(GameAction.updateTime);
+		}, 50); //every 50ms ball moves
 		return () => clearInterval(interval);
 	}, []);
 
 
+	const k = -42.5 / 0.925;
+	const l = 42.5;
 
+	const leftPaddleTop = k * state.leftPaddle.paddlePosition + l;
+	const rightPaddleTop = k * state.rightPaddle.paddlePosition + l;
 	//RENDER 
 	return (
 		<div className="pong-frame">
 			<div className="centre-line"></div>
-			<div className="paddle-left" style={{ top: state.paddlePosition }}></div>
-			<div className="paddle-right"></div>
-			<div className="pong-ball" style={{ left: state.ballPosition.x, top: state.ballPosition.y }}></div>
-			{/* <div className="pong-ball" style={{ left: `calc(${state.ballPosition.x}px - 10px)`, top: `calc(${state.ballPosition.y}px - 10px)` }}></div> */}
-
+			<div className="h-centre-line"></div>
+			<div className="paddle-right" style={{ top: rightPaddleTop + '%' }}></div>
+			<div className="paddle-left" style={{ top: leftPaddleTop + '%'  }}></div>
+			<div className="pong-ball" style={{ left: (state.ball.position.x * 0.1 + 50) + '%', top: (state.ball.position.y * 0.1 + 50) + '%' }}></div>
 		</div>
 	);
+
+
+
+
+	// return (
+	// 	<div className="pong-frame">
+	// 		<div className="centre-line"></div>
+	// 		{/* from logic (-1, 1) to % for display */}
+	// 		<div className="paddle-right" style={{ top: (state.rightPaddle.paddlePosition * 0.1 + 50) + '%' }}></div>
+	// 		<div className="paddle-left" style={{ top: (state.leftPaddle.paddlePosition * 0.1 + 50) + '%' }}></div>
+	// 		{/* <div className="paddle-left"></div> */}
+	// 		<div className="pong-ball" style={{ left: (state.ball.position.x * 0.1 + 50) + '%', top: (state.ball.position.y * 0.1 + 50) + '%'}}></div>
+	// 		{/* <div className="pong-ball" style={{ left: `calc(${state.ballPosition.x}px - 10px)`, top: `calc(${state.ballPosition.y}px - 10px)` }}></div> */}
+
+	// 	</div>
+	// );
 };
 
 export default PongGame;
-
-
-	//GAME STATE
-	// 	const board = [...Array(PADDLE_BOARD_SIZE)].map((_, pos) => pos);
-	// 		/* Paddle Array */
-	// 		player:   board.map(x => (x  * COL_SIZE) + PADDLE_EDGE_SPACE),
-	// 		opponent: board.map(x => ((x+1) * COL_SIZE)-(PADLE_EDGE_SPACE+1)),
-	// 		/* ball */
-	// 		ball:     Math.round((ROW_SIZE * COL_SIZE)/2)+ ROW_SIZE,
-	// 		deltaY:   -COL_SIZE, // change ball in Y AXIS
-	// 		deltaX:   -1, // change ball in  X AXIS

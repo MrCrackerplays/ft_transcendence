@@ -32,6 +32,17 @@
 	z-index: 2;
 }
 
+.h-centre-line {
+
+	position: absolute;
+	height: 1px;
+	width: 100%;
+	background-color: rgb(255, 255, 255);
+	left: 0;
+	top: 50%;
+	z-index: 2;
+}
+
 /* 
 .paddle {
 
@@ -44,21 +55,18 @@
 .paddle-left {
 
 	position: absolute;
-	top: calc(var(--pong-frame-height) / 2 - var(--paddle-height) / 2);
-	right: 20px;
-	height: var(--paddle-height);
-	width: var(--paddle-width);
+	left: 20px;
+	height: 15%;
+	width: 2%;
 	background-color: rgb(255, 255, 255);
 }
 
 .paddle-right {
 
 	position: absolute;
-	top: calc(var(--pong-frame-height) / 2 - var(--paddle-height) / 2);
-	/* height / 2 - paddle size */
-	left: 20px;
-	height: 15vH;
-	width: 2vW;
+	right: 20px;
+	height: 15%;
+	width: 2%;
 	background-color: rgb(255, 255, 255);
 }
 
