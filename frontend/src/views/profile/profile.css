@@ -5,7 +5,7 @@
 	grid-auto-flow: row;
 	grid-template-areas:
 	  "NA Name Name Name Name Name Search"
-	  "NA SelectBar SelectBar SelectBar SelectBar SelectBar SelectBar"
+	  "NA NONE1 SelectBar SelectBar SelectBar SelectBar NONE2"
 	  "Profile FLEXBOX FLEXBOX FLEXBOX FLEXBOX FLEXBOX FLEXBOX"
 	  "Add-Friend FLEXBOX FLEXBOX FLEXBOX FLEXBOX FLEXBOX FLEXBOX"
 	  "Stats FLEXBOX FLEXBOX FLEXBOX FLEXBOX FLEXBOX FLEXBOX";
@@ -56,31 +56,14 @@
 	justify-self: center;
 	grid-area: Add-Friend; 
   }
-  
-  .add-friend-btn{
-	height:100%;
-	width:100%;
-	/* max-width: 100%; */
-	font-size: 1rem;
-	color: white;
-	text-shadow: 0 1px 0 rgb(0, 0, 0);
-	font-weight:bold;
-  }
-
-  .self-friend{
-	background-color: rgb(63, 61, 64);
-  }
-  .add-friend{
-	background-color: rgb(43, 166, 194);
-  }
-
-  .remove-friend{
-	background-color: rgb(168, 10, 18);
-  }
 
   .Stats { grid-area: Stats; }
   
-  .FLEXBOX { grid-area: FLEXBOX; }
+  .FLEXBOX { 
+	grid-area: FLEXBOX;
+	justify-self: start;
+  	align-self: start;
+}
   
   .Search {
 	justify-self: end;
@@ -89,20 +72,3 @@
   }
   
   .NA { grid-area: NA; }
-
-  .searchform{
-	display:flex;
-	padding-right: 5rem;
-  }
-
-  .searchinput{
-	font-size: 1rem;
-	background-color: lightgray;
-  }
-
-  .searchbutton{
-	color:white;
-	font-size: 1rem;
-	background-color:rgb(10, 103, 143)
-  }
-  

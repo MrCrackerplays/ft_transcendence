@@ -1,12 +1,17 @@
-.all-matchs
+.all-matches
 {
-	position: fixed;
-	margin-left: 30%;
-	margin-top: 10%;
-	min-height: 100px;
-	height:5rem;
-	width: 20rem;
+	padding-left: 10%;
+	padding-right: 10%;
+	/* position: fixed; */
+	/* min-height: 100px; */
+	max-height: 750px;
+	overflow-y: auto;
+	overflow-x: hidden;
+	width: 60%;
 	color: white;
+	font-size: 1.5rem;
+	color-scheme: dark;
+	/* font-size: 1rem; */
 }
 
 .monospace
@@ -16,8 +21,8 @@
 
 .match-card
 {
-	height:100%;
-	width: 100%;
+	/* height:100%; */
+	max-width: 100%;
 	display: flex;
 	justify-content: space-between;
 	flex-direction: row;
@@ -25,6 +30,7 @@
 	background-color:rgb(38, 37, 37);
 	z-index: 1;
 	transition: transform 0.3s ease-in-out;
+	/* font-size: 1rem; */
 }
 
 .greenborder
@@ -87,31 +93,28 @@
 
 .left-player
 {
-	height: 100%;
-	width:	33%;
-	flex-direction: column;
-	/* border: 1px solid pink; */
+	max-width:	10%;
+	display: flex;
+  	flex-direction: column;
+  	align-items: left;
+	overflow: hidden;
 }
 
 .left-player img
 {
 	text-align: left;
 	vertical-align: bottom;
-	height:75%;
-	width: 75%;
+	max-height:100%;
+	max-width: 100%;
+	object-fit: contain;
+	margin-bottom: auto;
+	margin-top: auto;
 }
 
 .left-player p
 {
 	text-align: center;
-	margin-top: 5px;
-	padding-right: 7px;
-	/* left: 5%; */
-}
-
-.left-player p:hover
-{
-	color: red;
+	margin-top: auto;
 }
 
 .center-score
@@ -119,14 +122,16 @@
 	display: flex;
 	flex-direction: column;
 	align-items: center;
+	justify-content: space-between;
+	font-size: 2rem;
 	/* line-heig	ht: 0px; */
 }
 
 .center-score h1
 {
-	padding-top: 10px;
+	/* padding-top: 10px; */
 	margin: 0;
-	font-size: 20px;
+	/* font-size: 20px; */
 }
 
 .center-row
@@ -147,8 +152,11 @@
 
 .right-player
 {
-	height: 100%;
-	width:	33%;
+	/* max-height: 100%; */
+	max-width:	10%;
+	display: flex;
+  	flex-direction: column;
+  	align-items: center;
 }
 
 .right-player img
@@ -156,14 +164,18 @@
 	/* padding-left: 10px; */
 	text-align: right;
 	vertical-align: bottom;
-	height:75%;
-	width: 75%;
+	max-height:100%;
+	max-width: 100%;
+	object-fit: contain;
+	margin-bottom: auto;
+	margin-top: auto;
 }
 
 .right-player p
 {
 	text-align: center;
-	margin-top: 5px;
+	margin-top: auto;
+	/* margin-top: 5px; */
 }
 
 
