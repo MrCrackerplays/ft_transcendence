@@ -7,6 +7,7 @@ import { Public } from 'src/auth/decorators/public.decorator';
 import { join } from 'path';
 import { Response } from 'express';
 import { STORAGE_DEFAULT_IMAGE, STORAGE_IMAGE_LOCATION } from 'src/storage';
+import { Match } from 'src/matches/match.entity';
 
 @Controller('users')
 export class UserController {
@@ -45,6 +46,16 @@ export class UserController {
 			return res.sendFile(join(process.cwd(), STORAGE_DEFAULT_IMAGE));
 		}
 		return res.sendFile(join(process.cwd(), STORAGE_IMAGE_LOCATION + '/' + user.imageURL));
+	}
+
+	@Get(':name/matches')
+	async getRecentMatches(@Param('name') name: string): Promise<Match[]> {
+		const user : User = await this.userService.getOne({userName: name});
+
+		if (!user)
+			throw new HttpException('User not found', HttpStatus.NOT_FOUND);
+
+		return this.userService.getRecentMatches(user);
 	}
 
 	// @Get(':name/friends')

@@ -28,6 +28,14 @@ function Temp() {
 			winnerScore : p1s,
 			loserScore : p2s
 		};
+ 
+		/// BUILD DTO
+		// const matchDTO : CreateMatchDTO = {
+		// 	loserID : data.id,
+		// 	winnerID : p2,
+		// 	loserScore : p1s,
+		// 	winnerScore : p2s
+		// };
 
 		// console.log(data.id)
 		const RESPONSE = await fetch("http://localhost:3000/matches", {

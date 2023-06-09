@@ -1,0 +1,26 @@
+ .stats{
+	color:white;
+	font-size: 1.25rem;
+ }
+ .title{
+	/* /* justify-content: center; */
+	text-align: center;
+	/* padding:0%; */
+ }
+ .percentage{
+	/* padding: 0%; */
+	width:75;
+	display:flex;
+	font-size: 2rem;
+	justify-content: space-between;
+ }
+ .win{
+	color:green;
+	order:1;
+ }
+
+ .loss{
+	align-self: right;
+	color:red;
+	order:2;
+ }

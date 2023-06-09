@@ -1,5 +1,7 @@
 import { useEffect, useState } from "react";
 import { Navigate, useNavigate } from "react-router-dom";
+import './search.css'
+
 function SearchBar()
 {
 	const [text, setText] = useState("");
