@@ -6,5 +6,21 @@ export class PublicUser {
 	gamesPlayed: number;
 	gamesWon: number;
 	active: boolean;
+	status:	string;
 	imageURL: string;
 }
+
+function DefaultProfile()
+{
+	let retValue : PublicUser = new PublicUser;
+	retValue.id = "";
+	retValue.userName = "N/A";
+	retValue.gamesPlayed = 0;
+	retValue.gamesWon = 0;
+	retValue.active = false;
+	retValue.status = 'OFFLINE'
+	retValue.imageURL = "N/A"
+	return (retValue);
+}
+
+export default DefaultProfile

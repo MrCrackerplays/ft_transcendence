@@ -1,0 +1,43 @@
+.menu{
+	position:static;
+	min-width: 250px;
+	margin-top: 120px;
+	margin-left: 15%;
+	font-size: 32px;
+}
+
+.button {
+	position: inherit;
+	width: inherit;
+	min-width: inherit;
+	height: 2em;
+	font-size: 1em;
+	display: block;
+	background-color: rgb(117, 117, 117);
+	outline: none;
+	padding: 10px;
+	margin-top: 0.1em;
+	font-family: fantasy;
+	font-size: 32px;
+	color: aquamarine;
+	text-decoration-line: underline;
+}
+
+.default {
+	border: 3px rgba(0, 0, 0, 0);
+}
+
+.text {
+	position: relative;
+	margin-left: auto;
+	font-family: fantasy;
+	font-size: 32px;
+	color: aquamarine;
+	text-decoration-line: underline;
+}
+
+.click {
+	font-family: fantasy;
+	font-size: 34px;
+	color: blue;
+}

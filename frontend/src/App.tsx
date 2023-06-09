@@ -1,22 +1,57 @@
-import { BrowserRouter as Router, Route, Routes } from 'react-router-dom'
+import { Route, Routes, useLocation, useNavigate } from 'react-router-dom'
 import ProfilePage from './views/profile/profile';
-import MySettingsPage from './views/settings/settings'
 import MyLoginPage from './views/login/login';
+import Temp from './views/profile/temp/temp';
+import isLoggedIn from './hooks/isLoggedIn/isLoggedIn'
+import LoginOTP from './views/loginotp/loginotp';
+import SetUp from './views/newuser/newuser';
+import { useEffect, useState } from 'react'
+import MyNavBar from './hooks/navbar/navbar';
+import MyFriendsList from './views/profile/flexbox/friendlist/friendlist';
+import HomePage from './views/menu/home';
 
-function App()
+function App(): React.ReactElement
 {
-  return (
-    <div className="App">
-		<Router>
+	const [isLoading, setIsLoading] = useState(true)
+	const [isVerified, setIsVerified] = useState(false);
+	const navigate = useNavigate();
+	const location = useLocation();
+
+	useEffect(() => {
+		const fetchData = async () => {
+			const data = await isLoggedIn();
+			if (!(data >= 200 && data <= 299))
+				navigate("/login");
+			else
+				setIsVerified(true);
+			setIsLoading(false);
+		}
+		if (location.pathname !== "/login" && location.pathname !== "/loginOTP" && location.pathname !== "/setup")
+			fetchData();
+		else
+			setIsLoading(false);
+	}, [location])
+	if (isLoading)
+		return (<div> </div>);
+	if (!isVerified)
+		return (
+				<Routes>
+					<Route path="/login" element={<MyLoginPage />}/>
+					<Route path="/loginOTP" element={<LoginOTP />}/>
+					<Route path="/setup" element={<SetUp />} />
+				</Routes>
+		)
+	return (
+		<div>
+			<MyNavBar/>
+			<MyFriendsList />
     		<Routes>
-				<Route path="/" />
-    			<Route path="/profile/*" Component={ProfilePage} />
-    			<Route path="/setting" Component={MySettingsPage} />
-				<Route path="/login" Component={MyLoginPage} />
+				<Route path="/" element={<HomePage />}/>
+				<Route path="/profile/*" element={<ProfilePage />} />
+    			<Route path="/settings" element={<Temp />} />
+				<Route path="/temp" element={<Temp />}/>
     		</Routes>
-		</Router>
-    </div>
+		</div>
   );
 }
-
-export default App
+export default App	

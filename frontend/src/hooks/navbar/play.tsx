@@ -1,8 +1,7 @@
-import { Menu, Transition } from '@headlessui/react'
 import { Popover } from '@headlessui/react'
+import { Link } from "react-router-dom"
 import React, {useState} from 'react'
-import pfp from './Tateru.png'
-import './home.css'
+import './navbar.css'
 
 function MyLink({ label, link }: { label: string, link: string })
 {
@@ -17,11 +16,10 @@ function MyLink({ label, link }: { label: string, link: string })
 	};
   
 	const className = `my-link a ${hovered ? 'hovered' : ''}`;
-  
 	return (
-	  <a href={link} className={className} onMouseOver={handleMouseOver} onMouseOut={handleMouseOut}>
+	  <Link to={link} className={className} onMouseOver={handleMouseOver} onMouseOut={handleMouseOut}>
 		{label}
-	  </a>
+	  </Link>
 	);
 }
   
@@ -29,23 +27,22 @@ function MyLinks()
 {
 	return (
 	  <div className='pfp-popover-content a'>
-		<MyLink label="Play" link="/Play"/>
-		<MyLink label="Profile" link="/Profile" />
+		<MyLink label="Play" link="/play"/>
+		<MyLink label="Profile" link="/profile" />
 		<MyLink label="Settings" link="/settings" />
-		<MyLink label="Logout" link="/Logout" />
+		<MyLink label="Logout" link="/logout" />
 	  </div>
 	);
 }
 
-function MyPopover()
+function MyPopover( {name, imgsrc} )
 {
-	const name = "ThisisAReallyLongusername"
 	return (
 	  <Popover className="pfp-popover">
 		<div className='pfp-flex-box'>
 			<p>{name}</p>
 			<Popover.Button className="pfp-button">
-				<img src={pfp} alt="Tateru" className="pfp-circle-image"/>
+				<img src={imgsrc} alt="Missing" className="pfp-circle-image"/>
 			</Popover.Button>
 		</div>
 		<Popover.Panel className="pfp-popover-content">

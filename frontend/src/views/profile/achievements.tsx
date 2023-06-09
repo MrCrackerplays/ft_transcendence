@@ -1,4 +1,4 @@
-function AchievementCard({ icon, unlocked }: { icon:string, unlocked:boolean}) {
+function AchievementCard({ icon, unlocked }: { icon: string, unlocked: boolean }) {
 	return (
 		<div>
 			<p>sup</p>
@@ -6,9 +6,8 @@ function AchievementCard({ icon, unlocked }: { icon:string, unlocked:boolean}) {
 	)
 }
 
-function Achievements(user: string)
-{
+function Achievements(user: string) {
 	return (
-		<AchievementCard icon={"text"} unlocked={true}/>
+		<AchievementCard icon={"text"} unlocked={true} />
 	)
 }
