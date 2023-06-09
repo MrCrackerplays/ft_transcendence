@@ -22,6 +22,19 @@
 	background-color: rgb(38, 37, 37);
 }
 
+/* .friend-card:active
+{
+	background-color:red;
+} */
+
+.greenfriend{
+	background-color:green;
+}
+
+.redfriend{
+	background-color:red;
+}
+
 .ONLINE {
 	color: green;
 }

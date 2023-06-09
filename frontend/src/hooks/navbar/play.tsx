@@ -27,7 +27,7 @@ function MyLinks()
 {
 	return (
 	  <div className='pfp-popover-content a'>
-		<MyLink label="Play" link="/play"/>
+		<MyLink label="Play" link="/"/>
 		<MyLink label="Profile" link="/profile" />
 		<MyLink label="Settings" link="/settings" />
 		<MyLink label="Logout" link="/logout" />
