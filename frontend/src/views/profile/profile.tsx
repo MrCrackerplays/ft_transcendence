@@ -73,7 +73,7 @@ function ProfilePage() {
 		<div className="container">
 				<div className="SelectBar">SELECTBAR</div>
 				<div className="Name"><Userbar name={jsonData.userName} /></div>
-				<div><TestSidebar name={jsonData.userName}/></div>
+				<div className="testsidebar"><TestSidebar name={jsonData.userName}/></div>
 				<div className="Profile">
 					<img src={`${fetchPFP}/${jsonData.userName}/pfp`} className='PFP'/>
 					<div className='PFP-Border'></div>

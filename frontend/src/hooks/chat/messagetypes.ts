@@ -2,6 +2,7 @@ export type UserMessage = {
 	channel: string;
 	content: string;
 	sender: string;
+	sender_id: string;
 	date: string;
 }
 

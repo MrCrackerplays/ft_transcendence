@@ -41,6 +41,7 @@ function MessageComponent({ message } : {message: Message}) {
 }
 
 function ChatChannel( { isConnectionOpen, messages, messageBody, sendMessage, setMessageBody, sender, muted } : { isConnectionOpen: boolean; messages: UserMessage[] | Message[]; messageBody: string; sendMessage: () => void; setMessageBody: (message: string) => void; sender: string; muted: boolean; } ) {
+	console.log("muted?", muted);
 	return (
 		<>
 		<div id="chat-history">
@@ -65,7 +66,8 @@ function ChatChannel( { isConnectionOpen, messages, messageBody, sendMessage, se
 					onKeyDown={(e) => {
 						if (e.key == "Enter" && e.shiftKey == false) {
 							e.preventDefault();
-							sendMessage();
+							if (isConnectionOpen)
+								sendMessage();
 						}
 					}}
 					onChange={(e) => {setMessageBody(e.target.value)}}
@@ -76,7 +78,7 @@ function ChatChannel( { isConnectionOpen, messages, messageBody, sendMessage, se
 					aria-label="Send"
 					onClick={sendMessage}
 					className="send-button"
-					disabled={!isConnectionOpen && !muted}
+					disabled={!isConnectionOpen || muted}
 				>Send</button>
 			</div>
 		</footer>

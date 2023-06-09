@@ -25,11 +25,12 @@ import { parse } from 'cookie';
 		origin: 'http://localhost:5173',
 		credentials: true
 	},
+	namespace: 'chat',
 })
 export class ChatGateway {
 	@WebSocketServer()
 	server: Server;
-	// connectionService: ConnectionService;
+	// connectionUser: Map<string, User> = new Map<string, User>();
 	constructor(
 		private jwtService: JwtService,
 		private connectionService: ConnectionService,
@@ -71,14 +72,20 @@ export class ChatGateway {
 			return;
 		}
 		this.userFromSocket(client, result).then(user => {
-			console.log("trying to join to all subscribed channels");
-			if (!user || !user.channelSubscribed) {
-				console.log("failed to join to all subscribed channels");
+			// console.log("trying to join to all subscribed channels");
+			if (!user || !user.id) {
+				// console.log("failed to join to all subscribed channels");
 				return;
 			}
-			console.log("joining to all subscribed channels");
+			// this.connectionUser.set(client.id, user);
+			client.join("user:" + user.id);
+			if (!user.channelSubscribed) {
+				// console.log("failed to join to all subscribed channels");
+				return;
+			}
+			// console.log("joining to all subscribed channels");
 			for (var i = 0; i < user.channelSubscribed.length; i++) {
-				// client.join(user.channelSubscribed[i].id);
+				// client.join("channel:" + user.channelSubscribed[i].id);
 			}
 		});
 		console.log(1, result);
@@ -119,18 +126,118 @@ export class ChatGateway {
 
 	@UseGuards(WsGuard)
 	@SubscribeMessage('join')
-	async joinChannel(@ConnectedSocket() client: Socket, @MessageBody("channel") channel_id : string): Promise<boolean> {
+	async joinChannel(
+		@ConnectedSocket() client: Socket,
+		@MessageBody("channel") channel_id: string
+	): Promise<{channel_id: string, success: boolean, reason: string}> {
+		console.log("join channel event", channel_id);
 		const user = await this.userFromSocket(client);
-		if (!user)
-			return false;
+		if (!user) {
+			return {channel_id: channel_id, success: false, reason: "user not found"};
+		}
 		console.log("user:", user);
 		const channel = await this.channelService.findOne(channel_id);
-		if (!channel)
-			return false;
-		//TODO: check if user is subscribed to channel, currently no way to do it
-		client.join(channel_id);
-		this.server.to(channel_id).emit("join", { channel: channel_id, content: user.userName + " has joined the channel" });
-		return true;
+		if (!channel) {
+			return {channel_id: channel_id, success: false, reason: "channel not found"};
+		}
+		// if (user.userName == "zach")
+		// 	return {channel_id: channel_id, success: false, reason: "zach is not allowed"};
+
+		//TODO: check if user is subscribed to channel otherwise not allowed, currently no way to do it
+		const is_subscribed = true;
+		if (!is_subscribed) {
+			return {channel_id: channel_id, success: false, reason: "not subscribed"};
+		}
+
+		//TODO: check if user is banned from channel otherwise not allowed, currently no way to do it
+		const is_banned = false;
+		if (is_banned) {
+			return {channel_id: channel_id, success: false, reason: "banned"};
+		}
+
+		client.join("channel:" + channel_id);
+		this.server.to("channel:" + channel_id).emit("join", { channel: channel_id, content: user.userName + " has joined the channel" });
+		return {channel_id: channel_id, success: true, reason: "Success"};
+	}
+
+	//TODO: implement kick
+	@UseGuards(WsGuard)
+	@SubscribeMessage('kick')
+	kickUser(
+		@ConnectedSocket() client: Socket,
+		@MessageBody("channel") channel_id: string,
+		@MessageBody("user") user_id: string
+	): void {
+		console.log("kick event");
+		this.server.to("user:" + user_id).emit("kick", channel_id );
+		console.log("kick event end");
+	}
+
+	//TODO: implement leave
+	@UseGuards(WsGuard)
+	@SubscribeMessage('leave')
+	leaveChannel(
+		@ConnectedSocket() client: Socket,
+		@MessageBody("channel") channel_id: string
+	): void {
+		console.log("leave event");
+		client.leave("channel:" + channel_id);
+		this.userFromSocket(client).then(user => {
+			this.server.to("user:" + user.id).emit("leave", channel_id );
+		});
+		console.log("leave event end");
+	}
+
+	//TODO: implement 
+	@UseGuards(WsGuard)
+	@SubscribeMessage('ban')
+	banUser(
+		@ConnectedSocket() client: Socket,
+		@MessageBody("channel") channel_id: string,
+		@MessageBody("user") user_id: string
+	) {
+		console.log("ban event");
+		this.server.to("user:" + user_id).emit("ban", channel_id );
+		console.log("ban event end");
+	}
+
+	//TODO: implement 
+	@UseGuards(WsGuard)
+	@SubscribeMessage('unban')
+	unbanUser(
+		@ConnectedSocket() client: Socket,
+		@MessageBody("channel") channel_id: string,
+		@MessageBody("user") user_id: string
+	) {
+		console.log("unban event");
+		this.server.to("user:" + user_id).emit("unban", channel_id );
+		console.log("unban event end");
+	}
+
+	//TODO: implement mute
+	@UseGuards(WsGuard)
+	@SubscribeMessage('mute')
+	muteUser(
+		@ConnectedSocket() client: Socket,
+		@MessageBody("channel") channel_id: string,
+		@MessageBody("user") user_id: string
+	) {
+		console.log("mute event");
+		this.server.to("user:" + user_id).emit("mute", channel_id );
+		console.log("mute event end");
+	}
+
+	//TODO: implement unmute
+	@UseGuards(WsGuard)
+	@SubscribeMessage('unmute')
+	unmuteUser(
+		@ConnectedSocket() client: Socket,
+		@MessageBody("channel") channel_id: string,
+		@MessageBody("user") user_id: string
+	) {
+		console.log("unmute event");
+		this.server.to("user:" + user_id).emit("unmute", channel_id );
+		console.log("unmute event end");
 	}
 
 	@UseGuards(WsGuard)
@@ -143,9 +250,12 @@ export class ChatGateway {
 				this.channelService.findOne(channel_id).then(channel => {
 					if (!channel)
 						return;
+
+					//check if user is in channel and not muted
+
 					this.messageService.createMessage(channel, user, message).then((m) => {
 						console.log("sending message");
-						this.server.to(channel_id).emit("message", {channel: channel_id, sender: m.author.userName, content: m.content, date: m.date});
+						this.server.to("channel:" + channel_id).emit("message", {channel: channel_id, sender: m.author.userName, sender_id: m.author.id, content: m.content, date: m.date});
 					});
 				});
 			});

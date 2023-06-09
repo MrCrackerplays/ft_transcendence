@@ -22,6 +22,14 @@
 	border-radius: 6px;
 }
 
+.channel {
+	display: flex;
+	justify-content: space-between;
+	box-shadow: 0 1px 0 lightblue ;
+	margin-top: 0.5rem;
+	margin-bottom: 0.5rem;
+}
+
 .chat-area {
 	top: 100%;
 	position: sticky;
