@@ -3,6 +3,18 @@ import React from "react";
 import { useReducer, useEffect } from 'react';
 import "./pong.css";
 
+//this - on BE only?
+type Players = {
+
+	PlayerScore : number,
+	OpponentScore : number,
+	PlayerID : string,
+	OpponentID : string,
+	PlayerWin : boolean,
+	OpponentWin : boolean,
+};
+
+
 enum PaddleAction {
 	Up,
 	Down,
@@ -16,11 +28,11 @@ enum GameAction {
 	updateTime,
 };
 
-type PaddleState = {
+type PaddleState = { //move to Players?
 	playerID: string,
 	paddlePosition: number,
 	action: PaddleAction,
-	score: number,
+	score: number, //move to Players?
 };
 
 type BallState = {
@@ -36,19 +48,82 @@ type GameState = {
 };
 
 const paddleHeight = 0.15;
+const paddleWidth = 0.02;
 const paddleSpeed = 1;
+const ballHeight = 0.02;
+const ballWidth = 0.02;
 
 function checkPaddleBoarder(paddlePosition) {
 	const paddleMaxUp = 1 - paddleHeight / 2;
 	const paddleMaxDown = -1 + paddleHeight / 2;
-	if (paddlePosition > paddleMaxUp) {
+	if (paddlePosition >= paddleMaxUp) {
 		return paddleMaxUp;
-	} else if (paddlePosition < paddleMaxDown) {
+	} else if (paddlePosition <= paddleMaxDown) {
 		return paddleMaxDown;
 	} else {
 		return paddlePosition;
 	}
+};
+
+function updateBallPosition(state: GameState, timeDlta: number) {
+	state.ball.position.x += state.ball.velocity.x * timeDlta;
+	state.ball.position.y += state.ball.velocity.y * timeDlta;
 }
+
+function updateBall(state: GameState, timeDlta: number) {
+
+	const ball = state.ball;
+	const leftPaddle = state.leftPaddle;
+	const rightPaddle = state.rightPaddle;
+	const maxBallPosition = 1 - ballHeight / 2;
+	const minBallPosition = -1 + ballHeight / 2;
+	updateBallPosition(state, timeDlta);
+
+	//up and down wall collision
+	if (ball.position.y >= maxBallPosition || ball.position.y <= minBallPosition) {
+		state.ball.velocity = { x : ball.velocity.x, y : (ball.velocity.y * -1) };
+		return;
+	} 
+
+
+	const padStartX = paddleWidth * 2;
+	const padEndX = paddleWidth * 2;
+	
+	//padle collision
+	//paddle position is middle of paddle
+	const leftMaxPaddleY = (leftPaddle.paddlePosition + paddleHeight / 2);
+	const leftMinPaddleY = (leftPaddle.paddlePosition - paddleHeight / 2);
+	
+	const rightMaxPaddleY = (rightPaddle.paddlePosition + paddleHeight / 2);
+	const rightMinPaddleY = (rightPaddle.paddlePosition - paddleHeight / 2);
+	
+	const isBallAtLeftWall = (ball.position.x - ballWidth / 2) <= -1;
+	const isBallAtRightWall = (ball.position.x + ballWidth / 2) >= 1;
+	const willBounceLeftPaddle = leftMinPaddleY <= ball.position.y && ball.position.y <= leftMaxPaddleY;
+	const willBounceRightPaddle = rightMinPaddleY <= ball.position.y && ball.position.y <= rightMaxPaddleY;
+	if (isBallAtLeftWall) {
+		if (willBounceLeftPaddle) {
+			state.ball.velocity = { x : -ball.velocity.x, y : ball.velocity.y };
+			updateBallPosition(state, timeDlta);
+		} else {
+			state.ball.position = { x : 0, y : 0 };
+			state.leftPaddle.score += 1;
+		}
+	} else if (isBallAtRightWall) {
+		if (willBounceRightPaddle) {
+			state.ball.velocity = { x : -ball.velocity.x, y : ball.velocity.y };
+			updateBallPosition(state, timeDlta);
+		} else {
+			state.ball.position = { x : 0, y : 0 };
+			state.rightPaddle.score += 1;
+		}
+
+	}
+};
+
+
+
+
 const makeReducer = (playerID: string) => {
 	const reducer = (state: GameState, action: GameAction) => {
 		let newState = structuredClone(state);
@@ -100,9 +175,8 @@ const makeReducer = (playerID: string) => {
 				newState.leftPaddle.paddlePosition = checkPaddleBoarder(newState.leftPaddle.paddlePosition);
 				newState.rightPaddle.paddlePosition = checkPaddleBoarder(newState.rightPaddle.paddlePosition);
 				//ball movement
-				newState.ball.position.x += newState.ball.velocity.x * timeDlta;
-				newState.ball.position.y += newState.ball.velocity.y * timeDlta;
-				//ball collision : wall collision + paddle collision 
+				//ball collision : up and down wall collision
+				updateBall(newState, timeDlta); //player paddle
 				break;
 		}
 		return newState
@@ -117,7 +191,7 @@ const PongGame = () => {
 	const initialState: GameState = {
 		leftPaddle: { playerID: playerID, paddlePosition: 0, action: PaddleAction.None, score: 0},
 		rightPaddle: { playerID: opponentID, paddlePosition: 0, action: PaddleAction.None, score: 0},
-		ball: { velocity: { x: 10, y: 0 }, position: { x: 0, y: 0 } },
+		ball: { velocity: { x: -0.1, y: -0.001 }, position: { x: 0, y: 0 } },
 		time: 0,
 	};
 	const [state, dispatch] = useReducer(makeReducer(playerID), initialState);
@@ -156,16 +230,33 @@ const PongGame = () => {
 	const k = -42.5 / 0.925;
 	const l = 42.5;
 
+	const lBallCorrection = 0.5 - ballWidth / 2;
+	const kBallCorrection = lBallCorrection / (1 - ballWidth / 2);
+
 	const leftPaddleTop = k * state.leftPaddle.paddlePosition + l;
 	const rightPaddleTop = k * state.rightPaddle.paddlePosition + l;
+
+	const ballPositionLeft = kBallCorrection * state.ball.position.x + lBallCorrection;
+	const ballPositionTop = kBallCorrection * state.ball.position.y + lBallCorrection;
 	//RENDER 
 	return (
 		<div className="pong-frame">
 			<div className="centre-line"></div>
 			<div className="h-centre-line"></div>
-			<div className="paddle-right" style={{ top: rightPaddleTop + '%' }}></div>
-			<div className="paddle-left" style={{ top: leftPaddleTop + '%'  }}></div>
-			<div className="pong-ball" style={{ left: (state.ball.position.x * 0.1 + 50) + '%', top: (state.ball.position.y * 0.1 + 50) + '%' }}></div>
+			<div className="paddle-right" style={{
+				top: rightPaddleTop + '%',
+				height: (paddleHeight * 100) + '%',
+			}}></div>
+			<div className="paddle-left" style={{
+				top: leftPaddleTop + '%',
+				height: (paddleHeight * 100) + '%',
+			}}></div>
+			<div className="pong-ball" style={{
+				left: (ballPositionLeft * 100) + '%',
+				top: (ballPositionTop * 100) + '%',
+				width: (ballWidth * 100) + '%',
+				height: (ballHeight * 100) + '%',
+				}}>{state.ball.position.x}, {state.ball.position.y}</div>
 		</div>
 	);
 
