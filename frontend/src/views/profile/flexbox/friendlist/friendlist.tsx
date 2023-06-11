@@ -21,12 +21,18 @@ function MyFriendsList() {
 	const [friendArray, setFriendArray] = useState<Array<PublicUser>>([]);
 	const [isLoading, setisLoading] = useState(true);
 	useEffect(() => {
-		async function getFriends() {
-			setFriendArray(await FetchFriends());
-			setisLoading(false);
-		}
-		getFriends();
+		const interval = setInterval(() => {
+				getFriends(); 
+			}, 30*1000);
+			return () => clearInterval(interval);
 	}, [])
+	
+	async function getFriends() {
+		console.log("fetched some friends");
+		setFriendArray(await FetchFriends());
+		setisLoading(false);
+	}
+
 	if (isLoading)
 		return (<div></div>)
 	return (
