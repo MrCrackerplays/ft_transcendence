@@ -5,7 +5,7 @@ import { useState, useEffect } from "react";
 import DefaultProfile, { PublicUser } from "../../../../../../shared/public-user";
 import { Constants } from "../../../../../../shared/constants";
 
-import userStatus from "../../../../hooks/userStatus/userStatus";
+import UserStatus from "../../../../hooks/userStatus/userStatus";
 
 function FriendCard({ friend }: {friend: PublicUser}){
 	const textcolor = "white";
@@ -29,13 +29,11 @@ function MyFriendsList() {
 		setisLoading(false);
 	}
 
-	userStatus( false );
-	// getFriends();
-
 	useEffect(() => {
+		getFriends();
 		const interval = setInterval(() => {
 				getFriends(); 
-			}, 30*1000);
+			}, 1000);
 			return () => clearInterval(interval);
 	}, [])
 

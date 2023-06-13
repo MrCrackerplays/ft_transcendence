@@ -10,6 +10,9 @@ import MyNavBar from './hooks/navbar/navbar';
 import MyFriendsList from './views/profile/flexbox/friendlist/friendlist';
 import HomePage from './views/menu/home';
 
+import UserStatus from './hooks/userStatus/userStatus';
+import { setFlagsFromString } from 'v8';
+
 function App(): React.ReactElement
 {
 	const [isLoading, setIsLoading] = useState(true)
@@ -45,6 +48,7 @@ function App(): React.ReactElement
 		<div>
 			<MyNavBar/>
 			<MyFriendsList />
+			<UserStatus />
     		<Routes>
 				<Route path="/" element={<HomePage />}/>
 				<Route path="/profile/*" element={<ProfilePage />} />

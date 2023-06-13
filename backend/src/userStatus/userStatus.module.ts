@@ -1,16 +1,21 @@
 import { Module } from "@nestjs/common";
-import { userStatusGateway } from "./userStatus.gateway";
+import { UserStatusGateway } from "./UserStatus.gateway";
+import { JwtService } from "@nestjs/jwt";
+
 import { TypeOrmModule } from "@nestjs/typeorm";
-import { User } from "src/users/user.entity";
-import { UserService } from "src/users/user.service";
 import { Connection } from "src/auth/connection/connection.entity";
 import { ConnectionService } from "src/auth/connection/connection.service";
-import { JwtService } from "@nestjs/jwt";
+
+import { User } from "src/users/user.entity";
+import { UserService } from "src/users/user.service";
+import { UserModule } from "src/users/user.module";
+import { AuthModule } from "src/auth/auth.module";
 
 @Module({
 	imports: [
-		TypeOrmModule.forFeature([Connection, User])
+		AuthModule,
+		UserModule
 	],
-	providers: [userStatusGateway, JwtService, ConnectionService, UserService],
+	providers: [UserStatusGateway],
 })
 export class UserStatusModule {}

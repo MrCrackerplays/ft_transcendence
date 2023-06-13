@@ -1,11 +1,9 @@
-import { func } from '@hapi/joi';
 import {
-	MessageBody,
-	SubscribeMessage,
 	WebSocketGateway,
 	WebSocketServer,
 	WsResponse,
-	ConnectedSocket
+	ConnectedSocket,
+	OnGatewayConnection, OnGatewayDisconnect
 }	from '@nestjs/websockets'
 import { Server, Socket } from 'socket.io';
 import  { Constants } from '../../../shared/constants'
@@ -25,19 +23,24 @@ import { EventListenerObject } from 'rxjs/internal/observable/fromEvent';
 	},
 	namespace: 'userStatusGateway',
 })
-export class userStatusGateway {
+export class UserStatusGateway implements OnGatewayConnection, OnGatewayDisconnect{
 	@WebSocketServer()
 	Server: Server;
 
 	constructor(
 		private jwtService: JwtService,
 		private connectionService: ConnectionService,
-		private userService: User,
+		private userService: UserService,
 	) {}
 
 	private userFromSocket(socket: Socket, result?: any): Promise<User> | undefined {
 		try {
 			if (!result) {
+				if (!socket.handshake.headers.cookie)
+				{
+					Logger.log("Cookie's gone");
+					return ;
+				}
 				const auth_cookie = parse(socket.handshake.headers.cookie).Authentication;
 				result = this.jwtService.verify(auth_cookie, { secret: process.env.JWT_SECRET })
 			}
@@ -49,20 +52,49 @@ export class userStatusGateway {
 		}
 		return undefined;
 	}
+
+	private	setStatus(user: User, newStatus: string)
+	{
+		user.status = newStatus;
+		user.save();
+	}
 	
 	afterInit(server: Server) {
 		Logger.log('Frieds list connection initialized');
 	}	
 
-	@SubscribeMessage('UPDATE')
-	setStatus(@ConnectedSocket() client: Socket, newStatus: string)
-	{
+	handleConnection(client: Socket) {
+		Logger.log(`new connection ${client.id}`);
+		if (!client.handshake.headers.cookie)
+		{
+			Logger.log("Cookie's gone");
+			return ;
+		}
+		const auth_cookie = parse(client.handshake.headers.cookie).Authentication;
+		let result = undefined;
+		try {
+			result = this.jwtService.verify(auth_cookie, { secret: process.env.JWT_SECRET });
+			if (!result)
+				throw new Error('Invalid Token');
+		} catch (e) {
+			client.disconnect();
+			return ;
+		}
+		this.userFromSocket(client, result).then(user => {
+			if (!user)
+				return ;
+			this.setStatus(user, 'online');
+			// console.log(`${user.userName}: ${user.status}`);
+		})
+	}
+
+	handleDisconnect(client: Socket) {
 		this.userFromSocket(client).then(user => {
 			if (!user)
 				return ;
-			
-			user.status = newStatus;
-		});
+			this.setStatus(user, 'offline')
+			// console.log(`${user.status}`);
+		})
+		Logger.log(`disconnected ${client.id}`)
 	}
-
 };

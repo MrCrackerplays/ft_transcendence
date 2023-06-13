@@ -12,7 +12,7 @@ async function FetchFriends() {
 	}
 	// console.log(js);
 	const jsonData = await res.json();
-	console.log(jsonData);
+	// console.log(jsonData);
 	// console.log(`User Score: ${jsonData.score}, User active: ${jsonData.active}`);
 	return jsonData;
 }

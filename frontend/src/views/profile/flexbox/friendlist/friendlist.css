@@ -14,8 +14,7 @@
 	height: 100%;
 	width: 100%;
 	display: flex;
-	justify-content: space-between;
-	flex-direction: row;
+	padding: 1.5px;
 	position: relative;
 	background-color: rgb(38, 37, 37);
 }
