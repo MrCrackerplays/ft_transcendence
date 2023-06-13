@@ -18,6 +18,7 @@ import { UserService } from 'src/users/user.service';
 import { WsGuard } from 'src/auth/guards/wsguard.guard';
 import { User } from 'src/users/user.entity';
 import { parse } from 'cookie';
+import { CreateChannelDTO, Visibility } from '../../../shared/dto/channel.dto';
 
 
 @WebSocketGateway({
@@ -104,12 +105,23 @@ export class ChatGateway {
 
 	@UseGuards(WsGuard)
 	@SubscribeMessage('create')
-	createChannel(@ConnectedSocket() client: Socket, @MessageBody("channel") channel_name : string): void {
-		this.userFromSocket(client).then(user => {
-			if (!user)
-				return;
-			this.channelService.create(user, { name: channel_name, visibility: 0, password: null });
-		});
+	async createChannel(@ConnectedSocket() client: Socket, @MessageBody("name") name : string, @MessageBody("visibility") visibility : Visibility, @MessageBody("password") password : string
+	): Promise<boolean> {
+		const user = await this.userFromSocket(client);
+		if (!user)
+			return false;
+		if (!name || !/^([a-zA-Z0-9_\-]{3,16})$/.test(name))
+			return false;
+		if (!password || password === "" || visibility == Visibility.PRIVATE)
+			password = null;
+		if (password && !/^([a-zA-Z0-9_\-]{3,16})$/.test(password))
+			return false;
+		if (visibility != Visibility.PUBLIC && visibility != Visibility.PRIVATE)
+			return false;
+			//TODO: add a method for creating dm's or allow them using this method
+		let dto : CreateChannelDTO = { name: name, visibility: visibility, password: password };
+		this.channelService.create(user, dto);
+		return true;
 	}
 
 	@UseGuards(WsGuard)
@@ -155,7 +167,8 @@ export class ChatGateway {
 			return {channel_id: channel_id, success: false, reason: "banned"};
 		}
 
-		client.join("channel:" + channel_id);
+		// client.join("channel:" + channel_id);
+		this.server.in("user:" + user.id).socketsJoin("channel:" + channel_id);
 		this.server.to("channel:" + channel_id).emit("join", { channel: channel_id, content: user.userName + " has joined the channel" });
 		return {channel_id: channel_id, success: true, reason: "Success"};
 	}

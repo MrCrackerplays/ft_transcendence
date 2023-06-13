@@ -26,8 +26,28 @@
 	display: flex;
 	justify-content: space-between;
 	box-shadow: 0 1px 0 lightblue ;
-	margin-top: 0.5rem;
-	margin-bottom: 0.5rem;
+	padding-top: 0.5rem;
+	padding-bottom: 0.5rem;
+}
+
+.channel:nth-of-type(odd) {
+	background-color: rgba(255, 255, 255, 0.05);
+}
+
+.channel:hover {
+	background-color: rgba(255, 255, 255, 0.1);
+}
+
+dialog::backdrop {
+	background-color: rgba(0, 0, 0, 0.5);
+}
+
+dialog > form {
+	display: grid;
+}
+
+#create_channel_visibility {
+	display: grid;
 }
 
 .chat-area {

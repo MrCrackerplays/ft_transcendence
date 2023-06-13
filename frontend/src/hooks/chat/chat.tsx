@@ -38,8 +38,12 @@ function Chat( {sender} : {sender: string}) {
 		});
 	};
 
-	const createChannel = (channel_name : string) => {
-		ws.current?.emit("create", {channel_name});
+	const createChannel = (name: string, visibility: number, password: string) => {
+		return new Promise<boolean>((resolve, reject) => {
+			ws.current?.emit("create", {name: name, visibility: visibility, password: password}, (response: boolean) => {
+				resolve(response);
+			});
+		});
 	}
 
 	const joinResponse = ({channel_id, success, reason} : {channel_id: string, success: boolean, reason: string}) => {
@@ -285,6 +289,7 @@ function Chat( {sender} : {sender: string}) {
 			<ChannelList
 				sender={sender}
 				joinChannel={joinChannel}
+				createChannel={createChannel}
 				isConnectionOpen={isConnectionOpen}
 				channels={channels}
 				setChannels={setChannels}
