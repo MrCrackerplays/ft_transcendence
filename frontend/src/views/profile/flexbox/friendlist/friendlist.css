@@ -2,7 +2,7 @@
 {
 	position: fixed;
 	margin-left: 85%;
-	margin-top: 10%;
+	margin-top: 50px;
 	min-height: 50px;
 	height: 1rem;
 	width: 7rem;
@@ -20,18 +20,22 @@
 	background-color: rgb(38, 37, 37);
 }
 
-.ONLINE {
+.online {
+	margin-left: 10px;
 	color: green;
 }
 
-.OFFLINE {
+.offline {
+	margin-left: 10px;
 	color: grey;
 }
 
-.BUSY {
+.busy {
+	margin-left: 10px;
 	color: rgb(165, 0, 0);
 }
 
-.INGAME {
+.ingame {
+	margin-left: 10px;
 	color: rebeccapurple;
 }

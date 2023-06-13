@@ -16,15 +16,16 @@ import { UserService } from 'src/users/user.service';
 import { User } from 'src/users/user.entity';
 import { Logger, UseGuards } from '@nestjs/common';
 import { parse } from 'cookie'
+import { EventListenerObject } from 'rxjs/internal/observable/fromEvent';
 
 @WebSocketGateway ({
 	cors: {
 		origin: Constants.FRONTEND_URL,
 		credentials: true
 	},
-	namespace: 'friendfistgateway',
+	namespace: 'userStatusGateway',
 })
-export class FriendListGateway {
+export class userStatusGateway {
 	@WebSocketServer()
 	Server: Server;
 
@@ -34,7 +35,34 @@ export class FriendListGateway {
 		private userService: User,
 	) {}
 
+	private userFromSocket(socket: Socket, result?: any): Promise<User> | undefined {
+		try {
+			if (!result) {
+				const auth_cookie = parse(socket.handshake.headers.cookie).Authentication;
+				result = this.jwtService.verify(auth_cookie, { secret: process.env.JWT_SECRET })
+			}
+			return this.connectionService.get({ id: result.id }, ['user']).then(connection => {
+				return connection.user;
+			});
+		}
+		catch (e){
+		}
+		return undefined;
+	}
+	
 	afterInit(server: Server) {
 		Logger.log('Frieds list connection initialized');
+	}	
+
+	@SubscribeMessage('UPDATE')
+	setStatus(@ConnectedSocket() client: Socket, newStatus: string)
+	{
+		this.userFromSocket(client).then(user => {
+			if (!user)
+				return ;
+			
+			user.status = newStatus;
+		});
 	}
+
 };

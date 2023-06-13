@@ -1,5 +1,5 @@
 import { Module } from "@nestjs/common";
-import { FriendListGateway } from "./friendlist.gateway";
+import { userStatusGateway } from "./userStatus.gateway";
 import { TypeOrmModule } from "@nestjs/typeorm";
 import { User } from "src/users/user.entity";
 import { UserService } from "src/users/user.service";
@@ -11,6 +11,6 @@ import { JwtService } from "@nestjs/jwt";
 	imports: [
 		TypeOrmModule.forFeature([Connection, User])
 	],
-	providers: [FriendListGateway, JwtService, ConnectionService, UserService],
+	providers: [userStatusGateway, JwtService, ConnectionService, UserService],
 })
-export class FriendListModule {}
+export class UserStatusModule {}

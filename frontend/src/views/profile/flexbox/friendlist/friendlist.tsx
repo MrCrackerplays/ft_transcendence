@@ -5,6 +5,8 @@ import { useState, useEffect } from "react";
 import DefaultProfile, { PublicUser } from "../../../../../../shared/public-user";
 import { Constants } from "../../../../../../shared/constants";
 
+import userStatus from "../../../../hooks/userStatus/userStatus";
+
 function FriendCard({ friend }: {friend: PublicUser}){
 	const textcolor = "white";
 	const fetchPFP = Constants.FETCH_USERS;
@@ -20,18 +22,22 @@ function FriendCard({ friend }: {friend: PublicUser}){
 function MyFriendsList() {
 	const [friendArray, setFriendArray] = useState<Array<PublicUser>>([]);
 	const [isLoading, setisLoading] = useState(true);
-	useEffect(() => {
-		const interval = setInterval(() => {
-				getFriends(); 
-			}, 30*1000);
-			return () => clearInterval(interval);
-	}, [])
 	
 	async function getFriends() {
 		console.log("fetched some friends");
 		setFriendArray(await FetchFriends());
 		setisLoading(false);
 	}
+
+	userStatus( false );
+	// getFriends();
+
+	useEffect(() => {
+		const interval = setInterval(() => {
+				getFriends(); 
+			}, 30*1000);
+			return () => clearInterval(interval);
+	}, [])
 
 	if (isLoading)
 		return (<div></div>)
