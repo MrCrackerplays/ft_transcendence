@@ -31,25 +31,24 @@ export class User extends BaseEntity {
 
 	// Every user can own mutliple channels, every channel only has one owner
 	// ONE user has MANY channels
-	@OneToMany(type => Channel, channel => channel.owner)
-	@JoinColumn()
+	@OneToMany(type => Channel, channel => channel.owner, { nullable: true, cascade: ['remove'] })
 	channelsOwned: Channel[];
 
 	// Every user can be subscribed to multiple channels, and every channel can have multiple subscribers
 	// MANY users subscribe to MANY channels
-	@ManyToMany(type => Channel, channel => channel.members)
+	@ManyToMany(type => Channel, channel => channel.members, { nullable: true })
 	@JoinTable()
 	channelSubscribed: Channel[];
 
-	@ManyToMany(type => Channel, channel => channel.admins)
+	@ManyToMany(type => Channel, channel => channel.admins, { nullable: true })
 	@JoinTable()
 	channelAdmin: Channel[];
 
-	@ManyToMany(type => Channel, channel => channel.muted)
+	@ManyToMany(type => Channel, channel => channel.muted, { nullable: true })
 	@JoinTable()
 	channelMuted: Channel[];
 
-	@ManyToMany(type => Channel, channel => channel.banned)
+	@ManyToMany(type => Channel, channel => channel.banned, { nullable: true })
 	@JoinTable()
 	channelBanned: Channel[];
 
@@ -67,12 +66,10 @@ export class User extends BaseEntity {
 	@JoinTable({ joinColumn: { name: 'users_id_1' } })
 	blocked: User[];
 
-	@OneToMany(type => Match, match => match.winner)
-	@JoinColumn()
+	@OneToMany(type => Match, match => match.winner, { nullable: true })
 	wonMatches: Match[];
 
-	@OneToMany(type => Match, match => match.loser)
-	@JoinColumn()
+	@OneToMany(type => Match, match => match.loser, { nullable: true })
 	lostMatches: Match[];
 
 	@OneToOne( type => Connection, connection => connection.user )
@@ -80,8 +77,7 @@ export class User extends BaseEntity {
 
 	// Every user can write multiple messages, every message only has a single author
 	// ONE user has MANY messages
-	@OneToMany(type => Message, message => message.author, { cascade: true })
-	@JoinColumn()
+	@OneToMany(type => Message, message => message.author, { cascade: true, nullable: true})
 	messages: Message[];
 
 }

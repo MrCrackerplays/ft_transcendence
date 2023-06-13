@@ -80,28 +80,15 @@ export class IDController {
 	}
 
 	// !: DEBUG only
-	// @Public()
-	// @Get(':idn/delete')
-	// // Delete a single user found from id
-	// async removeOne(@Param('idn') idn: string): Promise<void> {
-	// 	console.log("removing user from database");
-
-	// 	const conn = await this.connectionService.get({
-	// 			user: {
-	// 				id: idn
-	// 			}
-	// 		},
-	// 	['user']);
-
-	// 	if (!conn)
-	// 	{
-	// 		const u = await this.userService.get(idn);
-	// 		u.remove();
-	// 		return ;
-	// 		// throw new HttpException('Connection not found', HttpStatus.NOT_FOUND);
-	// 	}
-
-	// 	await this.connectionService.removeOne(conn);
-	// 	return this.userService.removeOne(conn.user);
-	// }
+	@Public()
+	@Get(':idn/delete')
+	// Delete a single user found from id
+	async removeOne(@Param('idn') idn: string): Promise<void> {
+		const user: User = await this.getID(idn);
+		
+		if (user) {
+			console.log(`removing user from database with name: ${user.userName}`);
+			user.remove();
+		}
+	}
 }

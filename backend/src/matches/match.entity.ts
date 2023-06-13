@@ -1,4 +1,4 @@
-import { BaseEntity, Column, CreateDateColumn, Entity, JoinTable, ManyToMany, ManyToOne, PrimaryGeneratedColumn } from "typeorm";
+import { BaseEntity, Column, CreateDateColumn, Entity, JoinColumn, JoinTable, ManyToMany, ManyToOne, PrimaryGeneratedColumn } from "typeorm";
 
 import { User } from "src/users/user.entity";
 
@@ -15,10 +15,12 @@ export class Match extends BaseEntity {
 	@CreateDateColumn({ type: "timestamp", default: () => "CURRENT_TIMESTAMP(6)" })
 	date: Date;
 
-	@ManyToOne(type => User, user => user.wonMatches, { eager: true })
+	@ManyToOne(type => User, user => user.wonMatches, { eager: true, nullable: true })
+	@JoinColumn()
 	winner: User;
 
-	@ManyToOne(type => User, user => user.lostMatches, { eager: true })
+	@ManyToOne(type => User, user => user.lostMatches, { eager: true, nullable: true })
+	@JoinColumn()
 	loser: User;
 
 	@Column('int', { default: 0, nullable: true })
