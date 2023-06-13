@@ -1,4 +1,4 @@
-import { Body, Controller, Get, HttpException, HttpStatus, Param, Post, Req, Res, UploadedFile, UseInterceptors } from "@nestjs/common";
+import { Body, Controller, Delete, Get, HttpException, HttpStatus, Param, Post, Req, Res, UploadedFile, UseInterceptors } from "@nestjs/common";
 import { UserService } from "../user.service";
 import { AuthRequest } from "src/auth/interfaces/authrequest.interface";
 import { User } from "../user.entity";
@@ -44,9 +44,15 @@ export class SelfController {
 		return this.userService.addFriend(currentUser, friend.id as string);
 	}
 
+	@Delete('friends')
+	async removeFriend(@Req() req: AuthRequest, @Body() friend : any): Promise<void> {
+		const currentUser = await this.getCurrentUser(req);
+		return this.userService.removeFriend(currentUser, friend.id as string);
+	}
+
 	@Get('channels')
 	async getChannels(@Req() req: AuthRequest): Promise<Channel[]> {
-		const currentUser = await this.getCurrentUser(req);		
+		const currentUser = await this.getCurrentUser(req);
 		return this.userService.getChannels(currentUser);
 	}
 
@@ -72,6 +78,12 @@ export class SelfController {
 	async createChannelMessage(@Req() req: AuthRequest, @Param('idn') channelID: string, @Body() dto: CreateMessageDTO): Promise<Message> {
 		const currentUser = await this.getCurrentUser(req);
 		return this.userService.createChannelMessage(channelID, currentUser, dto);
+	}
+
+	@Post('channels/:idn/password')
+	async setChannelPassword(@Req() req: AuthRequest, @Param('idn') channelID: string, @Body() pw: any): Promise<void> {
+		const currentUser = await this.getCurrentUser(req);
+		return this.userService.setChannelPassword(channelID, currentUser, pw.password);
 	}
 
 	@Get('messages')
@@ -116,6 +128,24 @@ export class SelfController {
 			return res.sendFile(join(process.cwd(), STORAGE_DEFAULT_IMAGE));
 		}
 		return res.sendFile(join(process.cwd(), STORAGE_IMAGE_LOCATION + '/' + currentUser.imageURL));
+	}
+
+	@Get('block')
+	async getBlocked(@Req() req: AuthRequest): Promise<User[]> {
+		const currentUser = await this.getCurrentUser(req);
+		return this.userService.getBlocked(currentUser);
+	}
+
+	@Post('block')
+	async block(@Req() req: AuthRequest, @Body() blockee : any): Promise<void> {
+		const currentUser = await this.getCurrentUser(req);
+		return this.userService.block(currentUser, blockee.id as string);
+	}
+
+	@Post('unblock')
+	async unblock(@Req() req: AuthRequest, @Body() blockee : any): Promise<void> {
+		const currentUser = await this.getCurrentUser(req);
+		return this.userService.unblock(currentUser, blockee.id as string);
 	}
 
 	// ====== HELPERS =======

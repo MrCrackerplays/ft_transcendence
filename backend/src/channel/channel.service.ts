@@ -49,6 +49,9 @@ export class ChannelService {
 		channel.password = dto.password;
 		channel.owner = owner;
 		channel.members = [ owner ];
+		channel.admins = [];
+		channel.banned = [];
+		channel.muted = [];
 		channel.save();
 
 		// Strip password and return
@@ -131,16 +134,41 @@ export class ChannelService {
 		return msg.save();
 	}
 
-	// This one first checks if user is subscribed to the channel before sending back messages
-	async getMessagesProtected(channelID: string, user: User): Promise<Message[]> {
+	async setPassword(channelID: string, user: User, new_password: string): Promise<void> {
 		const channel = await this.channelRepository.findOne({
-			relations: ['members'],
+			relations: ['owner'],
 			where : {
-				members: {
+				id: channelID,
+				owner: {
 					id: user.id
 				}
 			}
 		});
+
+		if (!channel) {
+			throw new HttpException('Not the owner of the channel', HttpStatus.UNAUTHORIZED);
+		}
+
+		if (channel.visibility != Visibility.PUBLIC) {
+			throw new HttpException('Only public channels can have passwords', HttpStatus.UNAUTHORIZED);
+		}
+
+		channel.password = new_password;
+		channel.save();
+	}
+
+	async getChannelProtected(channelID: string, user: User): Promise<Channel> {
+		const channel = await this.protectedChannel(channelID, user);
+
+		if (!channel)
+			throw new HttpException('Not part of channel', HttpStatus.UNAUTHORIZED);
+
+		return channel;
+	}
+
+	// This one first checks if user is subscribed to the channel before sending back messages
+	async getMessagesProtected(channelID: string, user: User): Promise<Message[]> {
+		const channel = await this.protectedChannel(channelID, user);
 
 		if (!channel)
 			throw new HttpException('Not part of channel', HttpStatus.UNAUTHORIZED);
@@ -157,14 +185,7 @@ export class ChannelService {
 	}
 
 	async createMessageProtected(channelID: string, user: User, dto: CreateMessageDTO): Promise<Message> {
-		const channel = await this.channelRepository.findOne({
-			relations: ['members'],
-			where : {
-				members: {
-					id: user.id
-				}
-			}
-		});
+		const channel = await this.protectedChannel(channelID, user);
 
 		if (!channel)
 			throw new HttpException('Not part of channel', HttpStatus.UNAUTHORIZED);
@@ -178,5 +199,21 @@ export class ChannelService {
 
 	async removeOne(id: string): Promise<void> {
 		await this.channelRepository.delete(id);
+	}
+
+	async protectedChannel(channelID: string, user: User): Promise<Channel | null> {
+		const channel = await this.channelRepository.findOne({
+			relations: ['members'],
+			where : {
+				id: channelID,
+				members: {
+					id: user.id
+				}
+			}
+		});
+
+		// Strip password
+		channel.password = null;
+		return channel;
 	}
 }

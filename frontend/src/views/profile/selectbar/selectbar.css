@@ -1,0 +1,24 @@
+.btn-group{
+	display:flex;
+	width:100;
+}
+
+.btn-group-secondary{
+	font-size: 2rem;
+	color:black;
+	flex: 1;
+	/* background-color: lightgreen; */
+}
+
+.active{
+	background-color: lightblue;
+}
+
+.active:hover{
+	filter: brightness(80%);
+}
+
+.inactive:hover
+{
+	filter: brightness(80%)
+}

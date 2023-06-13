@@ -1,0 +1,48 @@
+.newuser
+{
+	padding-top: 10%;
+	justify-content: center;
+	text-align: center;
+}
+
+.text
+{
+	color: whitesmoke;
+	text-shadow: 2px;
+}
+
+
+.input
+{
+	width:25rem;
+	height:2rem;
+	font-size:2rem;	
+}
+
+.input::placeholder
+{
+	font-size:2rem;
+}
+
+.aBtn
+{
+	display: block;
+	margin:auto;
+	border: 2px solid white;
+	box-shadow: 0px 0px 10px 0px rgba(0, 0, 0, 0.75);
+	font-size: 3rem;
+	background-color: aquamarine;
+	text-decoration-line: none;
+	color: black;
+}
+
+.aBtn:visited
+{
+	color: black
+}
+
+.errortext
+{
+	color:red;
+	font-size: 2rem;
+}

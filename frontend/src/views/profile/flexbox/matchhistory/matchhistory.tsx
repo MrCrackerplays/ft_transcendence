@@ -1,76 +1,70 @@
-import { Card, Container } from "@mui/material"
 import './matchhistory.css'
-import pfp from './Tateru.png'
-import pfp2 from './Tortenite.png'
 import React, {useEffect, useState} from "react"
+import { PublicMatch } from "../../../../../../shared/public-match"
+import { Constants } from '../../../../../../shared/constants';
+import FetchUserMatchHistory from '../../../../hooks/fetch/FetchUserMatchHistory';
+import { PublicUser } from '../../../../../../shared/public-user';
 
-class Match {
-	id!: string
-	date!: Date
-	winner: any;
-	loser: any;
-	winnerScore!: number
-	loserScore!: number
-	gameMode!: string
-}
 
-function MatchCard({ user }) {
-	const textcolor = user.winner ? "red" : "green";
-	const display = user.winner ? "Defeat" : "Victory";
+function MatchCard({ match, username } : {match:PublicMatch, username:string}) {
+	const leftside: PublicUser = (match.winner.userName === username) ? match.winner : match.loser;
+	console.log(leftside, username);
+	const leftsideScore: number = (match.winner.userName === username) ? match.winnerScore : match.loserScore; 
+	const rightside: PublicUser = (match.winner.userName !== username) ? match.winner : match.loser;
+	const rightsideScore: number = (match.winner.userName !== username) ? match.winnerScore : match.loserScore;
+	
+	// console.log(leftside)
+	const textcolor = (match.winner.userName == username) ? "red" : "green";
+	const display = (match.winner.userName == username) ? "Defeat" : "Victory";
+	const fetchPFP = Constants.FETCH_USERS;
 
-	// console.log(user)
 	return (
 		<div className={`match-card ${textcolor}border monospace`}>
 			<div className="left-player">
-				<img src={user} alt="pfp not found"/>
-				<p>{user.players[0].userName}</p>
+				<img className="img" src={`${fetchPFP}/${leftside.userName}/pfp`} alt="pfp not found"/>
+				<p className="names">{leftside.userName}</p>
 			</div>
-			<div className="center-score">
+			<div className="center-score"> 
 				<h1 className={`${textcolor}`}>{display}</h1>
 				<div className="center-row">
-					<p>{user.p1Score}</p>
+					<p>{leftsideScore}</p>
 					<p>-</p>
-					<p>{user.p2Score}</p>
+					<p>{rightsideScore}</p>
 				</div>
-				<p className={"gamemode"}>{user.gameMode}</p>
+				<p className={"gamemode"}>{match.gameMode}</p>
 			</div>
 			<div className="right-player">
-				<img src={user.p2} alt="pfp not found"/>
-				<p>{user.players[1].userName}</p>
+				<img className="img" src={`${fetchPFP}/${rightside.userName}/pfp`} alt="pfp not found"/>
+				<p className="names">{rightside.userName}</p>
 			</div>
 		</div>
 	)
 }
 
-async function getMatchHistory() {
+function MatchHistory({username}: {username:string}) {
 
-	const res = await fetch('http://localhost:3000/self/matches', {
-		credentials: 'include'
-	});
-	if (!res.ok)
-		console.log("something wrong");
-	const jsonData = await res.json();
-	return jsonData;
-}
-
-function MatchHistory() {
-
-	const [jsonData, setJsonData] = useState([] as any);
-
+	const [jsonData, setJsonData] = useState<Array<PublicMatch>>([]);
+	const [isLoading, setisLoading] = useState(false);
 	useEffect(() => {
 		async function checkJson() {
-			const value = await getMatchHistory()
+			const value = await FetchUserMatchHistory(username)
 			// console.log(value)
 			if (value)
-				setJsonData(value);	
+				setJsonData(value);
+			setisLoading(false);
 		}
 		checkJson();
 	}, []);
+	if (isLoading)
+		return (<div style={{color:"white"}}>Matches are loading...</div>)
+	if (jsonData.length == 0)
+		return (<div style={{color:"white"}}>no matches played</div>)
+	console.log(jsonData)
 	return (
-		<div className="all-matchs">
+		<div className="all-matches">
 			{ 
 				jsonData.map((user, index) => (
-					<MatchCard key={index} user={user} /> 
+					<MatchCard key={index} match={user} username={username}/> 
 				))
 			}
 		</div>
@@ -78,3 +72,32 @@ function MatchHistory() {
 }
 
 export default MatchHistory
+
+// import { useEffect, useState } from "react";
+// import { PublicMatch } from "../../../../../../shared/public-match";
+// import FetchMatchHistory from "../../../../hooks/fetch/FetchMatchHistory";
+
+// function MatchHistory()
+// {
+// 	const [matcharray, setmatcharray] = useState<Array<PublicMatch>>([]);
+// 	const [isLoading, setisLoading] = useState(false);
+// 	useEffect(() => {
+// 		async function fetchdata()
+// 		{
+// 			setmatcharray(await FetchMatchHistory());
+// 			setisLoading(false);
+// 		}
+// 		fetchdata();
+// 	}, []);
+
+// 	if (isLoading)
+// 		return (<div style={{color:"white"}}>Matches are loading...</div>)
+// 	console.log(matcharray);
+// 	return (
+// 		<div>
+
+// 		</div>
+// 	)
+// }
+
+// export default MatchHistory
