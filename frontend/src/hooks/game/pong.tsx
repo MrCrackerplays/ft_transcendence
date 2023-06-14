@@ -5,7 +5,6 @@ import "./pong.css";
 
 //this - on BE only?
 type Players = {
-
 	PlayerScore : number,
 	OpponentScore : number,
 	PlayerID : string,
@@ -13,7 +12,6 @@ type Players = {
 	PlayerWin : boolean,
 	OpponentWin : boolean,
 };
-
 
 enum PaddleAction {
 	Up,
