@@ -41,15 +41,31 @@ export class User extends BaseEntity {
 	@JoinTable()
 	channelSubscribed: Channel[];
 
-	@ManyToMany(type => Achievement, achievement => achievement.members, { onDelete: 'CASCADE', eager: true })
+	@ManyToMany(type => Channel, channel => channel.admins)
+	@JoinTable()
+	channelAdmin: Channel[];
+
+	@ManyToMany(type => Channel, channel => channel.muted)
+	@JoinTable()
+	channelMuted: Channel[];
+
+	@ManyToMany(type => Channel, channel => channel.banned)
+	@JoinTable()
+	channelBanned: Channel[];
+
+	@ManyToMany(type => Achievement, achievement => achievement.members, {  eager: true })
 	@JoinTable()
 	achievements: Achievement[];
 
 	// Every user can have multiple friends
-	// ONE user, MANY friends
-	@ManyToMany(type => User, { onDelete: 'CASCADE' })
+	@ManyToMany(type => User)
 	@JoinTable({ joinColumn: { name: 'users_id_1' } })
 	friends: User[];
+
+	// Every user can have multiple blocked people
+	@ManyToMany(type => User)
+	@JoinTable({ joinColumn: { name: 'users_id_1' } })
+	blocked: User[];
 
 	@OneToMany(type => Match, match => match.winner)
 	@JoinColumn()
@@ -64,7 +80,7 @@ export class User extends BaseEntity {
 
 	// Every user can write multiple messages, every message only has a single author
 	// ONE user has MANY messages
-	@OneToMany(type => Message, message => message.author, { onDelete: 'CASCADE', cascade: true })
+	@OneToMany(type => Message, message => message.author, { cascade: true })
 	@JoinColumn()
 	messages: Message[];
 
