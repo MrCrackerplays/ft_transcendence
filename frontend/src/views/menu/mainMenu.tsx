@@ -27,12 +27,13 @@ const Menu = () => {
 				<button className='button' onClick={() =>setActiveMenu('play')}>play</button>
 				<NavButton label={'profile'} />
 				<NavButton label={'settings'} />
-				<button className='button'>extras</button>
+				<button className='button'>pointless</button>
 			</div>
 		)
 	}
 
 	const playMenu = () => {
+		//TODO: rename gamemodes, and connect to matchmaking.
 		return (
 			<div className='menu'>
 				<p className='text'>GAMEMODE</p>

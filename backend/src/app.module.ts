@@ -10,6 +10,7 @@ import { ChannelModule } from './channel/channel.module';
 import { MatchModule } from './matches/match.module';
 import { AuthModule } from './auth/auth.module';
 import { AchievementModule } from './achievements/achievement.module';
+import { UserStatusModule } from './userStatus/UserStatus.module';
 
 @Module({
 
@@ -37,7 +38,8 @@ import { AchievementModule } from './achievements/achievement.module';
 		ChannelModule,
 		MatchModule,
 		AuthModule,
-		AchievementModule
+		AchievementModule,
+		UserStatusModule
 	],
 
 	controllers: [

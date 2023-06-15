@@ -17,7 +17,7 @@ export class User extends BaseEntity {
 	@Column( {default: 0} )
 	score: number;
 
-	@Column( {default: 'online'} )
+	@Column( {default: 'offline'} )
 	status: string;
 
 	@Column( {default: ''} )

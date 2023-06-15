@@ -5,6 +5,8 @@ import { useState, useEffect } from "react";
 import DefaultProfile, { PublicUser } from "../../../../../../shared/public-user";
 import { Constants } from "../../../../../../shared/constants";
 
+import UserStatus from "../../../../hooks/userStatus/userStatus";
+
 function FriendCard({ friend }: {friend: PublicUser}){
 	const textcolor = "white";
 	const fetchPFP = Constants.FETCH_USERS;
@@ -12,33 +14,29 @@ function FriendCard({ friend }: {friend: PublicUser}){
 	return (
 		<div className="friend-card">
 			<img src={`${fetchPFP}/${friend.userName}/pfp`} alt="pfp not found" />
-			<p className={'ONLINE'}>{friend.userName}</p>
+			<p className={friend.status}>{friend.userName}</p>
 		</div>
 	)
 }
 
-// class FriendStatus
-// {
-// 	name: string;
-// 	pfp: string;
-// 	status: string;
-// 	constructor() {
-// 		this.name = "Friend1"
-// 		this.pfp = pfp;
-// 		this.status = "ONLINE";
-// 	}
-// }
-
 function MyFriendsList() {
 	const [friendArray, setFriendArray] = useState<Array<PublicUser>>([]);
 	const [isLoading, setisLoading] = useState(true);
+	
+	async function getFriends() {
+		console.log("fetched some friends");
+		setFriendArray(await FetchFriends());
+		setisLoading(false);
+	}
+
 	useEffect(() => {
-		async function getFriends() {
-			setFriendArray(await FetchFriends());
-			setisLoading(false);
-		}
 		getFriends();
+		const interval = setInterval(() => {
+				getFriends(); 
+			}, 1000);
+			return () => clearInterval(interval);
 	}, [])
+
 	if (isLoading)
 		return (<div></div>)
 	return (
