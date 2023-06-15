@@ -20,6 +20,7 @@
     "react-dom": "^18.2.0",
     "react-query": "^3.39.3",
     "react-router-dom": "^6.11.1",
+    "socket.io-client": "^4.6.2",
     "stable": "^0.1.8"
   },
   "devDependencies": {

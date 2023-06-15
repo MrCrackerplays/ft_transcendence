@@ -21,14 +21,21 @@ export class Channel extends BaseEntity {
 	password: string;
 
 	// A channel can only have one owner
-	@ManyToOne(type => User, user => user.channelsOwned)
+	@ManyToOne(type => User, user => user.channelsOwned, { eager: true })
 	owner: User;
+
+	@ManyToMany(type => User, user => user.channelAdmin, { eager: true })
+	admins: User[];
 
 	// A channel can have many members (if it's not a DM)
 	@ManyToMany(type => User, user => user.channelSubscribed)
 	members: User[];
 
-	// TODO: add admins
+	@ManyToMany(type => User, user => user.channelBanned, { eager: true })
+	banned: User[];
+
+	@ManyToMany(type => User, user => user.channelMuted, { eager: true })
+	muted: User[];
 
 	// A channel has many messages
 	@OneToMany(type => Message, message => message.channel, {

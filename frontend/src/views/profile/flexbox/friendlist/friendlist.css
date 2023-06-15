@@ -1,11 +1,9 @@
 .all-friends
 {
 	position: fixed;
-	margin-top: 60px;
 	margin-left: 85%;
-	border-spacing: 10px;
-	min-height: 3rem;
-	min-width: 7rem;
+	margin-top: 50px;
+	min-height: 50px;
 	height: 1rem;
 	width: 7rem;
 	color: white;
@@ -16,8 +14,7 @@
 	height: 100%;
 	width: 100%;
 	display: flex;
-	justify-content: space-between;
-	flex-direction: row;
+	padding: 1.5px;
 	position: relative;
 	background-color: rgb(38, 37, 37);
 }
@@ -35,18 +32,22 @@
 	background-color:red;
 }
 
-.ONLINE {
+.online {
+	margin-left: 10px;
 	color: green;
 }
 
-.OFFLINE {
+.offline {
+	margin-left: 10px;
 	color: grey;
 }
 
-.BUSY {
+.busy {
+	margin-left: 10px;
 	color: rgb(165, 0, 0);
 }
 
-.INGAME {
+.ingame {
+	margin-left: 10px;
 	color: rebeccapurple;
 }

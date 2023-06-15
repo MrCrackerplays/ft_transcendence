@@ -111,19 +111,19 @@ export class UserService {
 		if (friend_id == user.id)
 			throw new HttpException('Can not friend yourself', HttpStatus.FORBIDDEN);
 		
-		const friend = await this.get(friend_id);
+		const friend = await this.get(friend_id, ['blocked']);
 		if (!friend)
 			throw new HttpException('Friend does not exist', HttpStatus.FORBIDDEN);
+
+		if (friend.blocked.find((value) => {
+			value.id == user.id
+		}) != undefined)
+			throw new HttpException('You are blocked by this individual', HttpStatus.FORBIDDEN);
 
 		return this.usersRepository.createQueryBuilder()
 			.relation(User, "friends")
 			.of(user.id)
 			.add(friend_id);
-
-		// user.friends.push(friend);
-		// friend.friends.push(user);
-		// user.save()
-		// return friend.save();
 	}
 
 	getFriends(user: User): Promise<User[]> {
@@ -131,6 +131,38 @@ export class UserService {
 			.relation(User, "friends")
 		  	.of(user)
 			.loadMany();
+	}
+
+	async getBlocked(user: User): Promise<User[]> {
+		return this.usersRepository.createQueryBuilder()
+			.relation(User, "blocked")
+		  	.of(user)
+			.loadMany();
+	}
+
+	async block(user: User, block_id: string): Promise<void> {
+		if (block_id == user.id)
+			throw new HttpException('Can not block yourself', HttpStatus.FORBIDDEN);
+		
+		const blockee = await this.get(block_id);
+		if (!blockee) {
+			throw new HttpException('Person does not exist', HttpStatus.FORBIDDEN);
+		}
+
+		return this.usersRepository.createQueryBuilder()
+			.relation(User, "blocked")
+			.of(user.id)
+			.add(block_id);
+	}
+	
+	async unblock(user: User, block_id: string): Promise<void> {
+		if (block_id == user.id)
+			throw new HttpException('Can not unblock yourself', HttpStatus.FORBIDDEN);
+		
+		return this.usersRepository.createQueryBuilder()
+			.relation(User, "blocked")
+			.of(user.id)
+			.remove(block_id);
 	}
 
 	async removeFriend(user: User, friend_id: string): Promise<void> {
@@ -144,9 +176,23 @@ export class UserService {
 	}
 
 	async setName(user: User, name: string): Promise<User> {
-		if (!name || name.length == 0)
+		if (!name)
 			return null;
 		
+		// Validate username (a-z A-Z 0-9 _) (between 8 & 16 characters)
+		const MIN_CHAR = 8;
+		const MAX_CHAR = 16;
+		if (name.length < MIN_CHAR || name.length > MAX_CHAR) {
+			return null;
+		}
+
+		for (const c of name) {
+			const valid: boolean = (c >= 'a' && c <= 'z') || (c >= 'A' && c <= 'Z') || (c >= '0' && c <= '9') || (c == '_');
+			if (!valid) {
+				return null;
+			}
+		}
+
 		const userWithName = await this.usersRepository.findOne({
 			where: {
 				userName: name
@@ -172,6 +218,10 @@ export class UserService {
 
 	async createChannel(user: User, dto: CreateChannelDTO): Promise<Channel> {
 		return this.channelService.create(user, dto);
+	}
+
+	async setChannelPassword(channelID: string, user: User, new_password: string): Promise<void> {
+		return this.channelService.setPassword(channelID, user, new_password);
 	}
 
 	async getChannelMessages(channelID: string, user: User): Promise<Message[]> {

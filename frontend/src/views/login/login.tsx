@@ -4,6 +4,7 @@ import './login.css'
 function MyLoginPage()
 {
   const link = Constants.BACKEND_LOGIN_REDIRECT
+
   return (
     <div className="login">
 		  <h1 className="text"> So, You're Trying to Roll into Ball Busters huh?</h1>

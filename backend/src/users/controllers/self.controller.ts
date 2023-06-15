@@ -51,7 +51,7 @@ export class SelfController {
 
 	@Get('channels')
 	async getChannels(@Req() req: AuthRequest): Promise<Channel[]> {
-		const currentUser = await this.getCurrentUser(req);		
+		const currentUser = await this.getCurrentUser(req);
 		return this.userService.getChannels(currentUser);
 	}
 
@@ -67,10 +67,16 @@ export class SelfController {
 		return this.userService.getChannelMessages(channelID, currentUser);
 	}
 
-	@Get('channels/:idn/messages')
+	@Post('channels/:idn/messages')
 	async createChannelMessage(@Req() req: AuthRequest, @Param('idn') channelID: string, @Body() dto: CreateMessageDTO): Promise<Message> {
 		const currentUser = await this.getCurrentUser(req);
 		return this.userService.createChannelMessage(channelID, currentUser, dto);
+	}
+
+	@Post('channels/:idn/password')
+	async setChannelPassword(@Req() req: AuthRequest, @Param('idn') channelID: string, @Body() pw: any): Promise<void> {
+		const currentUser = await this.getCurrentUser(req);
+		return this.userService.setChannelPassword(channelID, currentUser, pw.password);
 	}
 
 	@Get('messages')
@@ -115,6 +121,24 @@ export class SelfController {
 			return res.sendFile(join(process.cwd(), STORAGE_DEFAULT_IMAGE));
 		}
 		return res.sendFile(join(process.cwd(), STORAGE_IMAGE_LOCATION + '/' + currentUser.imageURL));
+	}
+
+	@Get('block')
+	async getBlocked(@Req() req: AuthRequest): Promise<User[]> {
+		const currentUser = await this.getCurrentUser(req);
+		return this.userService.getBlocked(currentUser);
+	}
+
+	@Post('block')
+	async block(@Req() req: AuthRequest, @Body() blockee : any): Promise<void> {
+		const currentUser = await this.getCurrentUser(req);
+		return this.userService.block(currentUser, blockee.id as string);
+	}
+
+	@Post('unblock')
+	async unblock(@Req() req: AuthRequest, @Body() blockee : any): Promise<void> {
+		const currentUser = await this.getCurrentUser(req);
+		return this.userService.unblock(currentUser, blockee.id as string);
 	}
 
 	// ====== HELPERS =======
