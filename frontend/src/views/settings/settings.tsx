@@ -1,7 +1,7 @@
 import React, {useState} from 'react';
 import { useNavigate } from 'react-router-dom';
 import MyNavBar from "../../hooks/navbar/navbar";
-import MyFriendsList from "../profile/flexbox/friendlist/friendlist";
+import MyFriendsList from "../sidebar/friendlist/friendlist";
 import './settings.css'
 
 function NavButton({label}) {

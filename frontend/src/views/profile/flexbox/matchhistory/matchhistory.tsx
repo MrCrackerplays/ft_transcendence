@@ -8,21 +8,21 @@ import { PublicUser } from '../../../../../../shared/public-user';
 
 function MatchCard({ match, username } : {match:PublicMatch, username:string}) {
 	const leftside: PublicUser = (match.winner.userName === username) ? match.winner : match.loser;
-	console.log(leftside, username);
+	// console.log(leftside, username);
 	const leftsideScore: number = (match.winner.userName === username) ? match.winnerScore : match.loserScore; 
 	const rightside: PublicUser = (match.winner.userName !== username) ? match.winner : match.loser;
 	const rightsideScore: number = (match.winner.userName !== username) ? match.winnerScore : match.loserScore;
 	
 	// console.log(leftside)
-	const textcolor = (match.winner.userName == username) ? "red" : "green";
-	const display = (match.winner.userName == username) ? "Defeat" : "Victory";
+	const textcolor = (match.winner.userName == username) ? "green" : "red";
+	const display = (match.winner.userName == username) ? "Victory" : "Defeat";
 	const fetchPFP = Constants.FETCH_USERS;
 
 	return (
 		<div className={`match-card ${textcolor}border monospace`}>
 			<div className="left-player">
-				<img className="img" src={`${fetchPFP}/${leftside.userName}/pfp`} alt="pfp not found"/>
-				<p className="names">{leftside.userName}</p>
+				<img src={`${fetchPFP}/${leftside.userName}/pfp`} alt="pfp not found"/>
+				<p >{leftside.userName}</p>
 			</div>
 			<div className="center-score"> 
 				<h1 className={`${textcolor}`}>{display}</h1>
@@ -34,8 +34,8 @@ function MatchCard({ match, username } : {match:PublicMatch, username:string}) {
 				<p className={"gamemode"}>{match.gameMode}</p>
 			</div>
 			<div className="right-player">
-				<img className="img" src={`${fetchPFP}/${rightside.userName}/pfp`} alt="pfp not found"/>
-				<p className="names">{rightside.userName}</p>
+				<img src={`${fetchPFP}/${rightside.userName}/pfp`} alt="pfp not found"/>
+				<p >{rightside.userName}</p>
 			</div>
 		</div>
 	)
@@ -59,7 +59,7 @@ function MatchHistory({username}: {username:string}) {
 		return (<div style={{color:"white"}}>Matches are loading...</div>)
 	if (jsonData.length == 0)
 		return (<div style={{color:"white"}}>no matches played</div>)
-	console.log(jsonData)
+	// console.log(jsonData)
 	return (
 		<div className="all-matches">
 			{ 

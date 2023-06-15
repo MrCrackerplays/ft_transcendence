@@ -1,13 +1,13 @@
 .all-matches
 {
-	padding-left: 10%;
+	padding-left: 30%;
 	padding-right: 10%;
 	/* position: fixed; */
 	/* min-height: 100px; */
 	max-height: 750px;
 	overflow-y: auto;
 	overflow-x: hidden;
-	width: 60%;
+	width: 80%;
 	color: white;
 	font-size: 1.5rem;
 	color-scheme: dark;
@@ -97,11 +97,11 @@
 	display: flex;
   	flex-direction: column;
   	align-items: left;
-	overflow: hidden;
 }
 
 .left-player img
 {
+	padding-left:10px;
 	text-align: left;
 	vertical-align: bottom;
 	max-height:100%;
@@ -113,7 +113,7 @@
 
 .left-player p
 {
-	text-align: center;
+	text-align: left;
 	margin-top: auto;
 }
 
@@ -156,12 +156,13 @@
 	max-width:	10%;
 	display: flex;
   	flex-direction: column;
-  	align-items: center;
+  	align-items: right;
+	text-align: right;
 }
 
 .right-player img
 {
-	/* padding-left: 10px; */
+	padding-right: 10px;
 	text-align: right;
 	vertical-align: bottom;
 	max-height:100%;
@@ -173,9 +174,9 @@
 
 .right-player p
 {
-	text-align: center;
+	text-align: right;
+	direction:rtl;
 	margin-top: auto;
-	/* margin-top: 5px; */
 }
 
 

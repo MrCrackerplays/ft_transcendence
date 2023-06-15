@@ -4,7 +4,6 @@ import { useState, useEffect } from "react"
 import FetchSelf from "../../../hooks/fetch/FetchSelf";
 import FetchFriends from "../../../hooks/fetch/FetchFriends";
 import './addfriend.css'
-import { useParams } from "react-router-dom";
 
 function AddFriend( {UUID} : {UUID:string}) {
 	const [friendState, setfriendState] = useState('Loading');
@@ -21,12 +20,12 @@ function AddFriend( {UUID} : {UUID:string}) {
 	useEffect(() => {
 		async function getFriends()
 		{
+			setFriendArray(await FetchFriends());
 			if (jsonData.id == UUID)
 			{
 				setfriendState("Self");
 				return ;
 			}
-			setFriendArray(await FetchFriends());
 		}
 		getFriends();
 	}, [jsonData])
@@ -93,13 +92,6 @@ function AddFriend( {UUID} : {UUID:string}) {
 			</form>
 		)
 	}
-	if (friendState == "Self"){
-		return (
-			<form onSubmit={handleSelf}>
-				<button type="submit" className="add-friend-btn self-friend">Can't Friend Yourself(so far)</button>
-			</form>
-		)
-	}
 	//CANT REMOVE SELF && Removing friend that doenst exist is fien
 	if (friendState == "Remove"){
 		return (
@@ -108,9 +100,17 @@ function AddFriend( {UUID} : {UUID:string}) {
 			</form>
 		)
 	}
-	return (
-		<form onSubmit={handleAdd}>
+	if (friendState == "Add")
+	{	
+		return (
+			<form onSubmit={handleAdd}>
 			<button type="submit" className="add-friend-btn add-friend">Add Friend</button>
+		</form>
+	)
+	}
+	return (
+		<form onSubmit={handleSelf}>
+			<button type="submit" className="add-friend-btn self-friend">Can't Friend Yourself(so far)</button>
 		</form>
 	)
 }

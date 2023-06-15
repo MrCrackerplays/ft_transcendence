@@ -7,11 +7,10 @@ import LoginOTP from './views/loginotp/loginotp';
 import SetUp from './views/newuser/newuser';
 import { useEffect, useState } from 'react'
 import MyNavBar from './hooks/navbar/navbar';
-import MyFriendsList from './views/profile/flexbox/friendlist/friendlist';
 import HomePage from './views/menu/home';
 
 import UserStatus from './hooks/userStatus/userStatus';
-import { setFlagsFromString } from 'v8';
+import Sidebar from './views/sidebar/sidebar';
 
 function App(): React.ReactElement
 {
@@ -40,14 +39,14 @@ function App(): React.ReactElement
 		return (
 				<Routes>
 					<Route path="/login" element={<MyLoginPage />}/>
-					<Route path="/loginOTP" element={<LoginOTP />}/>
+					<Route path="/loginOTP" element={<LoginOTP />}/>	
 					<Route path="/setup" element={<SetUp />} />
 				</Routes>
 		)
 	return (
 		<div>
 			<MyNavBar/>
-			<MyFriendsList />
+			<Sidebar />
 			<UserStatus />
     		<Routes>
 				<Route path="/" element={<HomePage />}/>

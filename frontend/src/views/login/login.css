@@ -1,6 +1,6 @@
 .login
 {
-	/* display: flex; */
+	padding-top: 10%;
 	justify-content: center;
 	text-align: center;
 }
@@ -13,11 +13,12 @@
 
 .aBtn
 {
-	/* position:absolute; */
-	/* text-align: center; */
+	width:25rem;
+	display: block;
+	margin:auto;
 	border: 2px solid white;
 	box-shadow: 0px 0px 10px 0px rgba(0, 0, 0, 0.75);
-	font-size: 50px;
+	font-size: 3rem;
 	background-color: aquamarine;
 	text-decoration-line: none;
 	color: black;
