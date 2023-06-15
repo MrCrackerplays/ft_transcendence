@@ -11,7 +11,6 @@ function FriendCard({ friend, setcurrentFriend, ownID, currentFriend }: {friend:
 {
 	const textcolor = "white";
 	const fetchPFP = Constants.FETCH_USERS;
-	const [active, setactive] = useState(false);
 	function handleMouseDown()
 	{
 		if (ownID == currentFriend.userid)
@@ -20,20 +19,22 @@ function FriendCard({ friend, setcurrentFriend, ownID, currentFriend }: {friend:
 			setcurrentFriend({userid: ownID, value: true});
 	}
 	const test = () => {
-		console.log("clickity");
 		if (ownID == currentFriend.userid)
-		{
-			if (currentFriend.value == true)
-				return ("greenfriend");
-			// return (currentFriend.value)
-		}
-		return ("redfriend")
+			return (currentFriend.value);
+		return (false);
 	}
-	const action = test();
+	const active = test();	
 	return (
-		<div className={`friend-card ${action}`} onMouseDown={handleMouseDown}>
+		<div className={`friend-card`} onMouseDown={handleMouseDown}>
 			<img src={`${fetchPFP}/${friend.userName}/pfp`} alt="pfp not found" />
 			<p className={friend.status}>{friend.userName}</p>
+			{active && (
+			<div className="dropdown-content">
+			 	<a href="#">Link 1</a>
+			 	<a href="#">Link 2</a>
+			 	<a href="#">Link 3</a>
+		   </div>
+		)}
 		</div>
 	)
 }
