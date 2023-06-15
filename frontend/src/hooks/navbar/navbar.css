@@ -9,7 +9,6 @@
 	border-bottom: 2px solid transparent;
 	border-image-slice: 1;
 	width: 100%;
-	display:flex;
 }
 
 .website {
@@ -58,12 +57,8 @@
 
 .pfp-popover {
 	position: absolute;
+	top:3%;
 	right: 0;
-	transform: translateY(25%);
-	/* margin-bottom:10px; */
-	/* margin:auto; */
-	/* padding:1rem; */
-	/* z-index: 8; */
 	transform: translateY(-50%);
 	/* background-color: white; */
 	/* box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1); */
