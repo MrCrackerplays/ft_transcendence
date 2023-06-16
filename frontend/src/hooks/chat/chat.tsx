@@ -18,13 +18,16 @@ function block_filter(message: UserMessage | Message) : UserMessage | Message {
 	return message;
 }
 
-function Chat( {sender} : {sender: string}) {
+function Chat( {sender, sender_id} : {sender: string, sender_id: string}) {
 	const [isConnectionOpen, setIsConnectionOpen] = useState(false);
 	const [history, setHistory] = useState<Map<string, UserMessage[] | Message[]>>(new Map());
 	const [messageBody, setMessageBody] = useState("");
 	const [channels, setChannels] = useState<Channel[]>([]);
 	const [muted, setMuted] = useState<string[]>([]);
 	const [banned, setBanned] = useState<string[]>([]);
+	const [owner, setOwner] = useState<string[]>([]);
+	const [admin, setAdmin] = useState<string[]>([]);
+	const [hasloaded, setHasLoaded] = useState(false);
 	
 	const [joinedChannels, setJoinedChannels, joinedChannelsRef] = useStateRef<string[]>([]);
 	const [currentChannel, setCurrentChannel, currentChannelRef] = useStateRef<string>("");
@@ -44,7 +47,31 @@ function Chat( {sender} : {sender: string}) {
 				resolve(response);
 			});
 		});
-	}
+	};
+
+	const updateVisibility = (channel_id: string, visibility: number, password: string) => {
+		return new Promise<boolean>((resolve, reject) => {
+			ws.current?.emit("updateChannel", {channel: channel_id, visibility: visibility, password: password}, (response: boolean) => {
+				resolve(response);
+			});
+		});
+	};
+
+	const deleteChannel = (channel_id: string) => {
+		return new Promise<boolean>((resolve, reject) => {
+			ws.current?.emit("delete", {channel: channel_id}, (response: boolean) => {
+				resolve(response);
+			});
+		});
+	};
+
+	const leaveChannel = (channel_id: string) => {
+		return new Promise<boolean>((resolve, reject) => {
+			ws.current?.emit("leave", {channel: channel_id}, (response: boolean) => {
+				resolve(response);
+			});
+		});
+	};
 
 	const joinResponse = ({channel_id, success, reason} : {channel_id: string, success: boolean, reason: string}) => {
 		if (!success) {
@@ -84,9 +111,11 @@ function Chat( {sender} : {sender: string}) {
 			setCurrentChannel(channel_id);
 			return;
 		}
-		console.log("emitting join");
-		ws.current?.emit("join", {channel: channel_id}, joinResponse);
-	}
+		ws.current?.emit("subscribe", {channel: channel_id, password: null}, (response: boolean) => {
+			console.log("emitting join");
+			ws.current?.emit("join", {channel: channel_id}, joinResponse);
+		});
+	};
 
 	const sendMessage = () => {
 
@@ -178,8 +207,30 @@ function Chat( {sender} : {sender: string}) {
 		}
 
 		if (!ws.current.hasListeners("join")) {
-			ws.current.on("join", (message) => {
-				console.log("Received join:", message);
+			ws.current.on("join", (channel: string) => {
+				console.log("prehistory")
+				getMessageHistory(channel).then(res => res.json()).then((data) => {
+					console.log("data", data);
+					data = data.map((message) => {
+						let formatted_message = {
+							channel: message.channel.id,
+							content: message.content,
+							sender: message.author ? message.author.userName : "null",
+							sender_id: message.author ? message.author.id : "null",
+							date: message.date
+						};
+						return (block_filter(formatted_message));
+					});
+					setHistory(hist => new Map(hist.set(channel, data)));
+				});
+				console.log("posthistory")
+				setJoinedChannels(joined => [...joined, channel]);
+			});
+		}
+
+		if (!ws.current.hasListeners("joinmessage")) {
+			ws.current.on("joinmessage", (message) => {
+				console.log("Received joinmessage:", message);
 				updateHistory(message.channel, message);
 			});
 		}
@@ -266,20 +317,20 @@ function Chat( {sender} : {sender: string}) {
 	if (currentChannel) {
 		return (
 			<>
-			<button
-				aria-label="Return to channel list"
-				onClick={() => setCurrentChannel("")}
-				className="close-button"
-				disabled={!isConnectionOpen}
-			>Return to channel list</button>
 			<ChatChannel
+				currentChannel={currentChannel}
+				setCurrentChannel={setCurrentChannel}
 				isConnectionOpen={isConnectionOpen}
 				messages={history.get(currentChannel) || []}
 				messageBody={messageBody}
 				setMessageBody={setMessageBody}
 				sendMessage={sendMessage}
 				sender={sender}
-				muted={muted.includes(currentChannel)} />
+				muted={muted.includes(currentChannel)}
+				deleteChannel={deleteChannel}
+				leaveChannel={leaveChannel}
+				role={owner.includes(currentChannel) ? "owner" : (admin.includes(currentChannel) ? "admin" : "user")}
+				updateVisibility={updateVisibility} />
 			</>
 		)
 	}
@@ -288,12 +339,18 @@ function Chat( {sender} : {sender: string}) {
 			<>
 			<ChannelList
 				sender={sender}
+				sender_id={sender_id}
 				joinChannel={joinChannel}
 				createChannel={createChannel}
 				isConnectionOpen={isConnectionOpen}
 				channels={channels}
 				setChannels={setChannels}
-				banned={banned} />
+				banned={banned}
+				setOwner={setOwner}
+				setAdmin={setAdmin}
+				hasloaded={hasloaded}
+				setHasLoaded={setHasLoaded}
+	/>
 			</>
 		)
 	}

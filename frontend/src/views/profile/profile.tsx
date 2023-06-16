@@ -14,7 +14,7 @@ import MyStats from './misc/stats';
 import SelectBar from './selectbar/selectbar';
 import { match } from 'assert';
 
-function TestSidebar({name}) {
+function TestSidebar({name, id}) {
 	return (
 		<>
 			<div style={{width:"250px",right:"0", top: "0", bottom: "0", position: "fixed", overflow: "auto", display: "flex", flexDirection: "column", color: "white"}}>
@@ -22,7 +22,7 @@ function TestSidebar({name}) {
 				<hr style={{width: "90%"}}/>
 				<h1>Test</h1>
 				<hr style={{width: "90%"}}/>
-				<Chat sender={name} />
+				<Chat sender={name} sender_id={id} />
 			</div>
 		</>
 	)
@@ -78,7 +78,7 @@ function ProfilePage() {
 		<div className="container">
 				<div className="SelectBar"><SelectBar matchhistory={matchhistory} setmatchhistory={setmatchhistory}/></div>
 				<div className="Name"><Userbar name={jsonData.userName} /></div>
-				<div className="testsidebar"><TestSidebar name={jsonData.userName}/></div>
+				<div className="testsidebar"><TestSidebar name={jsonData.userName} id={jsonData.id}/></div>
 				<div className="Profile">
 					<img src={`${fetchPFP}/${jsonData.userName}/pfp`} className='PFP'/>
 					<div className='PFP-Border'></div>

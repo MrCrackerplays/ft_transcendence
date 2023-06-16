@@ -7,8 +7,6 @@ import {
 	WsResponse,
 	ConnectedSocket,
 } from '@nestjs/websockets';
-import { from, Observable } from 'rxjs';
-import { map } from 'rxjs/operators';
 import { Server, Socket } from 'socket.io';
 import { JwtService } from "@nestjs/jwt";
 import { ConnectionService } from 'src/auth/connection/connection.service';
@@ -31,7 +29,6 @@ import { CreateChannelDTO, Visibility } from '../../../shared/dto/channel.dto';
 export class ChatGateway {
 	@WebSocketServer()
 	server: Server;
-	// connectionUser: Map<string, User> = new Map<string, User>();
 	constructor(
 		private jwtService: JwtService,
 		private connectionService: ConnectionService,
@@ -39,15 +36,13 @@ export class ChatGateway {
 		private channelService: ChannelService,
 		private userService: UserService,
 		) { }
-	private incrementer: number = 0;
 
 	private userFromSocket(socket: Socket, result?: any): Promise<User> | undefined {
 		try {
 			if (!result) {
-				const auth_cookie = parse(socket.handshake.headers.cookie).Authentication;
-				result = this.jwtService.verify(auth_cookie, { secret: process.env.JWT_SECRET })
+				result = this.jwtService.verify(parse(socket.handshake.headers.cookie).Authentication, { secret: process.env.JWT_SECRET })
 			}
-			return this.connectionService.get({ id: result.id }, ['user']).then(connection => {
+			return this.connectionService.get({ id: result.id }).then(connection => {
 				return connection.user;
 			});
 		} catch (e) {
@@ -60,12 +55,10 @@ export class ChatGateway {
 	}
 
 	handleConnection(client: Socket) {
-		this.incrementer++;
-		console.log(`new connection ${client.id}`, this.incrementer);
-		const auth_cookie = parse(client.handshake.headers.cookie).Authentication;
+		Logger.log(`new connection ${client.id}`);
 		let result = undefined;
 		try {
-			result = this.jwtService.verify(auth_cookie, { secret: process.env.JWT_SECRET });
+			result = this.jwtService.verify(parse(client.handshake.headers.cookie).Authentication, { secret: process.env.JWT_SECRET });
 			if (!result)
 				throw new Error("Invalid Token");
 		} catch (e) {
@@ -73,34 +66,23 @@ export class ChatGateway {
 			return;
 		}
 		this.userFromSocket(client, result).then(user => {
-			// console.log("trying to join to all subscribed channels");
 			if (!user || !user.id) {
-				// console.log("failed to join to all subscribed channels");
+				client.disconnect();
 				return;
 			}
-			// this.connectionUser.set(client.id, user);
 			client.join("user:" + user.id);
-			if (!user.channelSubscribed) {
-				// console.log("failed to join to all subscribed channels");
-				return;
-			}
-			// console.log("joining to all subscribed channels");
-			for (var i = 0; i < user.channelSubscribed.length; i++) {
-				// client.join("channel:" + user.channelSubscribed[i].id);
-			}
+
+			this.userService.getChannels(user).then(channels => {
+				channels.forEach(channel => {
+					client.join("channel:" + channel.id);
+					client.emit("join", channel.id);
+				});
+			});
 		});
-		console.log(1, result);
 	}
 
 	handleDisconnect(client: Socket) {
 		Logger.log(`disconnected ${client.id}`);
-	}
-
-	//TODO: remove
-	@UseGuards(WsGuard)
-	@SubscribeMessage('events')
-	findAll(@MessageBody() data: any): Observable<WsResponse<number>> {
-		return from([1, 2, 3]).pipe(map(item => ({ event: 'events', data: item })));
 	}
 
 	@UseGuards(WsGuard)
@@ -121,6 +103,22 @@ export class ChatGateway {
 			//TODO: add a method for creating dm's or allow them using this method
 		let dto : CreateChannelDTO = { name: name, visibility: visibility, password: password };
 		this.channelService.create(user, dto);
+		return true;
+	}
+
+	@UseGuards(WsGuard)
+	@SubscribeMessage('delete')
+	async deleteChannel(@ConnectedSocket() client: Socket, @MessageBody("channel") channel_id : string): Promise<boolean> {
+		const user = await this.userFromSocket(client);
+		if (!user)
+			return false;
+		const channel = await this.channelService.get({ id: channel_id });
+		if (!channel || (channel.owner && channel.owner.id != user.id))
+			return false;
+		console.log("no deletion allowed yet, will crash")
+		// this.server.to("channel:" + channel.id).emit("kick", { channel_id: channel.id });
+		// this.server.to("channel:" + channel.id).socketsLeave("channel:" + channel.id);
+		// this.channelService.removeOne(channel.id);
 		return true;
 	}
 
@@ -155,21 +153,27 @@ export class ChatGateway {
 		// if (user.userName == "zach")
 		// 	return {channel_id: channel_id, success: false, reason: "zach is not allowed"};
 
-		//TODO: check if user is subscribed to channel otherwise not allowed, currently no way to do it
-		const is_subscribed = true;
+		// let channels = await this.userService.getChannels(user);
+		// console.log("channels:", channels);
+		// const is_subscribed = (channels).includes(channel);
+		// const is_subscribed = true;
+		const is_subscribed = (await this.userService.getChannels(user)).filter(subscribed => subscribed.id == channel_id).length > 0;
 		if (!is_subscribed) {
+			console.log("user is not subscribed");
+			// this.userService.subscribeToChannel(user, { channelID: channel_id, password: (await this.channelService.findOne(channel_id)).password });
 			return {channel_id: channel_id, success: false, reason: "not subscribed"};
 		}
 
 		//TODO: check if user is banned from channel otherwise not allowed, currently no way to do it
-		const is_banned = false;
+		const is_banned = channel.banned.filter(banned => banned.id == user.id).length > 0;
 		if (is_banned) {
+			console.log("user is banned");
 			return {channel_id: channel_id, success: false, reason: "banned"};
 		}
 
 		// client.join("channel:" + channel_id);
 		this.server.in("user:" + user.id).socketsJoin("channel:" + channel_id);
-		this.server.to("channel:" + channel_id).emit("join", { channel: channel_id, content: user.userName + " has joined the channel" });
+		this.server.to("channel:" + channel_id).emit("joinmessage", { channel: channel_id, content: user.userName + " has joined the channel" });
 		return {channel_id: channel_id, success: true, reason: "Success"};
 	}
 
@@ -183,6 +187,7 @@ export class ChatGateway {
 	): void {
 		console.log("kick event");
 		this.server.to("user:" + user_id).emit("kick", channel_id );
+		this.server.in("user:" + user_id).socketsLeave("channel:" + channel_id);
 		console.log("kick event end");
 	}
 
@@ -194,9 +199,10 @@ export class ChatGateway {
 		@MessageBody("channel") channel_id: string
 	): void {
 		console.log("leave event");
-		client.leave("channel:" + channel_id);
+		// client.leave("channel:" + channel_id);
 		this.userFromSocket(client).then(user => {
 			this.server.to("user:" + user.id).emit("leave", channel_id );
+			this.server.in("user:" + user.id).socketsLeave("channel:" + channel_id);
 		});
 		console.log("leave event end");
 	}
@@ -211,6 +217,7 @@ export class ChatGateway {
 	) {
 		console.log("ban event");
 		this.server.to("user:" + user_id).emit("ban", channel_id );
+		this.server.in("user:" + user_id).socketsLeave("channel:" + channel_id);
 		console.log("ban event end");
 	}
 
@@ -274,12 +281,5 @@ export class ChatGateway {
 			});
 		} catch (e) {
 		}
-	}
-
-	//TODO: remove
-	@UseGuards(WsGuard)
-	@SubscribeMessage('identity')
-	async identity(@MessageBody() data: number): Promise<number> {
-		return data;
 	}
 }
