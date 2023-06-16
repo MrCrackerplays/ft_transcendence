@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react"
 import DefaultProfile, { PublicUser } from "../../../../shared/public-user"
-import Chat from "../../hooks/chat/chat"
+import Chat from "./chat/chat"
 import FetchSelf from "../../hooks/fetch/FetchSelf"
 import MyFriendsList from "./friendlist/friendlist"
 
