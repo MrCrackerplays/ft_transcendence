@@ -11,7 +11,7 @@ export class ChannelController {
 
 	// Gets all public channels
 	@Get()
-	async getAllPublic(): Promise<Channel[]> {
+	async getAllPublic(): Promise<any[]> {
 		return this.channelService.getAllPublic();
 	}
 

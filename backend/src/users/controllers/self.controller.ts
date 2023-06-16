@@ -13,6 +13,7 @@ import { join } from "path";
 import { CreateChannelDTO } from "../../../../shared/dto/channel.dto";
 import { CreateMessageDTO } from "../../../../shared/dto/create-message.dto";
 import { SubscribeToChannelDTO } from "../../../../shared/dto/subscribe-channel.dto";
+import { PublicChannel } from "src/channel/public-channel.interface";
 
 @Controller('self')
 export class SelfController {
@@ -50,7 +51,7 @@ export class SelfController {
 	}
 
 	@Get('channels')
-	async getChannels(@Req() req: AuthRequest): Promise<Channel[]> {
+	async getChannels(@Req() req: AuthRequest): Promise<PublicChannel[]> {
 		const currentUser = await this.getCurrentUser(req);
 		return this.userService.getChannels(currentUser);
 	}
@@ -62,7 +63,7 @@ export class SelfController {
 	}
 
 	@Post('channels')
-	async createChannel(@Req() req: AuthRequest, @Body() dto: CreateChannelDTO): Promise<Channel> {
+	async createChannel(@Req() req: AuthRequest, @Body() dto: CreateChannelDTO): Promise<PublicChannel> {
 		const currentUser = await this.getCurrentUser(req);		
 		return this.userService.createChannel(currentUser, dto);
 	}
