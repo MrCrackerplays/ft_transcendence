@@ -63,7 +63,7 @@ function channelOptions(role: string, isConnectionOpen: boolean, currentChannel:
 		)
 	}
 	return (
-		<div id="channel-options">
+		<div>
 			<button
 				aria-label="Return to channel list"
 				onClick={() => setCurrentChannel("")}
@@ -110,7 +110,7 @@ function ChatChannel(
 	return (
 		<>
 		{channelOptions(role, isConnectionOpen, currentChannel, setCurrentChannel, deleteChannel, leaveChannel, makeModalVisible)}
-		<div id="chat-history">
+		<div id="chat-history" className="scrollable">
 			<div id="history-anchor"></div>
 			{messages.map((message: UserMessage | Message, index : number) => (
 				isUserMessage(message) ?

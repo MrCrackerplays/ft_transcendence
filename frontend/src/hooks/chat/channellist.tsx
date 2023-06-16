@@ -89,34 +89,36 @@ function ChannelList(
 	}
 
 	return (
-		<div id="channel-list">
-		<button
-			aria-label="magic channel"
-			onClick={() => joinChannel(magic_channel)}
-			className="open-button"
-			disabled={!isConnectionOpen || banned.includes(magic_channel)}
-		>magic</button>
-		<button
-			aria-label="create channel"
-			onClick={() => {modal.current?.showModal();}}
-			disabled={!isConnectionOpen}
-		>create</button>
-		<button
-			aria-label="refresh channels"
-			onClick={() => refreshChannels()}
-			disabled={!isConnectionOpen}
-		>refresh</button>
-		<ChannelEditor
-			ref={modal}
-			currentChannel=""
-			create_or_update_channel={createChannel}
-			defaultvisibility="public"
-		/>
-		<div>you are {sender} </div>
-		<div className="channelarea">
+		<>
+		<div>
+			<button
+				aria-label="magic channel"
+				onClick={() => joinChannel(magic_channel)}
+				className="open-button"
+				disabled={!isConnectionOpen || banned.includes(magic_channel)}
+			>magic</button>
+			<button
+				aria-label="create channel"
+				onClick={() => {modal.current?.showModal();}}
+				disabled={!isConnectionOpen}
+			>create</button>
+			<button
+				aria-label="refresh channels"
+				onClick={() => refreshChannels()}
+				disabled={!isConnectionOpen}
+			>refresh</button>
+			<ChannelEditor
+				ref={modal}
+				currentChannel=""
+				create_or_update_channel={createChannel}
+				defaultvisibility="public"
+			/>
+			<div>you are {sender} </div>
+		</div>
+		<div id="channel-list" className="scrollable">
 			{channelarea}
 		</div>
-		</div>
+		</>
 	);
 }
 

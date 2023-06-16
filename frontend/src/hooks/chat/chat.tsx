@@ -316,42 +316,43 @@ function Chat( {sender, sender_id} : {sender: string, sender_id: string}) {
 
 	if (currentChannel) {
 		return (
-			<>
-			<ChatChannel
-				currentChannel={currentChannel}
-				setCurrentChannel={setCurrentChannel}
-				isConnectionOpen={isConnectionOpen}
-				messages={history.get(currentChannel) || []}
-				messageBody={messageBody}
-				setMessageBody={setMessageBody}
-				sendMessage={sendMessage}
-				sender={sender}
-				muted={muted.includes(currentChannel)}
-				deleteChannel={deleteChannel}
-				leaveChannel={leaveChannel}
-				role={owner.includes(currentChannel) ? "owner" : (admin.includes(currentChannel) ? "admin" : "user")}
-				updateVisibility={updateVisibility} />
-			</>
+			<div className="chatbox">
+				<ChatChannel
+					currentChannel={currentChannel}
+					setCurrentChannel={setCurrentChannel}
+					isConnectionOpen={isConnectionOpen}
+					messages={history.get(currentChannel) || []}
+					messageBody={messageBody}
+					setMessageBody={setMessageBody}
+					sendMessage={sendMessage}
+					sender={sender}
+					muted={muted.includes(currentChannel)}
+					deleteChannel={deleteChannel}
+					leaveChannel={leaveChannel}
+					role={owner.includes(currentChannel) ? "owner" : (admin.includes(currentChannel) ? "admin" : "user")}
+					updateVisibility={updateVisibility}
+				/>
+			</div>
 		)
 	}
 	else {
 		return (
-			<>
-			<ChannelList
-				sender={sender}
-				sender_id={sender_id}
-				joinChannel={joinChannel}
-				createChannel={createChannel}
-				isConnectionOpen={isConnectionOpen}
-				channels={channels}
-				setChannels={setChannels}
-				banned={banned}
-				setOwner={setOwner}
-				setAdmin={setAdmin}
-				hasloaded={hasloaded}
-				setHasLoaded={setHasLoaded}
-	/>
-			</>
+			<div className="chatbox">
+				<ChannelList
+					sender={sender}
+					sender_id={sender_id}
+					joinChannel={joinChannel}
+					createChannel={createChannel}
+					isConnectionOpen={isConnectionOpen}
+					channels={channels}
+					setChannels={setChannels}
+					banned={banned}
+					setOwner={setOwner}
+					setAdmin={setAdmin}
+					hasloaded={hasloaded}
+					setHasLoaded={setHasLoaded}
+				/>
+			</div>
 		)
 	}
 }
