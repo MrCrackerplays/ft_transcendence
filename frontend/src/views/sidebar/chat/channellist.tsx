@@ -32,7 +32,7 @@ function ChannelList(
 		let owner: Set<string> = new Set();
 		let admin: Set<string> = new Set();
 		let combineddata: Channel[] = [];
-		const adder = (dataholder : Channel[], channel, passfallback: boolean = true) => {
+		const adder = (dataholder : Channel[], channel) => {
 			if (channel.owner && channel.owner.id === sender_id) {
 				owner.add(channel.id);
 			}
@@ -44,10 +44,10 @@ function ChannelList(
 					}
 				}
 			}
-			dataholder.push({id: channel.id, name: channel.name, visibility: channel.visibility, password: passfallback});
+			dataholder.push({id: channel.id, name: channel.name, visibility: channel.visibility, password: channel.password});
 		}
 		Promise.all([joinedchannels, publicchannels]).then((data) => {
-			// console.log("raw channels", data);
+			console.log("raw channels", data);
 		{
 				let joineddata : Channel[] = [];
 				data[0].forEach((channel) => {adder(joineddata, channel)});
@@ -58,7 +58,7 @@ function ChannelList(
 			}
 			{
 				let publicdata : Channel[] = [];
-				data[1].forEach((channel) => {adder(publicdata, channel, false)});
+				data[1].forEach((channel) => {adder(publicdata, channel)});
 				publicdata.sort(function (a, b) {
 					return a.name.toLowerCase().localeCompare(b.name.toLowerCase());
 				});
@@ -79,7 +79,7 @@ function ChannelList(
 
 	let channelarea: JSX.Element[];
 	if (!hasloaded) {
-		channelarea = [<div key={0}>Loading...</div>, <i className="gg-spinner"></i>];
+		channelarea = [<div key={0}>Loading...</div>, <i key={1} className="gg-spinner"></i>];
 	} else if (channels.length > 0) {
 		channelarea = channels.map((channel: Channel, index : number) => (
 			<ChannelComponent key={index} channel={channel} joinChannel={joinChannel} canJoin={isConnectionOpen && !banned.includes(channel.id)} />
