@@ -11,6 +11,7 @@ import { MatchModule } from './matches/match.module';
 import { AuthModule } from './auth/auth.module';
 import { ChatModule } from './chat/chat.module';
 import { AchievementModule } from './achievements/achievement.module';
+import { UserStatusModule } from './userStatus/UserStatus.module';
 
 @Module({
 
@@ -39,7 +40,8 @@ import { AchievementModule } from './achievements/achievement.module';
 		MatchModule,
 		AuthModule,
 		AchievementModule,
-		ChatModule
+		ChatModule,
+		UserStatusModule
 	],
 
 	controllers: [

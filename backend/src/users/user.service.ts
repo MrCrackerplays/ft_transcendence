@@ -177,9 +177,23 @@ export class UserService {
 	}
 
 	async setName(user: User, name: string): Promise<User> {
-		if (!name || name.length == 0)
+		if (!name)
 			return null;
 		
+		// Validate username (a-z A-Z 0-9 _) (between 8 & 16 characters)
+		const MIN_CHAR = 8;
+		const MAX_CHAR = 16;
+		if (name.length < MIN_CHAR || name.length > MAX_CHAR) {
+			return null;
+		}
+
+		for (const c of name) {
+			const valid: boolean = (c >= 'a' && c <= 'z') || (c >= 'A' && c <= 'Z') || (c >= '0' && c <= '9') || (c == '_');
+			if (!valid) {
+				return null;
+			}
+		}
+
 		const userWithName = await this.usersRepository.findOne({
 			where: {
 				userName: name

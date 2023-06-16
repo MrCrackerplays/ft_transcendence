@@ -2,6 +2,7 @@ import React, {useState} from 'react'
 import FetchSelf from '../../../hooks/fetch/fetchSelf';
 import './temp.css'
 import { CreateMatchDTO } from '../../../../../shared/dto/create-match.dto'
+import { Constants } from '../../../../../shared/constants';
 
 
 function Temp() {
@@ -50,6 +51,16 @@ function Temp() {
 		// console.log({name})
 		console.log(RESPONSE.ok);
 	};
+
+	async function removeAccount() {
+		window.event?.preventDefault();
+
+		const RESPONSE = await fetch("http://localhost:3000/remove", {
+			method: 'DELETE',
+			credentials: 'include'
+		});
+		console.log(RESPONSE.ok);
+	}
 
 	async function handleName() {
 		window.event?.preventDefault()
@@ -135,6 +146,9 @@ function Temp() {
 			<form method="POST" encType="multipart/form-data" action="http://localhost:3000/self/pfp">
   				<input type="file" id="file" name="file" accept='image/*'/>
   				<input type="submit" />
+			</form>
+			<form method="POST" action={`${Constants.BACKEND_URL}/remove`}>
+				<button>!!REMOVE ACCOUNT!!</button>
 			</form>
 			<img src="http://localhost:3000/self/pfp" alt="Not found!"	/>
 		</div>

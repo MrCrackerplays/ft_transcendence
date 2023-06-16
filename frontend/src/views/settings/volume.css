@@ -1,6 +1,6 @@
 .button {
-	margin-left: 35%;
-	margin-top: 30%; 
+	margin-left: 30%;
+	margin-top: 10%; 
 	background-color: transparent;
 	outline: none;
 }
@@ -9,14 +9,7 @@
 	border: 3px rgba(0, 0, 0, 0);
 }
 
-.text {
-	font-family: fantasy;
-	font-size: 32px;
-	color: aquamarine;
-}
-
 .click {
-	font-family: fantasy;
-	font-size: 34px;
-	color: blue;
+	position: fixed;
+	border: 3px rgb(255, 0, 0)
 }

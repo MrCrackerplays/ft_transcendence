@@ -25,7 +25,6 @@ export class SelfController {
 		return (this.userService.getCurrentUser(req));
 	}
 
-
 	@Get('matches')
 	async getRecentMatches(@Req() req: AuthRequest): Promise<Match[]> {
 		const currentUser = await this.getCurrentUser(req);
