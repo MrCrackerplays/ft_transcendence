@@ -3,6 +3,7 @@ import { BaseEntity, Column, Entity, JoinColumn, ManyToMany, ManyToOne, OneToMan
 import { Message } from "src/channel/message/message.entity";
 import { User } from "src/users/user.entity";
 import { Visibility } from "../../../shared/dto/channel.dto";
+import { PublicChannel } from "./public-channel.interface";
 
 @Entity()
 export class Channel extends BaseEntity {
@@ -43,4 +44,19 @@ export class Channel extends BaseEntity {
 		cascade: ['remove']
 	})
 	messages: Message[];
+
+	toPublic(): PublicChannel {
+		const pc: PublicChannel = {
+			id: this.id,
+			name: this.name,
+			visibility: this.visibility,
+			password: (this.password != null),
+			owner: this.owner,
+			admins: this.admins,
+			members: this.members,
+			banned: this.banned,
+			muted: this.muted
+		};
+		return pc;
+	}
 }

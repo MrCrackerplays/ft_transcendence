@@ -14,6 +14,7 @@ import { Achievement } from "src/achievements/achievement.entity";
 import { ChannelService } from "src/channel/channel.service";
 import { CreateChannelDTO } from "../../../shared/dto/channel.dto";
 import { CreateMessageDTO } from "../../../shared/dto/create-message.dto";
+import { PublicChannel } from "src/channel/public-channel.interface";
 
 @Injectable()
 export class UserService {
@@ -211,13 +212,19 @@ export class UserService {
 		return user.save();
 	}
 
-	async getChannels(user: User): Promise<Channel[]> {
+	async getChannels(user: User): Promise<PublicChannel[]> {
 		user = await this.get(user.id, ['channelSubscribed']);
-		return user.channelSubscribed;
+
+		const pubChannels = [];
+		for (var c of user.channelSubscribed) {
+			pubChannels.push(c.toPublic());
+		}
+
+		return pubChannels;
 	}
 
-	async createChannel(user: User, dto: CreateChannelDTO): Promise<Channel> {
-		return this.channelService.create(user, dto);
+	async createChannel(user: User, dto: CreateChannelDTO): Promise<PublicChannel> {
+		return (await this.channelService.create(user, dto)).toPublic();
 	}
 
 	async setChannelPassword(channelID: string, user: User, new_password: string): Promise<void> {
