@@ -86,7 +86,6 @@ function Chat( {sender, sender_id} : {sender: string, sender_id: string}) {
 		}
 		setCurrentChannel(channel_id);
 		getMessageHistory(channel_id).then(res => res.json()).then((data) => {
-			console.log("data", data);
 			data = data.map((message) => {
 				let formatted_message = {
 					channel: message.channel.id,
@@ -208,9 +207,7 @@ function Chat( {sender, sender_id} : {sender: string, sender_id: string}) {
 
 		if (!ws.current.hasListeners("join")) {
 			ws.current.on("join", (channel: string) => {
-				console.log("prehistory")
 				getMessageHistory(channel).then(res => res.json()).then((data) => {
-					console.log("data", data);
 					data = data.map((message) => {
 						let formatted_message = {
 							channel: message.channel.id,
@@ -223,7 +220,6 @@ function Chat( {sender, sender_id} : {sender: string, sender_id: string}) {
 					});
 					setHistory(hist => new Map(hist.set(channel, data)));
 				});
-				console.log("posthistory")
 				setJoinedChannels(joined => [...joined, channel]);
 			});
 		}
