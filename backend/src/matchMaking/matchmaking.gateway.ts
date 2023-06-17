@@ -1,4 +1,5 @@
 import {
+	SubscribeMessage,
 	WebSocketGateway,
 	WebSocketServer,
 	OnGatewayConnection, OnGatewayDisconnect
@@ -18,13 +19,13 @@ import { parse } from 'cookie'
 		origin: Constants.FRONTEND_URL,
 		credentials: true
 	},
-	namespace: 'userStatusGateway',
+	namespace: 'matchMakingGateway',
 })
-export class UserStatusGateway implements OnGatewayConnection, OnGatewayDisconnect {
+export class MatchMakingGateway {
 	@WebSocketServer()
 	server: Server;
 
-	constructor(
+	constructor (
 		private jwtService: JwtService,
 		private connectionService: ConnectionService,
 		private userService: UserService
@@ -55,16 +56,15 @@ export class UserStatusGateway implements OnGatewayConnection, OnGatewayDisconne
 		user.status = newStatus;
 		user.save();
 	}
-	
+
 	afterInit(server: Server) {
-		Logger.log('Frieds list connection initialized');
-	}	
+		Logger.log('waitlist')
+	}
 
 	handleConnection(client: Socket) {
-		Logger.log(`new connection ${client.id}`);
 		if (!client.handshake.headers.cookie)
 		{
-			Logger.log("Cookie's gone");
+			Logger.log('Lost the Cookie');
 			return ;
 		}
 		const auth_cookie = parse(client.handshake.headers.cookie).Authentication;
@@ -73,15 +73,12 @@ export class UserStatusGateway implements OnGatewayConnection, OnGatewayDisconne
 			result = this.jwtService.verify(auth_cookie, { secret: process.env.JWT_SECRET });
 			if (!result)
 				throw new Error('Invalid Token');
-		} catch (e) {
+		} catch {
 			client.disconnect();
 			return ;
 		}
 		this.userFromSocket(client, result).then(user => {
-			if (!user)
-				return ;
-			this.setStatus(user, 'online');
-			// console.log(`${user.userName}: ${user.status}`);
+			this.setStatus(user, 'in_queue');
 		})
 	}
 
@@ -89,9 +86,21 @@ export class UserStatusGateway implements OnGatewayConnection, OnGatewayDisconne
 		this.userFromSocket(client).then(user => {
 			if (!user)
 				return ;
-			this.setStatus(user, 'offline')
+			this.setStatus(user, 'online')
 			// console.log(`${user.status}`);
 		})
 		Logger.log(`disconnected ${client.id}`)
+	}
+
+	@SubscribeMessage('join_room')
+	handleJoinRoom(client: Socket, room: string) {
+		client.join(room);
+		client.emit("joinedRoom", room);
+	}
+
+	@SubscribeMessage('leave_room')
+	handleLeaveRoom(client: Socket, room: string) {
+		client.leave(room);
+		client.emit("leftRoom", room);
 	}
 };

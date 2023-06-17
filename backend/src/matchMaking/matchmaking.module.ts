@@ -1,5 +1,5 @@
 import { Module } from "@nestjs/common";
-import { UserStatusGateway } from "./UserStatus.gateway";
+import { MatchMakingGateway } from "./matchmaking.gateway";
 
 import { UserModule } from "src/users/user.module";
 import { AuthModule } from "src/auth/auth.module";
@@ -9,6 +9,6 @@ import { AuthModule } from "src/auth/auth.module";
 		AuthModule,
 		UserModule
 	],
-	providers: [UserStatusGateway],
+	providers: [MatchMakingGateway],
 })
-export class UserStatusModule {}
+export class MatchMakingModule {}
