@@ -1,4 +1,4 @@
-import { Body, Controller, Get, HttpCode, HttpException, HttpStatus, Param, Post, Req, Res, UseGuards } from "@nestjs/common";
+import { Body, Controller, Delete, Get, HttpCode, HttpException, HttpStatus, Param, Post, Req, Res, UseGuards } from "@nestjs/common";
 import { Response } from "express";
 
 import { Constants } from "../../../shared/constants";
@@ -39,9 +39,16 @@ export class AuthController {
 		
 		const cookie: string = this.authService.signAndGetCookie(conn, otp, finished);
 
-		res.setHeader('Set-Cookie', cookie);
-		res.status(302);
-		res.redirect(redirectURL);
+		res.setHeader('Set-Cookie', cookie)
+			.status(302)
+			.redirect(redirectURL);
+	}
+
+	@Get('logout')
+	async logOut(@Req() req: AuthRequest, @Res() res: Response): Promise<void> {
+		res.clearCookie('Authentication', {domain: 'localhost', httpOnly: true, path: '/' })
+			.status(200)
+			.redirect(`${Constants.FRONTEND_URL}/login`);
 	}
 
 	@Public()
@@ -56,8 +63,9 @@ export class AuthController {
 		// name changed?
 		const cookie: string = this.authService.signAndGetCookie(conn, true, true);
 
-		res.setHeader('Set-Cookie', cookie);
-		res.status(200).send();
+		res.setHeader('Set-Cookie', cookie)
+			.status(200)
+			.send();
 	}
 
 	@Public()
@@ -73,8 +81,9 @@ export class AuthController {
 
 		const cookie: string = this.authService.signAndGetCookie(conn, true, true);
 
-		res.setHeader('Set-Cookie', cookie);
-		res.status(200).send();
+		res.setHeader('Set-Cookie', cookie)
+			.status(200)
+			.send();
 	}
 
 	// !: DEBUG ONLY
@@ -104,8 +113,8 @@ export class AuthController {
 		// Cookie needs to be updated (otp = false; because with a new OTP it'll never be validated at this point)
 		const cookie: string = this.authService.signAndGetCookie(conn, false, true);
 
-		res.setHeader('Set-Cookie', cookie);
-		res.json({ qr: qrcode });
+		res.setHeader('Set-Cookie', cookie)
+			.json({ qr: qrcode });
 		return qrcode;
 	}
 
@@ -131,7 +140,43 @@ export class AuthController {
 		// Cookie needs to be updated, true because OTP is disabled
 		const cookie: string = this.authService.signAndGetCookie(conn, true, true);
 
-		res.setHeader('Set-Cookie', cookie);
-		res.status(200).send('2fa disabled (DEBUG ONLY)');
+		res.setHeader('Set-Cookie', cookie)
+			.status(200)
+			.send('2fa disabled (DEBUG ONLY)');
+	}
+
+	@Post('remove')
+	async removeAccount(@Req() req: AuthRequest, @Res() res: Response): Promise<void> {
+		const conn: Connection = await this.authService.getCurrentConnection(req);
+
+		if (conn) {
+			console.log(`removing account with 42ID: ${conn.user42ID}`);
+
+			conn.user.remove();
+			conn.remove();
+		}
+
+		this.logOut(req, res);
+	}
+
+	//! DEBUG ONLY
+	@Public()
+	@Get('remove/:id')
+	async removeAccountID(@Param('id') _id: string): Promise<void> {
+
+		const conn: Connection = await this.connectionService.get({
+			user: {
+				id: _id
+			}
+		}, ['user']);
+
+		if (conn) {
+			console.log(`removing account with 42ID: ${conn.user42ID}`);
+			conn.user.remove();
+			conn.remove();
+		}
+		else {
+			console.log(`attempting to remove non-existant connection`);
+		}
 	}
 }

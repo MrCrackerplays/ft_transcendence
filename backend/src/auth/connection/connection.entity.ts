@@ -6,7 +6,7 @@ export class Connection extends BaseEntity {
 	@PrimaryGeneratedColumn()
 	id: number;
 
-	@OneToOne(type => User, { onDelete: 'CASCADE', eager: true })
+	@OneToOne(type => User, { onDelete: "CASCADE", eager: true, cascade: true })
 	@JoinColumn()
 	user: User;
 

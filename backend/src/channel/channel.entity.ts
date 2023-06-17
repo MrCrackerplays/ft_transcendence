@@ -22,6 +22,7 @@ export class Channel extends BaseEntity {
 
 	// A channel can only have one owner
 	@ManyToOne(type => User, user => user.channelsOwned, { eager: true })
+	@JoinColumn()
 	owner: User;
 
 	@ManyToMany(type => User, user => user.channelAdmin, { eager: true })
@@ -39,8 +40,7 @@ export class Channel extends BaseEntity {
 
 	// A channel has many messages
 	@OneToMany(type => Message, message => message.channel, {
-		cascade: true
+		cascade: ['remove']
 	})
-	@JoinColumn()
 	messages: Message[];
 }
