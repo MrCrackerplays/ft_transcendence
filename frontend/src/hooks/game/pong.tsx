@@ -195,6 +195,12 @@ const makeReducer = (playerID: string) => {
 	return reducer;
 };
 
+const SocketMagic = () => {
+
+	const socket = new WebSocket("ws://localhost:8080/ws");
+
+}
+
 const PongGame = () => {
 	const playerID = "player1";
 	const opponentID = "player2";
