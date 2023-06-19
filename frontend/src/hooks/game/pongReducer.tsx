@@ -41,17 +41,21 @@ export type GameState = {
 	winner: string,
 };
 
-export const paddleHeight = 0.3;
-export const paddleWidth = 0.02;
-export const framePaddleGap = 0.03;
-export const paddleSpeed = 0.5;
-export const ballHeight = 0.04;
-export const ballWidth = 0.04;
-export const timeDlta = 0.02;
+export const pongConstants = {
+
+	paddleHeight : 0.3,
+	paddleWidth : 0.02,
+	framePaddleGap : 0.03,
+	paddleSpeed : 0.5,
+	ballHeight : 0.04,
+	ballWidth : 0.04,
+	timeDlta : 0.02,
+
+};
 
 function checkPaddleBoarder(paddlePosition) {//up and down boader frame for paddle
-	const paddleMaxUp = 1 - paddleHeight / 2;
-	const paddleMaxDown = -1 + paddleHeight / 2;
+	const paddleMaxUp = 1 - pongConstants.paddleHeight / 2;
+	const paddleMaxDown = -1 + pongConstants.paddleHeight / 2;
 	if (paddlePosition >= paddleMaxUp) {
 		return paddleMaxUp;
 	} else if (paddlePosition <= paddleMaxDown) {
@@ -70,8 +74,8 @@ function updateBall(state: GameState, timeDlta: number) {
 	const ball = state.ball;
 	const leftPaddle = state.leftPaddle;
 	const rightPaddle = state.rightPaddle;
-	const maxBallPosition = 1 - ballHeight / 2;
-	const minBallPosition = -1 + ballHeight / 2;
+	const maxBallPosition = 1 - pongConstants.ballHeight / 2;
+	const minBallPosition = -1 + pongConstants.ballHeight / 2;
 	updateBallPosition(state, timeDlta);
 
 	//up and down wall collision
@@ -80,21 +84,21 @@ function updateBall(state: GameState, timeDlta: number) {
 		return;
 	}
 
-	const padX = paddleWidth + framePaddleGap * 2;//why * 2? dunno
+	const padX = pongConstants.paddleWidth + pongConstants.framePaddleGap * 2;//why * 2? dunno
 
-	const minBallY = ball.position.y - (ballHeight / 2);
-	const maxBallY = ball.position.y + (ballHeight / 2);
+	const minBallY = ball.position.y - (pongConstants.ballHeight / 2);
+	const maxBallY = ball.position.y + (pongConstants.ballHeight / 2);
 
 	//padle collision : left
-	const leftMaxPaddleY = (leftPaddle.paddlePosition + paddleHeight / 2);
-	const leftMinPaddleY = (leftPaddle.paddlePosition - paddleHeight / 2);
-	const isBallAtLeftWall = (ball.position.x - ballWidth / 1) - padX <= -1;
+	const leftMaxPaddleY = (leftPaddle.paddlePosition + pongConstants.paddleHeight / 2);
+	const leftMinPaddleY = (leftPaddle.paddlePosition - pongConstants.paddleHeight / 2);
+	const isBallAtLeftWall = (ball.position.x - pongConstants.ballWidth / 1) - padX <= -1;
 	const willBounceLeftPaddle = (leftMinPaddleY <= minBallY && minBallY <= leftMaxPaddleY) || (leftMinPaddleY <= maxBallY && maxBallY <= leftMaxPaddleY);
 
 	//padle collision : right
-	const rightMaxPaddleY = (rightPaddle.paddlePosition + paddleHeight / 2);
-	const rightMinPaddleY = (rightPaddle.paddlePosition - paddleHeight / 2);
-	const isBallAtRightWall = (ball.position.x + ballWidth / 1) + padX >= 1;
+	const rightMaxPaddleY = (rightPaddle.paddlePosition + pongConstants.paddleHeight / 2);
+	const rightMinPaddleY = (rightPaddle.paddlePosition - pongConstants.paddleHeight / 2);
+	const isBallAtRightWall = (ball.position.x + pongConstants.ballWidth / 1) + padX >= 1;
 	const willBounceRightPaddle = (rightMinPaddleY <= minBallY && minBallY <= rightMaxPaddleY) || (rightMinPaddleY <= maxBallY && maxBallY <= rightMaxPaddleY);;
 
 	if (isBallAtLeftWall) {
@@ -186,23 +190,23 @@ export const makeReducer = (playerID: string) => {
 				}
 				break;
 			case GameActionKind.updateTime:
-				newState.time += timeDlta;
+				newState.time += pongConstants.timeDlta;
 				switch (newState.leftPaddle.action) {
 					case PaddleAction.Up:
-						newState.leftPaddle.paddlePosition -= timeDlta * paddleSpeed;
+						newState.leftPaddle.paddlePosition -= pongConstants.timeDlta * pongConstants.paddleSpeed;
 						break;
 					case PaddleAction.Down:
-						newState.leftPaddle.paddlePosition += timeDlta * paddleSpeed;
+						newState.leftPaddle.paddlePosition += pongConstants.timeDlta * pongConstants.paddleSpeed;
 						break;
 					case PaddleAction.None:
 						break;
 				}
 				switch (newState.rightPaddle.action) {
 					case PaddleAction.Up:
-						newState.rightPaddle.paddlePosition -= timeDlta * paddleSpeed;
+						newState.rightPaddle.paddlePosition -= pongConstants.timeDlta * pongConstants.paddleSpeed;
 						break;
 					case PaddleAction.Down:
-						newState.rightPaddle.paddlePosition += timeDlta * paddleSpeed;
+						newState.rightPaddle.paddlePosition += pongConstants.timeDlta * pongConstants.paddleSpeed;
 						break;
 					case PaddleAction.None:
 						break;
@@ -211,7 +215,7 @@ export const makeReducer = (playerID: string) => {
 				newState.rightPaddle.paddlePosition = checkPaddleBoarder(newState.rightPaddle.paddlePosition);
 				//ball movement
 				//ball collision : up and down wall collision
-				updateBall(newState, timeDlta); //player paddle
+				updateBall(newState, pongConstants.timeDlta); //player paddle
 				break;
 		}
 		return newState

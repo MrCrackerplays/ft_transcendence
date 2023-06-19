@@ -2,7 +2,7 @@
 import React from "react";
 import { useReducer, useEffect } from 'react';
 import "./pong.css";
-import { makeReducer , GameState , PaddleAction, GameActionKind, timeDlta, ballWidth, ballHeight, framePaddleGap, paddleWidth, paddleHeight} from "./pongReducer";
+import { makeReducer , GameState , PaddleAction, GameActionKind, pongConstants} from "./pongReducer";
 
 type SocketMagicInput = {
 	overrideState: (newState: GameState) => void
@@ -74,7 +74,7 @@ const PongGame = () => {
 	useEffect(() => {
 		const interval = setInterval(() => {
 			dispatch({kind : GameActionKind.updateTime, value : null});
-		}, timeDlta * 1000);
+		}, pongConstants.timeDlta * 1000);
 		return () => clearInterval(interval);
 	}, []);
 
@@ -89,14 +89,14 @@ const PongGame = () => {
 		const output = SocketMagic(input);
 	});
 
-	const lPaddle = 0.5 - paddleHeight / 4;
-	const kPaddle = lPaddle / (1 - paddleHeight / 2);
+	const lPaddle = 0.5 - pongConstants.paddleHeight / 4;
+	const kPaddle = lPaddle / (1 - pongConstants.paddleHeight / 2);
 
 	const leftPaddleTop = kPaddle * state.leftPaddle.paddlePosition + lPaddle;
 	const rightPaddleTop = kPaddle * state.rightPaddle.paddlePosition + lPaddle;
 
-	const lBallCorrection = 0.5 - ballWidth / 4;
-	const kBallCorrection = lBallCorrection / (1 - ballWidth / 2);
+	const lBallCorrection = 0.5 - pongConstants.ballWidth / 4;
+	const kBallCorrection = lBallCorrection / (1 - pongConstants.ballWidth / 2);
 
 	const ballPositionLeft = kBallCorrection * state.ball.position.x + lBallCorrection;
 	const ballPositionTop = kBallCorrection * state.ball.position.y + lBallCorrection;
@@ -108,22 +108,22 @@ const PongGame = () => {
 			<div className="paddle-right" style={{
 				//paddle right
 				top: (rightPaddleTop * 100) + '%',
-				height: (paddleHeight * 50) + '%',
-				width: (paddleWidth * 100) + '%',
-				right: (framePaddleGap * 100) + '%'
+				height: (pongConstants.paddleHeight * 50) + '%',
+				width: (pongConstants.paddleWidth * 100) + '%',
+				right: (pongConstants.framePaddleGap * 100) + '%'
 			}}></div>
 			<div className="paddle-left" style={{
 				//paddle left
 				top: (leftPaddleTop * 100) + '%',
-				height: (paddleHeight * 50) + '%',
-				width: (paddleWidth * 100) + '%',
-				left: (framePaddleGap * 100) + '%'
+				height: (pongConstants.paddleHeight * 50) + '%',
+				width: (pongConstants.paddleWidth * 100) + '%',
+				left: (pongConstants.framePaddleGap * 100) + '%'
 			}}>{state.leftPaddle.paddlePosition}</div>
 			<div className="pong-ball" style={{
 				left: (ballPositionLeft * 100) + '%',
 				top: (ballPositionTop * 100) + '%',
-				width: (ballWidth * 50) + '%',
-				height: (ballHeight * 50) + '%',
+				width: (pongConstants.ballWidth * 50) + '%',
+				height: (pongConstants.ballHeight * 50) + '%',
 			}}></div>
 			<div className="score" style={{
 
