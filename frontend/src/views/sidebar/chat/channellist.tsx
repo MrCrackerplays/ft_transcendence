@@ -1,4 +1,4 @@
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Channel } from "./channeltypes";
 import ChannelEditor from "./channeleditor";
 
@@ -21,11 +21,13 @@ function ChannelList(
 		hasloaded: boolean,
 		setHasLoaded: (value: boolean) => void
 	} ) {
+	const [refresh, setRefresh] = useState(false);
 	const modal = useRef<HTMLDialogElement>(null);
 
 	const magic_channel = "3e809453-5734-482c-aa2a-8fc311f0cd4e";
 
 	const refreshChannels = () => {
+		setRefresh(true);
 		let joinedchannels = fetch("http://localhost:3000/self/channels/", {credentials: 'include'}).then(res => res.json());
 		let publicchannels = fetch("http://localhost:3000/channels", {credentials: 'include'}).then(res => res.json());
 
@@ -70,6 +72,7 @@ function ChannelList(
 			setAdmin(Array.from(admin));
 			console.log("channels", combineddata);
 			setHasLoaded(true);
+			setRefresh(false);
 		});
 	}
 
@@ -105,7 +108,7 @@ function ChannelList(
 			<button
 				aria-label="refresh channels"
 				onClick={() => refreshChannels()}
-				disabled={!isConnectionOpen}
+				disabled={!isConnectionOpen || refresh}
 			>refresh</button>
 			<ChannelEditor
 				ref={modal}
