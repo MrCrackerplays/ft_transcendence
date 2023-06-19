@@ -75,5 +75,6 @@
 	left: calc(var(--pong-frame-width) / 2 - width / 2);
 	top: calc(var(--pong-frame-height) / 2 - height / 2);
 	z-index: 1;
+	border-radius: 50%;
 
 }
