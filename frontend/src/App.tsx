@@ -45,7 +45,7 @@ function App(): React.ReactElement
 				</Routes>
 		)
 	return (
-		<>
+		<div id="loggedincontainer">
 			<MyNavBar/>
 			<Sidebar />
 			<UserStatus />
@@ -57,7 +57,7 @@ function App(): React.ReactElement
 					<Route path="/temp" element={<Temp />}/>
 				</Routes>
 			</div>
-		</>
+		</div>
   );
 }
 export default App	

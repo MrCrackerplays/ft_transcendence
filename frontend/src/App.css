@@ -1,4 +1,4 @@
-#root {
+#loggedincontainer {
 	height: 100%;
 	display: grid;
 	grid-template-columns: 1.6fr 0.4fr; 
@@ -12,7 +12,7 @@
 }
 
 @media (width <= 900px) {
-	#root {
+	#loggedincontainer {
 		grid-template-columns: 1fr;
 		grid-template-rows: 62px 1fr 200px;
 		grid-template-areas:
