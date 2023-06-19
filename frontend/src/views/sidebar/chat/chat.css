@@ -47,17 +47,6 @@
 	text-align: right;
 }
 
-.chat-area {
-	top: 100%;
-	position: sticky;
-}
-@-moz-document url-prefix() {
-	/* Firefox being dumb with position sticky and top within a flex */
-	.chat-area {
-		top: auto;
-	}
-}
-
 
 dialog::backdrop {
 	background-color: rgba(0, 0, 0, 0.5);

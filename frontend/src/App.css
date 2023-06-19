@@ -58,6 +58,7 @@
 	grid-area: chatbox;
 	display: grid;
 	padding: 5px;
+	grid-template-rows: 0fr 1fr 0fr;
 }
 
 .maincontainer {
