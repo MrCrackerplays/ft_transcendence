@@ -2,23 +2,26 @@
 import React from "react";
 import { useReducer, useEffect } from 'react';
 import "./pong.css";
-import { makeReducer , GameState , PaddleAction, GameActionKind, pongConstants} from "./pongReducer";
+import { makeReducer, GameState, PaddleAction, GameActionKind, pongConstants } from "./pongReducer";
 
 type SocketMagicInput = {
 	overrideState: (newState: GameState) => void
 };
 
 type SocketMagicOutput = {
+	playerMovement: (movement: PaddleAction) => void
 };
-
+//https://en.wikipedia.org/wiki/WebSocket
 const SocketMagic: (input: SocketMagicInput) => SocketMagicOutput = (input) => {
 
 	const socket = new WebSocket("ws://localhost:8080/ws");
+	const playerMovement: (movement: PaddleAction) => void = (movement) => {
+		socket.send(JSON.stringify({ movement: movement }));
+	};
+	
 	//open connection when game start
 	socket.onopen = () => {
-		// if (socket.bufferedAmount == 0)
-		// 	input.
-		// socket.send("hello new state");
+
 	};
 
 	//read state from server -> I get true state from server -> override state client
@@ -29,9 +32,22 @@ const SocketMagic: (input: SocketMagicInput) => SocketMagicOutput = (input) => {
 		input.overrideState(newState);
 		// this.setState({state: newState});
 	};
+
 	//write action to server -> player action sent to server
 
-	return {};
+	// Fired when a connection with a WebSocket is closed
+	socket.onclose = function (event) {
+
+	};
+
+	// Fired when a connection with a WebSocket has been closed because of an error
+	socket.onerror = function (event) {
+
+	};
+
+	return {
+		playerMovement: playerMovement
+	};
 }
 
 const PongGame = () => {
@@ -41,25 +57,37 @@ const PongGame = () => {
 	const initialState: GameState = {
 		leftPaddle: { playerID: playerID, paddlePosition: 0, action: PaddleAction.None, score: 0, moved: false },
 		rightPaddle: { playerID: opponentID, paddlePosition: 0, action: PaddleAction.None, score: 0, moved: false },
-		ball: { velocity: { x: 0.5, y: 0.0 }, position: { x: 0, y: 0 }}, //if have time, add random velocity start
+		ball: { velocity: { x: 0.5, y: 0.0 }, position: { x: 0, y: 0 } }, //if have time, add random velocity start
 		time: 0,
 		gameOver: false,
 		winner: "",
 	};
 	const [state, dispatch] = useReducer(makeReducer(playerID), initialState);
 
-	//KEYBOARD INPUT 
 	useEffect(() => {
+		// socket magic
+		const overrideState = (newState: GameState) => {
+			dispatch({ kind: GameActionKind.overrideState, value: newState });
+		};
+		const input: SocketMagicInput = {
+			overrideState: overrideState,
+		};
+		const output = SocketMagic(input);
+
+		//KEYBOARD INPUT 
 		const handleKeyDown = (event) => {
 			if (event.key === "ArrowUp") {
-				dispatch({kind: GameActionKind.arrowUp, value: null});
+				dispatch({ kind: GameActionKind.arrowUp, value: null });
+				output.playerMovement(PaddleAction.Up);
 			} else if (event.key === "ArrowDown") {
-				dispatch({kind : GameActionKind.arrowDown, value : null});
+				dispatch({ kind: GameActionKind.arrowDown, value: null });
+				output.playerMovement(PaddleAction.Down);
 			}
 		};
 		const handleKeyUp = (event) => {
 			if (event.key === "ArrowUp" || event.key === "ArrowDown") {
-				dispatch({kind : GameActionKind.StopMovement, value : null});
+				dispatch({ kind: GameActionKind.StopMovement, value: null });
+				output.playerMovement(PaddleAction.None);
 			}
 		};
 		window.addEventListener("keydown", handleKeyDown);
@@ -73,21 +101,12 @@ const PongGame = () => {
 	//BALL MOVEMENT
 	useEffect(() => {
 		const interval = setInterval(() => {
-			dispatch({kind : GameActionKind.updateTime, value : null});
+			dispatch({ kind: GameActionKind.updateTime, value: null });
 		}, pongConstants.timeDlta * 1000);
 		return () => clearInterval(interval);
 	}, []);
 
-	//SOCKET MAGIC
-	useEffect(() => {
-		const overrideState = (newState: GameState) => {
-			dispatch({kind : GameActionKind.overrideState, value : newState});
-		};
-		const input: SocketMagicInput = {
-			overrideState: overrideState,
-		};
-		const output = SocketMagic(input);
-	});
+
 
 	const lPaddle = 0.5 - pongConstants.paddleHeight / 4;
 	const kPaddle = lPaddle / (1 - pongConstants.paddleHeight / 2);
@@ -143,22 +162,6 @@ const PongGame = () => {
 			}}>{state.rightPaddle.score}</div>
 		</div>
 	);
-
-
-
-
-	// return (
-	// 	<div className="pong-frame">
-	// 		<div className="centre-line"></div>
-	// 		{/* from logic (-1, 1) to % for display */}
-	// 		<div className="paddle-right" style={{ top: (state.rightPaddle.paddlePosition * 0.1 + 50) + '%' }}></div>
-	// 		<div className="paddle-left" style={{ top: (state.leftPaddle.paddlePosition * 0.1 + 50) + '%' }}></div>
-	// 		{/* <div className="paddle-left"></div> */}
-	// 		<div className="pong-ball" style={{ left: (state.ball.position.x * 0.1 + 50) + '%', top: (state.ball.position.y * 0.1 + 50) + '%'}}></div>
-	// 		{/* <div className="pong-ball" style={{ left: `calc(${state.ballPosition.x}px - 10px)`, top: `calc(${state.ballPosition.y}px - 10px)` }}></div> */}
-
-	// 	</div>
-	// );
 };
 
 export default PongGame;

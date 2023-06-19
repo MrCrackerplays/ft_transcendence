@@ -42,7 +42,6 @@ export type GameState = {
 };
 
 export const pongConstants = {
-
 	paddleHeight : 0.3,
 	paddleWidth : 0.02,
 	framePaddleGap : 0.03,
@@ -50,7 +49,6 @@ export const pongConstants = {
 	ballHeight : 0.04,
 	ballWidth : 0.04,
 	timeDlta : 0.02,
-
 };
 
 function checkPaddleBoarder(paddlePosition) {//up and down boader frame for paddle
