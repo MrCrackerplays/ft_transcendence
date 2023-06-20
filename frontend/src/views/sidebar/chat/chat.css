@@ -47,6 +47,10 @@
 	text-align: right;
 }
 
+.chat-user-menu {
+	position: absolute;
+}
+
 
 dialog::backdrop {
 	background-color: rgba(0, 0, 0, 0.5);

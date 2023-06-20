@@ -1,10 +1,112 @@
-import { useRef } from "react";
+import { forwardRef, useEffect, useRef, useState } from "react";
 import { Message, UserMessage, isUserMessage } from "./messagetypes";
 import ChannelEditor from "./channeleditor";
+// import { Menu, Transition } from "@headlessui/react";
 
-function UserMessageComponent({ message, sender } : { message: UserMessage; sender: string }) : JSX.Element {
+const links = [
+	{ action: 'kick', label: 'Kick' },
+	{ action: 'ban', label: 'Ban' },
+	{ action: 'mute', label: 'Mute' },
+	{ action: 'unmute', label: 'Unmute' },
+	{ action: 'promote', label: 'Promote' },
+	{ action: 'demote', label: 'Demote' },
+	{ action: 'unban', label: 'Unban' }
+]
+
+// function Testmenu() : ReactElement {
+// 	return (
+// 	);
+// }
+
+// const ChatUserComponent = forwardRef<HTMLElement, {showmenu: boolean, setshowmenu: (show: boolean) => void}>(({showmenu, setshowmenu}, ref) => {
+// 	if (!ref)
+// 		return <></>;
+// 	return (//TODO: MAKE THIS MENU WORK WITH RIGHT CLICKING PROBABLY BY NOT USING HEADLESSUI AS IT SUCKS BALLS BUT BY MAKING A CUSTOM MENU
+// 		<Transition
+// 			appear={false}
+// 			show={showmenu}
+// 			as={Fragment}
+// 		>
+// 			<Menu ref={ref}>
+// 				<Menu.Items className="chat-user-menu" static>
+// 				{
+// 					links.map((link) => (
+// 						<Menu.Item>
+// 						<button
+// 							key={link.action}
+// 							className="testmenu-item"
+// 							onClick={() => {
+// 								console.log(link.action);
+// 								setshowmenu(false);
+// 							}}
+// 						>
+// 							{link.label}
+// 						</button>
+// 						</Menu.Item>
+// 					))
+// 				}
+// 				</Menu.Items>
+// 			</Menu>
+// 		</Transition>
+// 	);
+// });
+
+function UserMenuComponent({ x, y, show, setMenu } : { x: number, y: number, show: boolean, setMenu: ({x, y, show}: {x: number, y: number, show: boolean}) => void}) : JSX.Element {
+	const menuref = useRef<HTMLMenuElement>(null);
+	// window.innerWidth, window.innerHeight
+	// const scroperef = useRef([window.innerWidth, window.innerHeight]);
+
+	const [bounds, setBounds] = useState([0, 0]);
+	useEffect(() => {
+		setBounds([menuref.current?.offsetWidth || 0, menuref.current?.offsetHeight || 0]);
+	}, []);
+
+	const maxwidth = window.innerWidth - bounds[0];
+	const maxheight = window.innerHeight - bounds[1];
+	console.log(x, window.innerWidth, bounds[0], maxwidth)
+	if (x > maxwidth)
+		x = maxwidth;
+	console.log(y, window.innerHeight, bounds[1], maxheight)
+	if (y > maxheight)
+		y = maxheight;
+
+	useEffect(() => {
+		function handleClickOutside(event) {
+			if (menuref.current && !menuref.current.contains(event.target)) {
+				setMenu({x: 0, y: 0, show: false});
+			}
+		}
+		// Bind the event listener
+		document.addEventListener("mousedown", handleClickOutside);
+		return () => {
+		// Unbind the event listener on clean up
+		document.removeEventListener("mousedown", handleClickOutside);
+		};
+	}, [menuref]);
+
+
+	if (!show)
+		return (<></>);
+	return (
+	<menu ref={menuref} style={{left: `${x}px`, top: `${y}px`, width:"100px"}} className="chat-user-menu">
+		hello there
+	</menu>
+	);
+}
+
+function UserMessageComponent({ message, sender, setMenu } : { message: UserMessage; sender: string, setMenu: ({x, y, show}: {x: number, y: number, show: boolean}) => void}) : JSX.Element {
 	let alignment = "leftalign";
-	let sender_element = <a href={`/profile/${message.sender}`}>{message.sender}</a>;
+	let sender_element = <a href={`/profile/${message.sender}`}
+			onContextMenu={(e) => {
+				e.preventDefault();
+				console.log(e);
+				if (!e.currentTarget.parentElement?.parentElement?.parentElement?.parentElement)
+					return;
+				let bounds = e.currentTarget.parentElement?.parentElement?.parentElement?.parentElement.getBoundingClientRect();
+				console.log(bounds);//TODO:STUPID ASS STORM FORCING US HOME
+				setMenu({x: e.clientX - bounds.left, y: e.clientY - bounds.top, show: true});
+			}}
+		>{message.sender}</a>;
 	let date_element = <sub>{new Date(message.date).toLocaleString()}</sub>;
 	let message_top = (
 		<div className="message-header">
@@ -100,7 +202,9 @@ function ChatChannel(
 		updateVisibility: (channel_id: string, visibility: number, password: string) => Promise<boolean>
 	}){
 	const modal = useRef<HTMLDialogElement>(null);
-	const visibilityForm = useRef<HTMLFormElement>(null);
+
+	const [menu, setMenu] = useState({x: 0, y: 0, show: false});
+
 
 	const makeModalVisible = () => {
 		modal.current?.showModal();
@@ -114,11 +218,12 @@ function ChatChannel(
 			<div id="history-anchor"></div>
 			{messages.map((message: UserMessage | Message, index : number) => (
 				isUserMessage(message) ?
-				<UserMessageComponent key={index} message={message} sender={sender}/>
+				<UserMessageComponent key={index} message={message} sender={sender} setMenu={setMenu} />
 				:
 				<MessageComponent key={index} message={message} />
 			))}
 		</div>
+		<UserMenuComponent x={menu.x} y={menu.y} show={menu.show} setMenu={setMenu} />
 		<footer className="chat-area">
 			<div>
 				You are chatting as {sender}
