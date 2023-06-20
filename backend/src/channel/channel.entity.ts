@@ -10,7 +10,7 @@ export class Channel extends BaseEntity {
 	@PrimaryGeneratedColumn("uuid")
 	id: string;
 
-	@Column({ unique: true })
+	@Column({ })
 	name: string;
 
 	// public, private or DM
