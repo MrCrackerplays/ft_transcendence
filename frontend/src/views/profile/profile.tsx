@@ -11,7 +11,6 @@ import AddFriend from './misc/addfriend';
 import SearchBar from './misc/search';
 import MyStats from './misc/stats';
 import SelectBar from './selectbar/selectbar';
-import { match } from 'assert';
 
 function ProfilePage() {
 	const [isLoading, setIsLoading] = useState(true);
@@ -38,7 +37,7 @@ function ProfilePage() {
 		return (<div><h1>User Not Found</h1></div>);
 	}
 	return (
-		<div className="container">
+		<div className="profilecontainer">
 				<div className="SelectBar"><SelectBar matchhistory={matchhistory} setmatchhistory={setmatchhistory}/></div>
 				<div className="Name"><Userbar name={jsonData.userName} /></div>
 				<div className="Profile">

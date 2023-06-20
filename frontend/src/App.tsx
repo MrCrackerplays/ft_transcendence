@@ -11,6 +11,7 @@ import HomePage from './views/menu/home';
 
 import UserStatus from './hooks/userStatus/userStatus';
 import Sidebar from './views/sidebar/sidebar';
+import './App.css'
 
 function App(): React.ReactElement
 {
@@ -44,16 +45,18 @@ function App(): React.ReactElement
 				</Routes>
 		)
 	return (
-		<div>
+		<div id="loggedincontainer">
 			<MyNavBar/>
 			<Sidebar />
 			<UserStatus />
-    		<Routes>
-				<Route path="/" element={<HomePage />}/>
-				<Route path="/profile/*" element={<ProfilePage />} />
-    			<Route path="/settings" element={<Temp />} />
-				<Route path="/temp" element={<Temp />}/>
-    		</Routes>
+			<div className="maincontainer scrollable">
+				<Routes>
+					<Route path="/" element={<HomePage />}/>
+					<Route path="/profile/*" element={<ProfilePage />} />
+					<Route path="/settings" element={<Temp />} />
+					<Route path="/temp" element={<Temp />}/>
+				</Routes>
+			</div>
 		</div>
   );
 }

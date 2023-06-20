@@ -174,7 +174,13 @@ export class ChannelService {
 
 		// Load the messages
 		// TODO: Remove magic number
-		return this.messageService.getWithChannelID(channelID, 10);
+		return this.messageService.get({
+				channel: {
+					id: channelID
+				}
+			},
+			['channel'],
+			50);
 	}
 
 	async createMessageProtected(channelID: string, user: User, dto: CreateMessageDTO): Promise<Message> {
