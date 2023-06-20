@@ -182,7 +182,7 @@ export class UserService {
 			return null;
 		
 		// Validate username (a-z A-Z 0-9 _) (between 8 & 16 characters)
-		const MIN_CHAR = 8;
+		const MIN_CHAR = 2;
 		const MAX_CHAR = 16;
 		if (name.length < MIN_CHAR || name.length > MAX_CHAR) {
 			return null;
