@@ -1,0 +1,80 @@
+/* Type: CSS */
+
+:root {
+	--pong-frame-width: 85vw;
+	--pong-frame-height: 85vh;
+	/* --pong-frame-width: 800;
+	--pong-frame-height: 600; */
+	/* --paddle-width: 2vW;
+	--paddle-height: 15vH; */
+
+
+	/* pixel values: */
+	--pong-frame-width-pixels: 0;
+	--pong-frame-height-pixels: 0;
+	--paddle-height-pixels: 0;
+}
+
+.pong-frame {
+	position: relative;
+	height: 85vh;
+	width: 85vw;
+	background-color: rgb(89, 163, 127);
+}
+
+.centre-line {
+
+	position: absolute;
+	width: 1px;
+	height: 85vh;
+	background-color: rgb(255, 255, 255);
+	left: calc(var(--pong-frame-width) / 2 - 1px);
+	z-index: 2;
+}
+
+
+/* REMOVE later */
+.h-centre-line {
+
+	position: absolute;
+	height: 1px;
+	width: 100%;
+	background-color: rgb(255, 255, 255);
+	left: 0;
+	top: 50%;
+	z-index: 2;
+}
+
+.paddle-left {
+
+	position: absolute;
+	background-color: rgb(255, 255, 255);
+}
+
+.paddle-right {
+
+	position: absolute;
+	background-color: rgb(255, 255, 255);
+}
+
+.score {
+
+	position: absolute;
+	color: rgb(255, 255, 255);
+	background-color: var(--pong-frame-background-color);
+	font: 2rem 'Press Start 2P', cursive;
+	z-index: 2;
+}
+
+.pong-ball {
+
+	position: absolute;
+	width: 2%;
+	height: 2%;
+	background-color: rgb(202, 103, 67);
+	left: calc(var(--pong-frame-width) / 2 - width / 2);
+	top: calc(var(--pong-frame-height) / 2 - height / 2);
+	z-index: 1;
+	border-radius: 50%;
+
+}
