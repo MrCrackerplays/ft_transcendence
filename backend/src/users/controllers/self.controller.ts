@@ -104,6 +104,12 @@ export class SelfController {
 		return this.userService.getAchievements(currentUser);
 	}
 
+	@Post('achievements')
+	async grantAchievement(@Req() req: AuthRequest, @Body() ach: any): Promise<void> {
+		const currentUser = await this.getCurrentUser(req);
+		return this.userService.unlockAchievement(currentUser, ach.name);
+	}
+
 	@Post('pfp')
 	@UseInterceptors(FileInterceptor('file', storage))
 	async uploadProfilePicture(@Req() req: AuthRequest, @UploadedFile() file : Express.Multer.File): Promise<User> {
