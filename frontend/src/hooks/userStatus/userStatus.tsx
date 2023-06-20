@@ -28,7 +28,7 @@ function UserStatus() {
 		});
 	}, [])
 	return (
-		<div />
+		<></>
 	);
 }
 

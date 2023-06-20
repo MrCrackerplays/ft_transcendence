@@ -9,6 +9,7 @@ import { DatabaseModule } from './database/database.module';
 import { ChannelModule } from './channel/channel.module';
 import { MatchModule } from './matches/match.module';
 import { AuthModule } from './auth/auth.module';
+import { ChatModule } from './chat/chat.module';
 import { AchievementModule } from './achievements/achievement.module';
 import { UserStatusModule } from './userStatus/UserStatus.module';
 
@@ -39,6 +40,7 @@ import { UserStatusModule } from './userStatus/UserStatus.module';
 		MatchModule,
 		AuthModule,
 		AchievementModule,
+		ChatModule,
 		UserStatusModule
 	],
 
