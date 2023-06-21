@@ -14,7 +14,7 @@ import { User } from 'src/users/user.entity';
 import { Logger } from '@nestjs/common';
 import { parse } from 'cookie'
 
-@WebSocketGateway ({
+@WebSocketGateway({
 	cors: {
 		origin: Constants.FRONTEND_URL,
 		credentials: true
