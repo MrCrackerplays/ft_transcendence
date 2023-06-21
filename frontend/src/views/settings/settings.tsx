@@ -1,69 +1,61 @@
-import React, {useState} from 'react';
-import { useNavigate } from 'react-router-dom';
-import MyNavBar from "../../hooks/navbar/navbar";
-import MyFriendsList from "../sidebar/friendlist/friendlist";
+import React, {useState} from 'react'
 import './settings.css'
+import { Constants } from '../../../../shared/constants';
 
-function NavButton({label}) {
-	const navigate = useNavigate();
 
-	function handleClick() {
-		navigate('/'.concat(label));
+function Settings() {
+	const [name, setName] = useState('')
+	const [twofa, setTwofa] = React.useState("")
+
+
+	async function handleName() {
+		window.event?.preventDefault()
+		//POST /self/changename
+		const RESPONSE = await fetch("http://localhost:3000/self/changename", {
+			method: 'POST',
+			credentials: 'include',
+			headers: {
+				'content-type': "application/json"
+			},
+			body: JSON.stringify({
+				name: name
+			})
+		});
+		console.log({name})
+		console.log(RESPONSE.ok);
 	}
-
+	async function handle2fa()
+	{
+		window.event?.preventDefault();
+		const response = await fetch('http://localhost:3000/2fa',{
+			credentials: 'include'
+		});
+		const body = await response.json();
+		const responseBody = body.qr;
+		setTwofa(responseBody)
+	}
 	return (
-		<button
-			className="button"
-			type="button"
-			onClick={handleClick}>
-				<p className="text">{label}</p>
-		</button>
+		<div className='main-body'>
+			<form className="size" onSubmit={handleName}>
+				<label>
+					Change Name:
+					<input className="size" type="text" value={name} onChange={(e) => setName(e.target.value)} />
+				</label>
+				<button type="submit">Submit Name Change!</button>
+			</form>
+			<div>
+				<button onClick={handle2fa}>Enable 2fa!</button>
+				<img src={twofa} alt=""	/>
+			</div>
+			<form method="POST" action={`${Constants.BACKEND_URL}/remove`}>
+				<button>!!REMOVE ACCOUNT!!</button>
+			</form>
+			<div id="iddelete" className="modal">
+
+			</div>
+			<img src="http://localhost:3000/self/pfp" alt="Not found!"	/>
+		</div>
 	)
 }
 
-function subMenu()
-{
-	const [isSubMenuOpen, setIsSubMenuOpen] = useState(false);
-
-	const handleSubMenuToggle = () => {
-		setIsSubMenuOpen(isSubMenuOpen);
-	}
-
-	return (
-		<ul className='menu'>
-			<p className='text'>BALLBUSTERS</p>
-			<NavButton label='profile' />
-			<NavButton label='extras' />
-			<button
-				className="button"
-				type="button"
-				onClick={handleSubMenuToggle}>
-					<p className="text">return</p>
-			</button> { isSubMenuOpen && <subMenu />}
-    	</ul>
-	)
-}
-
-function SettingsPage()
-{
-	const [isSubMenuOpen, setIsSubMenuOpen] = useState(false);
-
-	const handleSubMenuToggle = () => {
-		setIsSubMenuOpen(isSubMenuOpen);
-	}
-	return (
-    	<ul className='menu'>
-			<p className='text'>BALLBUSTERS</p>
-			<button
-				className="button"
-				type="button"
-				onClick={handleSubMenuToggle}>
-					<p className="text">play</p>
-			</button> { isSubMenuOpen && <subMenu />}
-			<NavButton label='profile' />
-			<NavButton label='extras' />
-    	</ul>
-	)
-}
-
-export default SettingsPage;
+export default Settings

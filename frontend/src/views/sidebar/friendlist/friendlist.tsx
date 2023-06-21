@@ -45,7 +45,7 @@ function MyFriendsList() {
 	const [isLoading, setisLoading] = useState(true);
 	
 	async function getFriends() {
-		console.log("fetched some friends");
+		// console.log("fetched some friends");
 		setFriendArray(await FetchFriends());
 		setisLoading(false);
 	}
