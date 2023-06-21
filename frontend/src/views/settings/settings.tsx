@@ -23,8 +23,10 @@ function ModalDelete({onClose})
 		<div className="modaldelete-content">
 		  <h2>Delete Account</h2>
 		  <p>Are you sure you wish you delete your account?</p>
+		  <div className="modaldelete-buttons">
 		  <button onClick={deleteAccount} className="deletebutton">Delete</button>
 		  <button onClick={onClose} className="cancelbutton">Cancel</button>
+		  </div>
 		</div>
 	  </div>
 	);
@@ -42,15 +44,35 @@ function DeleteAccountButton({setTrue, setFalse, showDelete})
 
 function Settings() {
 	const [showDelete, setshowDelete] = useState(false);
+	const [scam, setscam] = useState(0);
+	const handleSubmit = async (event) => {
+		if (event.target.file.files[0] === null)
+			return ;
+		const formData = new FormData();
+		formData.append('file', event.target.file.files[0])
+		window.event?.preventDefault()
+		const RESPONSE = await fetch(`${Constants.FETCH_SELF_PFP}`, {
+			method: 'POST',
+			credentials: 'include',
+			body: formData
+		});
+		console.log(RESPONSE.ok);
+	}
 	return (
 		<div className="setting-container">
 			<div className="Delete-Button">
 				<div className="SettingsDeleteButtonSubmit"><DeleteAccountButton setTrue={() => setshowDelete(true)} setFalse={() => setshowDelete(false)} showDelete={showDelete}/></div>
 			</div>
 			<div className="SettingsPFP">
-				<div className="SettingsPFPImage"></div>
-				<div className="SettingsPFPUpload"></div>
-				<div className="SettingsPFPSubmit"></div>
+				<div className="SettingsPFPImage">
+					<img className="SPFPSize" src={`${Constants.FETCH_SELF_PFP}`} alt=""/>
+				</div>
+				<div className="SettingsPFPUpload">
+				<form onSubmit={handleSubmit}>
+					<input className="sPFPInput" type="file" id="file" name="file" accept="image/*" />
+					<input className="sPFPSubmit" type="submit" value="Upload" />
+				</form>
+				</div>
 			</div>
 			<div className="SettingsNamechange">
 				<div className="SettingsChangeName"></div>
