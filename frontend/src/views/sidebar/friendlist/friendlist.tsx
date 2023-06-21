@@ -61,7 +61,7 @@ function MyFriendsList() {
 	if (isLoading)
 		return (<div></div>)
 	return (
-		<div className="all-friends">
+		<div className="all-friends scrollable">
 			{
 				friendArray.map((friend) => (
 					<FriendCard key={friend.id} friend={friend}/>

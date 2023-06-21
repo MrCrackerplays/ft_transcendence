@@ -8,6 +8,7 @@ import { Channel } from "./channel.entity";
 import { Message } from "src/channel/message/message.entity";
 import { MessageService } from "src/channel/message/message.service";
 import { User } from "src/users/user.entity";
+import { PublicChannel } from "./public-channel.interface";
 
 @Injectable()
 export class ChannelService {
@@ -54,8 +55,6 @@ export class ChannelService {
 		channel.muted = [];
 		channel.save();
 
-		// Strip password and return
-		channel.password = null;
 		return channel;
 	}
 
@@ -110,19 +109,19 @@ export class ChannelService {
 		return channel;
 	}
 
-	async getAllPublic(): Promise<Channel[]> {
+	async getAllPublic(): Promise<PublicChannel[]> {
 		const channels = await this.channelRepository.find({
 			where: {
 				visibility: Visibility.PUBLIC
 			}
 		});
 
-		// Strip passwords
+		const pubChannels: PublicChannel[] = [];
 		for (var c of channels) {
-			c.password = null;
+			pubChannels.push(c.toPublic());
 		}
 
-		return (channels);
+		return (pubChannels);
 	}
 
 	async findAllMessages(channelID: string): Promise<Message[]> {
@@ -157,13 +156,13 @@ export class ChannelService {
 		channel.save();
 	}
 
-	async getChannelProtected(channelID: string, user: User): Promise<Channel> {
+	async getChannelProtected(channelID: string, user: User): Promise<PublicChannel> {
 		const channel = await this.protectedChannel(channelID, user);
 
 		if (!channel)
 			throw new HttpException('Not part of channel', HttpStatus.UNAUTHORIZED);
 
-		return channel;
+		return channel.toPublic();
 	}
 
 	// This one first checks if user is subscribed to the channel before sending back messages
@@ -175,7 +174,13 @@ export class ChannelService {
 
 		// Load the messages
 		// TODO: Remove magic number
-		return this.messageService.getWithChannelID(channelID, 10);
+		return this.messageService.get({
+				channel: {
+					id: channelID
+				}
+			},
+			['channel'],
+			50);
 	}
 
 	async createMessageProtected(channelID: string, user: User, dto: CreateMessageDTO): Promise<Message> {

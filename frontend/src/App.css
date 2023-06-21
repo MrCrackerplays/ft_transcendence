@@ -1,0 +1,90 @@
+#loggedincontainer {
+	height: 100%;
+	display: grid;
+	grid-template-columns: 1.6fr 0.4fr; 
+	grid-template-rows: 62px 1fr;
+	gap: 0px 0px;
+	grid-auto-flow: row;
+	grid-template-areas:
+	  "my-navbar my-navbar"
+	  "maincontainer sidebarcontainer"
+	  "maincontainer sidebarcontainer";
+}
+
+@media (width <= 900px) {
+	#loggedincontainer {
+		grid-template-columns: 1fr;
+		grid-template-rows: 62px 1fr 200px;
+		grid-template-areas:
+		  "my-navbar"
+		  "maincontainer"
+		  "sidebarcontainer";
+	}
+}
+
+.my-navbar {
+	grid-area: my-navbar;
+}
+
+.sidebarcontainer {
+	display: grid;
+	grid-template-columns: 1fr;
+	grid-template-rows: 50% 50%;
+	gap: 0px 0px;
+	grid-auto-flow: row;
+	grid-template-areas:
+	  "all-friends"
+	  "chatbox";
+	grid-area: sidebarcontainer;
+	color: white;
+}
+
+@media (width <= 900px) {
+	.sidebarcontainer {
+		grid-template-columns: 1fr 1fr;
+		grid-template-rows: 100%;
+		grid-template-areas:
+		  "all-friends chatbox";
+	}
+}
+
+.all-friends {
+	grid-area: all-friends;
+	padding: 5px;
+	overflow: auto;
+}
+
+.chatbox {
+	grid-area: chatbox;
+	display: grid;
+	padding: 5px;
+	grid-template-rows: 0fr 1fr 0fr;
+}
+
+.maincontainer {
+	grid-area: maincontainer;
+	overflow: auto;
+}
+
+
+
+
+.scrollable {
+	scrollbar-color: lightslategray transparent;
+	scrollbar-width: thin;
+}
+
+.scrollable::-webkit-scrollbar {
+	height: 12px;
+	width: 12px;
+}
+
+.scrollable::-webkit-scrollbar-thumb {
+	background: lightslategray;
+	border-radius: 6px;
+}
+
+.scrollable::-webkit-scrollbar-corner {
+	background: lightslategray;
+	border-radius: 6px 0 0 0;
+}
