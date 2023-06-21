@@ -12,6 +12,7 @@ import UserStatus from './hooks/userStatus/userStatus';
 import Sidebar from './views/sidebar/sidebar';
 import './App.css'
 import Settings from './views/settings/Settings';
+import SettingsOld from './views/settings/settingsold';
 
 function App(): React.ReactElement
 {
@@ -54,7 +55,7 @@ function App(): React.ReactElement
 					<Route path="/" element={<HomePage />}/>
 					<Route path="/profile/*" element={<ProfilePage />} />
 					{/* <Route path="/settings" element={< />} /> */}
-					<Route path="/settings" element={<Settings />}/>
+					<Route path="/settings" element={<SettingsOld />}/>
 				</Routes>
 			</div>
 		</div>

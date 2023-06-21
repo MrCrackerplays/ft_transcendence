@@ -1,59 +1,68 @@
-import React, {useState} from 'react'
+import React, { useEffect, useState } from 'react'
 import './settings.css'
 import { Constants } from '../../../../shared/constants';
+import { PublicUser } from '../../../../shared/public-user';
+import FetchSelf from '../../hooks/fetch/FetchSelf';
 
+
+async function deleteAccount()
+{
+	console.log("remove")
+	window.event?.preventDefault();
+	const RESPONSE = await fetch(`${Constants.BACKEND_URL}/remove`, {
+		method: 'POST',
+		credentials: 'include'
+	});
+	console.log(RESPONSE.ok);
+}
+
+function ModalDelete({onClose})
+{
+	return (
+	  <div className="modaldelete">
+		<div className="modaldelete-content">
+		  <h2>Delete Account</h2>
+		  <p>Are you sure you wish you delete your account?</p>
+		  <button onClick={deleteAccount} className="deletebutton">Delete</button>
+		  <button onClick={onClose} className="cancelbutton">Cancel</button>
+		</div>
+	  </div>
+	);
+}
+
+function DeleteAccountButton({setTrue, setFalse, showDelete})
+{
+	return(
+		<div>
+		<button className="setShowDelete size" onClick={setTrue} >Delete Account</button>
+		{showDelete && <ModalDelete onClose={(setFalse)} />}
+		</div>
+	)
+}
 
 function Settings() {
-	const [name, setName] = useState('')
-	const [twofa, setTwofa] = React.useState("")
-
-
-	async function handleName() {
-		window.event?.preventDefault()
-		//POST /self/changename
-		const RESPONSE = await fetch("http://localhost:3000/self/changename", {
-			method: 'POST',
-			credentials: 'include',
-			headers: {
-				'content-type': "application/json"
-			},
-			body: JSON.stringify({
-				name: name
-			})
-		});
-		console.log({name})
-		console.log(RESPONSE.ok);
-	}
-	async function handle2fa()
-	{
-		window.event?.preventDefault();
-		const response = await fetch('http://localhost:3000/2fa',{
-			credentials: 'include'
-		});
-		const body = await response.json();
-		const responseBody = body.qr;
-		setTwofa(responseBody)
-	}
+	const [showDelete, setshowDelete] = useState(false);
 	return (
-		<div className='main-body'>
-			<form className="size" onSubmit={handleName}>
-				<label>
-					Change Name:
-					<input className="size" type="text" value={name} onChange={(e) => setName(e.target.value)} />
-				</label>
-				<button type="submit">Submit Name Change!</button>
-			</form>
-			<div>
-				<button onClick={handle2fa}>Enable 2fa!</button>
-				<img src={twofa} alt=""	/>
+		<div className="setting-container">
+			<div className="Delete-Button">
+				<div className="SettingsDeleteButtonSubmit"><DeleteAccountButton setTrue={() => setshowDelete(true)} setFalse={() => setshowDelete(false)} showDelete={showDelete}/></div>
 			</div>
-			<form method="POST" action={`${Constants.BACKEND_URL}/remove`}>
-				<button>!!REMOVE ACCOUNT!!</button>
-			</form>
-			<div id="iddelete" className="modal">
-
+			<div className="SettingsPFP">
+				<div className="SettingsPFPImage"></div>
+				<div className="SettingsPFPUpload"></div>
+				<div className="SettingsPFPSubmit"></div>
 			</div>
-			<img src="http://localhost:3000/self/pfp" alt="Not found!"	/>
+			<div className="SettingsNamechange">
+				<div className="SettingsChangeName"></div>
+				<div className="SettingsNameInput"></div>
+				<div className="SettingsNameSubmit"></div>
+			</div>
+			<div className="SettingsQRCode">
+				<div className="SettingsQRImg"></div>
+				<div className="SettingsEnableQR"></div>
+				<div className="SettingsQRInput"></div>
+				<div className="SettingsQRSubmission"></div>
+			</div>
 		</div>
 	)
 }
