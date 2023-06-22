@@ -17,6 +17,7 @@ import { WsGuard } from 'src/auth/guards/wsguard.guard';
 import { User } from 'src/users/user.entity';
 import { parse } from 'cookie';
 import { CreateChannelDTO, Visibility } from '../../../shared/dto/channel.dto';
+import { Channel } from 'src/channel/channel.entity';
 
 
 @WebSocketGateway({
@@ -50,11 +51,34 @@ export class ChatGateway {
 		return undefined;
 	}
 
-	afterInit(server: Server) {
+	private canDoAction(user: User, channel: Channel, action: string): boolean {
+		console.log("user", user);
+		console.log("channel", channel);
+		if (channel.owner && channel.owner.id == user.id)
+			return true;
+		const is_admin: boolean = channel.admins && channel.admins.find(admin => admin.id == user.id) != undefined;
+		const adminactions: string[] = [
+			"kick",
+			"ban",
+			"unban",
+			"mute",
+			"unmute",
+		];
+		if (adminactions.includes(action)) {
+			return is_admin;
+		}
+		const useractions: string[] = [
+			"block",
+			"unblock",
+		];
+		return useractions.includes(action);
+	}
+
+	afterInit(server: Server): void {
 		Logger.log('chat Server initialized');
 	}
 
-	handleConnection(client: Socket) {
+	handleConnection(client: Socket): void {
 		Logger.log(`new connection ${client.id}`);
 		let result = undefined;
 		try {
@@ -81,7 +105,7 @@ export class ChatGateway {
 		});
 	}
 
-	handleDisconnect(client: Socket) {
+	handleDisconnect(client: Socket): void {
 		Logger.log(`disconnected ${client.id}`);
 	}
 
@@ -153,111 +177,325 @@ export class ChatGateway {
 		// if (user.userName == "zach")
 		// 	return {channel_id: channel_id, success: false, reason: "zach is not allowed"};
 
-		// let channels = await this.userService.getChannels(user);
-		// console.log("channels:", channels);
-		// const is_subscribed = (channels).includes(channel);
-		// const is_subscribed = true;
-		const is_subscribed = (await this.userService.getChannels(user)).filter(subscribed => subscribed.id == channel_id).length > 0;
+		const is_subscribed = (await this.userService.getChannels(user)).find(ch => ch.id == channel_id);
 		if (!is_subscribed) {
 			console.log("user is not subscribed");
 			// this.userService.subscribeToChannel(user, { channelID: channel_id, password: (await this.channelService.findOne(channel_id)).password });
 			return {channel_id: channel_id, success: false, reason: "not subscribed"};
 		}
 
-		//TODO: check if user is banned from channel otherwise not allowed, currently no way to do it
-		const is_banned = channel.banned.filter(banned => banned.id == user.id).length > 0;
+		const is_banned = channel.banned.find(banned => banned.id == user.id);
 		if (is_banned) {
 			console.log("user is banned");
 			return {channel_id: channel_id, success: false, reason: "banned"};
 		}
 
-		// client.join("channel:" + channel_id);
 		this.server.in("user:" + user.id).socketsJoin("channel:" + channel_id);
 		this.server.to("channel:" + channel_id).emit("joinmessage", { channel: channel_id, content: user.userName + " has joined the channel" });
 		return {channel_id: channel_id, success: true, reason: "Success"};
 	}
 
-	//TODO: implement kick
 	@UseGuards(WsGuard)
 	@SubscribeMessage('kick')
 	kickUser(
 		@ConnectedSocket() client: Socket,
 		@MessageBody("channel") channel_id: string,
-		@MessageBody("user") user_id: string
+		@MessageBody("user") target_user_id: string
 	): void {
-		console.log("kick event");
-		this.server.to("user:" + user_id).emit("kick", channel_id );
-		this.server.in("user:" + user_id).socketsLeave("channel:" + channel_id);
-		console.log("kick event end");
+		this.userFromSocket(client).then(user => {
+			if (!user)
+				return;
+			this.channelService.get({ id: channel_id }).then(channel => {
+				if (!channel)
+					return;
+				console.log("kick event");
+				if (this.canDoAction(user, channel, "kick") && channel.owner.id != target_user_id) {
+					const is_owner = channel.owner.id == user.id;
+					const is_admin = channel.admins.find(admin => admin.id == user.id) != undefined;
+					const is_target_admin = channel.admins.find(admin => admin.id == target_user_id) != undefined;
+					if (((is_owner || is_admin) && !is_target_admin) || (is_owner && is_target_admin)) {
+						if (!channel.members) {
+							Logger.error("channel has no members", "kickUser");
+							return;
+						}
+						channel.members = channel.members.filter(member => member.id != target_user_id);
+						channel.admins = channel.admins.filter(admin => admin.id != target_user_id);
+						channel.save();
+						this.server.to("user:" + target_user_id).emit("kick", channel_id );
+						this.server.in("user:" + target_user_id).socketsLeave("channel:" + channel_id);
+					}
+				}
+				console.log("kick event end");
+			});
+		});
 	}
 
-	//TODO: implement leave
 	@UseGuards(WsGuard)
 	@SubscribeMessage('leave')
 	leaveChannel(
 		@ConnectedSocket() client: Socket,
 		@MessageBody("channel") channel_id: string
 	): void {
-		console.log("leave event");
-		// client.leave("channel:" + channel_id);
 		this.userFromSocket(client).then(user => {
-			this.server.to("user:" + user.id).emit("leave", channel_id );
-			this.server.in("user:" + user.id).socketsLeave("channel:" + channel_id);
+			this.channelService.get({ id: channel_id }).then(channel => {
+				console.log("leave event", channel, user);
+				if (!channel)
+					return;
+				if (!channel.members) {
+					Logger.error("channel has no members", "leaveChannel");
+					return;
+				}
+				channel.members = channel.members.filter(member => member.id != user.id);
+				channel.admins = channel.admins.filter(admin => admin.id != user.id);
+				channel.save();
+				this.server.to("user:" + user.id).emit("leave", channel_id );
+				this.server.in("user:" + user.id).socketsLeave("channel:" + channel_id);
+				console.log("leave event end");
+			});
 		});
-		console.log("leave event end");
 	}
 
-	//TODO: implement 
+	@UseGuards(WsGuard)
+	@SubscribeMessage('block')
+	blockUser(
+		@ConnectedSocket() client: Socket,
+		@MessageBody("user") target_user_id: string
+	): void {
+		this.userFromSocket(client).then(user => {
+			if (!user)
+				return;
+			console.log("block event");
+			this.userService.get(target_user_id).then(target_user => {
+				if (!target_user)
+					return;
+				user.blocked.push(target_user);
+				user.save();
+				this.server.to("user:" + user.id).emit("block", target_user_id );
+			});
+		});
+		console.log("block event end");
+	}
+
+	@UseGuards(WsGuard)
+	@SubscribeMessage('unblock')
+	unblockUser(
+		@ConnectedSocket() client: Socket,
+		@MessageBody("user") target_user_id: string
+	): void {
+		this.userFromSocket(client).then(user => {
+			if (!user)
+				return;
+			console.log("unblock event");
+			user.blocked = user.blocked.filter(blocked => blocked.id != target_user_id);
+			user.save();
+			this.server.to("user:" + user.id).emit("unblock", target_user_id );
+		});
+		console.log("unblock event end");
+	}
+
 	@UseGuards(WsGuard)
 	@SubscribeMessage('ban')
 	banUser(
 		@ConnectedSocket() client: Socket,
 		@MessageBody("channel") channel_id: string,
-		@MessageBody("user") user_id: string
-	) {
-		console.log("ban event");
-		this.server.to("user:" + user_id).emit("ban", channel_id );
-		this.server.in("user:" + user_id).socketsLeave("channel:" + channel_id);
-		console.log("ban event end");
+		@MessageBody("user") target_user_id: string
+	): void {
+		this.userFromSocket(client).then(user => {
+			if (!user)
+				return;
+			this.channelService.get({ id: channel_id }).then(async channel => {
+				if (!channel)
+					return;
+				console.log("ban event");
+				if (this.canDoAction(user, channel, "ban") && channel.owner.id != target_user_id) {
+					const is_owner = channel.owner.id == user.id;
+					const is_admin = channel.admins.find(admin => admin.id == user.id) != undefined;
+					const is_target_admin = channel.admins.find(admin => admin.id == target_user_id) != undefined;
+					if (((is_owner || is_admin) && !is_target_admin) || (is_owner && is_target_admin)) {
+						const target: User = await this.userService.findOne(target_user_id);
+						if (!target)
+							return;
+						if (!channel.members) {
+							Logger.error("channel has no members", "banUser");
+							return;
+						}
+						channel.members = channel.members.filter(member => member.id != target_user_id);
+						channel.admins = channel.admins.filter(admin => admin.id != target_user_id);
+						channel.banned.push(target);
+						channel.save();
+						this.server.to("user:" + target_user_id).emit("ban", channel_id );
+						this.server.in("user:" + target_user_id).socketsLeave("channel:" + channel_id);
+					}
+				}
+				console.log("ban event end");
+			});
+		});
 	}
 
-	//TODO: implement 
 	@UseGuards(WsGuard)
 	@SubscribeMessage('unban')
 	unbanUser(
 		@ConnectedSocket() client: Socket,
 		@MessageBody("channel") channel_id: string,
-		@MessageBody("user") user_id: string
-	) {
-		console.log("unban event");
-		this.server.to("user:" + user_id).emit("unban", channel_id );
-		console.log("unban event end");
+		@MessageBody("user") target_user_id: string
+	): void {
+		this.userFromSocket(client).then(user => {
+			if (!user)
+				return;
+			this.channelService.get({ id: channel_id }).then(async channel => {
+				if (!channel)
+					return;
+				console.log("unban event");
+				if (this.canDoAction(user, channel, "unban") && channel.owner.id != target_user_id) {
+					const is_owner = channel.owner.id == user.id;
+					const is_admin = channel.admins.find(admin => admin.id == user.id) != undefined;
+					const is_target_admin = channel.admins.find(admin => admin.id == target_user_id) != undefined;
+					if (((is_owner || is_admin) && !is_target_admin) || (is_owner && is_target_admin)) {
+						const target: User = await this.userService.findOne(target_user_id);
+						if (!target)
+							return;
+						channel.banned = channel.banned.filter(banned => banned.id != target.id);
+						channel.save();
+						this.server.to("user:" + target_user_id).emit("unban", channel_id );
+					}
+				}
+				console.log("unban event end");
+			});
+		});
 	}
 
-	//TODO: implement mute
 	@UseGuards(WsGuard)
 	@SubscribeMessage('mute')
 	muteUser(
 		@ConnectedSocket() client: Socket,
 		@MessageBody("channel") channel_id: string,
-		@MessageBody("user") user_id: string
-	) {
-		console.log("mute event");
-		this.server.to("user:" + user_id).emit("mute", channel_id );
-		console.log("mute event end");
+		@MessageBody("user") target_user_id: string
+	): void {
+		this.userFromSocket(client).then(user => {
+			if (!user)
+				return;
+			this.channelService.get({ id: channel_id }).then(async channel => {
+				if (!channel)
+					return;
+				console.log("mute event");
+				if (this.canDoAction(user, channel, "mute") && channel.owner.id != target_user_id) {
+					const is_owner = channel.owner.id == user.id;
+					const is_admin = channel.admins.find(admin => admin.id == user.id) != undefined;
+					const is_target_admin = channel.admins.find(admin => admin.id == target_user_id) != undefined;
+					if (((is_owner || is_admin) && !is_target_admin) || (is_owner && is_target_admin)) {
+						const target: User = await this.userService.findOne(target_user_id);
+						if (!target)
+							return;
+						channel.muted.push(target);
+						channel.save();
+						this.server.to("user:" + target_user_id).emit("mute", channel_id );
+					}
+				}
+				console.log("mute event end");
+			});
+		});
 	}
 
-	//TODO: implement unmute
 	@UseGuards(WsGuard)
 	@SubscribeMessage('unmute')
 	unmuteUser(
 		@ConnectedSocket() client: Socket,
 		@MessageBody("channel") channel_id: string,
-		@MessageBody("user") user_id: string
-	) {
-		console.log("unmute event");
-		this.server.to("user:" + user_id).emit("unmute", channel_id );
-		console.log("unmute event end");
+		@MessageBody("user") target_user_id: string
+	): void {
+		this.userFromSocket(client).then(user => {
+			if (!user)
+				return;
+			this.channelService.get({ id: channel_id }).then(async channel => {
+				if (!channel)
+					return;
+				console.log("unmute event");
+				if (this.canDoAction(user, channel, "unmute") && channel.owner.id != target_user_id) {
+					const is_owner = channel.owner.id == user.id;
+					const is_admin = channel.admins.find(admin => admin.id == user.id) != undefined;
+					const is_target_admin = channel.admins.find(admin => admin.id == target_user_id) != undefined;
+					if (((is_owner || is_admin) && !is_target_admin) || (is_owner && is_target_admin)) {
+						const target: User = await this.userService.findOne(target_user_id);
+						if (!target)
+							return;
+						channel.muted = channel.muted.filter(muted => muted.id != target.id);
+						channel.save();
+						this.server.to("user:" + target_user_id).emit("unmute", channel_id );
+					}
+				}
+				console.log("unmute event end");
+			});
+		});
+	}
+
+	@UseGuards(WsGuard)
+	@SubscribeMessage('promote')
+	promoteUser(
+		@ConnectedSocket() client: Socket,
+		@MessageBody("channel") channel_id: string,
+		@MessageBody("user") target_user_id: string
+	): void {
+		this.userFromSocket(client).then(user => {
+			if (!user)
+				return;
+			this.channelService.get({ id: channel_id }).then(async channel => {
+				if (!channel)
+					return;
+				console.log("promote event");
+				if (this.canDoAction(user, channel, "promote") && channel.owner.id != target_user_id) {
+					if (!channel.members) {
+						Logger.error("channel has no members", "promoteUser");
+						return;
+					}
+					if (!channel.members.find(member => member.id == target_user_id))
+						return;
+					const is_owner = channel.owner.id == user.id;
+					const is_admin = channel.admins.find(admin => admin.id == user.id) != undefined;
+					const is_target_admin = channel.admins.find(admin => admin.id == target_user_id) != undefined;
+					if (((is_owner || is_admin) && !is_target_admin) || (is_owner && is_target_admin)) {
+						const target: User = await this.userService.findOne(target_user_id);
+						if (!target)
+							return;
+						channel.admins.push(target);
+						channel.save();
+						this.server.to("user:" + target_user_id).emit("promote", channel_id );
+					}
+				}
+				console.log("promote event end");
+			});
+		});
+	}
+
+	@UseGuards(WsGuard)
+	@SubscribeMessage('demote')
+	demoteUser(
+		@ConnectedSocket() client: Socket,
+		@MessageBody("channel") channel_id: string,
+		@MessageBody("user") target_user_id: string
+	): void {
+		this.userFromSocket(client).then(user => {
+			if (!user)
+				return;
+			this.channelService.get({ id: channel_id }).then(async channel => {
+				if (!channel)
+					return;
+				console.log("demote event");
+				if (this.canDoAction(user, channel, "demote") && channel.owner.id != target_user_id) {
+					const is_owner = channel.owner.id == user.id;
+					const is_admin = channel.admins.find(admin => admin.id == user.id) != undefined;
+					const is_target_admin = channel.admins.find(admin => admin.id == target_user_id) != undefined;
+					if (((is_owner || is_admin) && !is_target_admin) || (is_owner && is_target_admin)) {
+						const target: User = await this.userService.findOne(target_user_id);
+						if (!target)
+							return;
+						channel.admins = channel.admins.filter(admin => admin.id != target.id);
+						channel.save();
+						this.server.to("user:" + target_user_id).emit("demote", channel_id );
+					}
+				}
+				console.log("demote event end");
+			});
+		});
 	}
 
 	@UseGuards(WsGuard)
@@ -271,7 +509,12 @@ export class ChatGateway {
 					if (!channel)
 						return;
 
-					//check if user is in channel and not muted
+					if (!channel.members) {
+						Logger.error("channel has no members", "message");
+					} else if (!channel.members.find(member => member.id == user.id))
+						return;
+					if (channel.muted.find(muted => muted.id == user.id))
+						return;
 
 					this.messageService.createMessage(channel, user, message).then((m) => {
 						console.log("sending message");

@@ -49,6 +49,17 @@
 
 .chat-user-menu {
 	position: absolute;
+	display: flex;
+	flex-direction: column;
+	padding: 0;
+	margin: 0;
+	border: 0;
+}
+
+.hide {
+	opacity: 0;
+	pointer-events: none;
+	z-index: -20;
 }
 
 

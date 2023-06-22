@@ -1,79 +1,36 @@
-import { forwardRef, useEffect, useRef, useState } from "react";
-import { Message, UserMessage, isUserMessage } from "./messagetypes";
+import { useEffect, useRef, useState } from "react";
+import { Message, UserMessage, isUserMessage, MenuItem } from "./messagetypes";
 import ChannelEditor from "./channeleditor";
-// import { Menu, Transition } from "@headlessui/react";
 
-const links = [
-	{ action: 'kick', label: 'Kick' },
-	{ action: 'ban', label: 'Ban' },
-	{ action: 'mute', label: 'Mute' },
-	{ action: 'unmute', label: 'Unmute' },
-	{ action: 'promote', label: 'Promote' },
-	{ action: 'demote', label: 'Demote' },
-	{ action: 'unban', label: 'Unban' }
-]
+type menuSettings = {x: number, y: number, boundX: number, boundY: number, show: boolean, target: string};
 
-// function Testmenu() : ReactElement {
-// 	return (
-// 	);
-// }
+type role = "owner" | "admin" | "user";
 
-// const ChatUserComponent = forwardRef<HTMLElement, {showmenu: boolean, setshowmenu: (show: boolean) => void}>(({showmenu, setshowmenu}, ref) => {
-// 	if (!ref)
-// 		return <></>;
-// 	return (//TODO: MAKE THIS MENU WORK WITH RIGHT CLICKING PROBABLY BY NOT USING HEADLESSUI AS IT SUCKS BALLS BUT BY MAKING A CUSTOM MENU
-// 		<Transition
-// 			appear={false}
-// 			show={showmenu}
-// 			as={Fragment}
-// 		>
-// 			<Menu ref={ref}>
-// 				<Menu.Items className="chat-user-menu" static>
-// 				{
-// 					links.map((link) => (
-// 						<Menu.Item>
-// 						<button
-// 							key={link.action}
-// 							className="testmenu-item"
-// 							onClick={() => {
-// 								console.log(link.action);
-// 								setshowmenu(false);
-// 							}}
-// 						>
-// 							{link.label}
-// 						</button>
-// 						</Menu.Item>
-// 					))
-// 				}
-// 				</Menu.Items>
-// 			</Menu>
-// 		</Transition>
-// 	);
-// });
-
-function UserMenuComponent({ x, y, show, setMenu } : { x: number, y: number, show: boolean, setMenu: ({x, y, show}: {x: number, y: number, show: boolean}) => void}) : JSX.Element {
+function UserMenuComponent({ channel, menusettings, setMenu, items } : { channel: string, menusettings: menuSettings, setMenu: (menusettings: menuSettings) => void, items: MenuItem[]}) : JSX.Element {
 	const menuref = useRef<HTMLMenuElement>(null);
-	// window.innerWidth, window.innerHeight
-	// const scroperef = useRef([window.innerWidth, window.innerHeight]);
 
-	const [bounds, setBounds] = useState([0, 0]);
-	useEffect(() => {
-		setBounds([menuref.current?.offsetWidth || 0, menuref.current?.offsetHeight || 0]);
-	}, []);
-
-	const maxwidth = window.innerWidth - bounds[0];
-	const maxheight = window.innerHeight - bounds[1];
-	console.log(x, window.innerWidth, bounds[0], maxwidth)
+	const ownBounds = [menuref.current?.offsetWidth || 0, menuref.current?.offsetHeight || 0];
+	const bufferspace= 20
+	const maxwidth = menusettings.boundX - ownBounds[0] - bufferspace;
+	const maxheight = menusettings.boundY - ownBounds[1] - bufferspace;
+	let x = menusettings.x;
+	let y = menusettings.y;
+	if (x < bufferspace)
+		x = bufferspace;
 	if (x > maxwidth)
 		x = maxwidth;
-	console.log(y, window.innerHeight, bounds[1], maxheight)
+	if (y < bufferspace)
+		y = bufferspace;
 	if (y > maxheight)
 		y = maxheight;
+
+	menuref.current?.style.setProperty("left", `${x}px`);
+	menuref.current?.style.setProperty("top", `${y}px`);
 
 	useEffect(() => {
 		function handleClickOutside(event) {
 			if (menuref.current && !menuref.current.contains(event.target)) {
-				setMenu({x: 0, y: 0, show: false});
+				setMenu({x: 0, y: 0, boundX: 0, boundY: 0, show: false, target: ""});
 			}
 		}
 		// Bind the event listener
@@ -84,27 +41,49 @@ function UserMenuComponent({ x, y, show, setMenu } : { x: number, y: number, sho
 		};
 	}, [menuref]);
 
-
-	if (!show)
-		return (<></>);
 	return (
-	<menu ref={menuref} style={{left: `${x}px`, top: `${y}px`, width:"100px"}} className="chat-user-menu">
-		hello there
-	</menu>
+		<menu ref={menuref} style={{width:"100px"}} className={"chat-user-menu" + (!menusettings.show ? " hide" : "")}>
+			{items.map((item, i) => {
+				return (
+					<button
+						key={i}
+						className="testmenu-item"
+						onClick={() => {
+							console.log(item.label);
+							if (item.label == "Invite to game" || item.label == "Block" || item.label == "Unblock")
+								item.action(menusettings.target);
+							else
+								item.action({channel: channel, user: menusettings.target});
+							setMenu({x: 0, y: 0, boundX: 0, boundY: 0, show: false, target: ""});
+						}}
+					>
+						{item.label}
+					</button>
+				);
+			})}
+		</menu>
 	);
 }
 
-function UserMessageComponent({ message, sender, setMenu } : { message: UserMessage; sender: string, setMenu: ({x, y, show}: {x: number, y: number, show: boolean}) => void}) : JSX.Element {
+
+function UserMessageComponent({ message, sender, setMenu } : { message: UserMessage; sender: string, setMenu: (menusettings: menuSettings) => void}) : JSX.Element {
 	let alignment = "leftalign";
 	let sender_element = <a href={`/profile/${message.sender}`}
 			onContextMenu={(e) => {
 				e.preventDefault();
 				console.log(e);
+				/*
+					chatbox <-what we want to get the bounds from
+						chat-history
+							message
+								message-header
+									anchor tag(<a>) <- what currentTarget is
+				*/
 				if (!e.currentTarget.parentElement?.parentElement?.parentElement?.parentElement)
 					return;
-				let bounds = e.currentTarget.parentElement?.parentElement?.parentElement?.parentElement.getBoundingClientRect();
-				console.log(bounds);//TODO:STUPID ASS STORM FORCING US HOME
-				setMenu({x: e.clientX - bounds.left, y: e.clientY - bounds.top, show: true});
+				let bounds = e.currentTarget.parentElement.parentElement.parentElement.parentElement.getBoundingClientRect();
+				//makes the click x and y coordinates relative to the chatbox
+				setMenu({x: e.clientX - bounds.left, y: e.clientY - bounds.top, boundX: bounds.width, boundY: bounds.height, show: true, target: message.sender});
 			}}
 		>{message.sender}</a>;
 	let date_element = <sub>{new Date(message.date).toLocaleString()}</sub>;
@@ -144,7 +123,7 @@ function MessageComponent({ message } : {message: Message}) : JSX.Element {
 	);
 }
 
-function channelOptions(role: string, isConnectionOpen: boolean, currentChannel: string, setCurrentChannel: (channel: string) => void, deleteChannel: (channel: string) => Promise<boolean>, leaveChannel: (channel: string) => Promise<boolean>, makeModalVisible: () => void) : JSX.Element {
+function channelOptions(role: role, isConnectionOpen: boolean, currentChannel: string, setCurrentChannel: (channel: string) => void, deleteChannel: (channel: string) => Promise<boolean>, leaveChannel: (channel: string) => Promise<boolean>, makeModalVisible: () => void) : JSX.Element {
 	let extraoptions = <></>;
 	if (role == "owner" || role == "admin") {
 		extraoptions = (
@@ -185,7 +164,7 @@ function channelOptions(role: string, isConnectionOpen: boolean, currentChannel:
 
 function ChatChannel(
 	{
-		currentChannel, setCurrentChannel, isConnectionOpen, messages, messageBody, sendMessage, setMessageBody, sender, muted, deleteChannel, leaveChannel, role, updateVisibility
+		currentChannel, setCurrentChannel, isConnectionOpen, messages, messageBody, sendMessage, setMessageBody, sender, muted, deleteChannel, leaveChannel, role, updateVisibility, getItems
 	} : {
 		currentChannel: string,
 		setCurrentChannel: (channel: string) => void,
@@ -198,19 +177,19 @@ function ChatChannel(
 		muted: boolean,
 		deleteChannel: (channel: string) => Promise<boolean>,
 		leaveChannel: (channel: string) => Promise<boolean>,
-		role: string,
-		updateVisibility: (channel_id: string, visibility: number, password: string) => Promise<boolean>
+		role: role,
+		updateVisibility: (channel_id: string, visibility: number, password: string) => Promise<boolean>,
+		getItems: (role: string) => MenuItem[]
 	}){
 	const modal = useRef<HTMLDialogElement>(null);
 
-	const [menu, setMenu] = useState({x: 0, y: 0, show: false});
+	const [menu, setMenu] = useState<menuSettings>({x: 0, y: 0, boundX: 0, boundY: 0, show: false, target: ""});
 
 
 	const makeModalVisible = () => {
 		modal.current?.showModal();
 	};
 
-	console.log("hmmm homie", role);
 	return (
 		<>
 		{channelOptions(role, isConnectionOpen, currentChannel, setCurrentChannel, deleteChannel, leaveChannel, makeModalVisible)}
@@ -223,7 +202,7 @@ function ChatChannel(
 				<MessageComponent key={index} message={message} />
 			))}
 		</div>
-		<UserMenuComponent x={menu.x} y={menu.y} show={menu.show} setMenu={setMenu} />
+		<UserMenuComponent channel={currentChannel} menusettings={menu} setMenu={setMenu} items={getItems(role)} />
 		<footer className="chat-area">
 			<div>
 				You are chatting as {sender}
