@@ -13,6 +13,9 @@ import UserStatus from './hooks/userStatus/userStatus';
 import Sidebar from './views/sidebar/sidebar';
 import './App.css'
 
+import TestMatchMakingConnection from './views/profile/temp/tempgame';
+import PongGame from './hooks/game/pong';
+
 function App(): React.ReactElement
 {
 	const [isLoading, setIsLoading] = useState(true)
@@ -46,15 +49,16 @@ function App(): React.ReactElement
 		)
 	return (
 		<div id="loggedincontainer">
+			<UserStatus />
 			<MyNavBar/>
 			<Sidebar />
-			<UserStatus />
 			<div className="maincontainer scrollable">
 				<Routes>
 					<Route path="/" element={<HomePage />}/>
 					<Route path="/profile/*" element={<ProfilePage />} />
 					<Route path="/settings" element={<Temp />} />
 					<Route path="/temp" element={<Temp />}/>
+					<Route path="/playpong" element={<TestMatchMakingConnection />} />
 				</Routes>
 			</div>
 		</div>

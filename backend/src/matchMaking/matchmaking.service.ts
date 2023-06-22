@@ -4,11 +4,15 @@ import { Socket } from 'socket.io';
 @Injectable()
 export class MatchMakingService {
 	private queues: Map<string, Socket[]> = new Map();
-	private static gameModes
+	private gameMode1 = "gamemode1";
+	private gameMode2 = "gamemode2";
 
 	addClientToQueue(queue: string, client: Socket) {
+		if (queue != this.gameMode1 && queue != this.gameMode2) {
+			console.log("Non-existant Gamemode");
+			return ;
+		}
 		client.join(queue);
-
 		if (!this.queues.has(queue))
 			this.queues.set(queue, []);
 		this.queues.get(queue).push(client)

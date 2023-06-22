@@ -1,6 +1,7 @@
-import React, { useState } from 'react'
-import { useNavigate } from 'react-router-dom';
+import React, { useEffect, useRef, useState } from 'react'
+import { useNavigate } from 'react-router-dom'
 import './home.css'
+import MatchMakingButton from "../../hooks/matchMaking/matchMakingButton"
 
 function NavButton({label}) {
 	const navigate = useNavigate();
@@ -37,8 +38,10 @@ const Menu = () => {
 		return (
 			<div className='menu'>
 				<p className='text'>GAMEMODE</p>
-				<button className='button'>gamemode 1</button>
-				<button className='button'>gamemode 2</button>
+				<NavButton label={'playpong'} />
+				<NavButton label={'gamemode2'} />
+				{/* <button className='button'>gamemode1</button>
+				<button className='button'>gamemode2</button> */}
 				<button className='button' onClick={() =>setActiveMenu('home')}>return</button>
 			</div>
 		)

@@ -12,6 +12,7 @@ import { AuthModule } from './auth/auth.module';
 import { ChatModule } from './chat/chat.module';
 import { AchievementModule } from './achievements/achievement.module';
 import { UserStatusModule } from './userStatus/UserStatus.module';
+import { MatchMakingModule } from './matchMaking/matchmaking.module';
 
 @Module({
 
@@ -41,7 +42,8 @@ import { UserStatusModule } from './userStatus/UserStatus.module';
 		AuthModule,
 		AchievementModule,
 		ChatModule,
-		UserStatusModule
+		UserStatusModule,
+		MatchMakingModule
 	],
 
 	controllers: [
