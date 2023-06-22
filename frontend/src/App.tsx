@@ -18,6 +18,7 @@ function App(): React.ReactElement
 {
 	const [isLoading, setIsLoading] = useState(true)
 	const [isVerified, setIsVerified] = useState(false);
+	const [updatescam, setupdatescam] = useState(0);
 	const navigate = useNavigate();
 	const location = useLocation();
 
@@ -39,15 +40,15 @@ function App(): React.ReactElement
 		return (<div> </div>);
 	if (!isVerified)
 		return (
-				<Routes>
-					<Route path="/login" element={<MyLoginPage />}/>
-					<Route path="/loginOTP" element={<LoginOTP />}/>	
-					<Route path="/setup" element={<SetUp />} />
-				</Routes>
+			<Routes>
+				<Route path="/login" element={<MyLoginPage />}/>
+				<Route path="/loginOTP" element={<LoginOTP />}/>	
+				<Route path="/setup" element={<SetUp />} />
+			</Routes>
 		)
 	return (
 		<div id="loggedincontainer">
-			<MyNavBar/>
+			<MyNavBar updatescam={updatescam}/>
 			<Sidebar />
 			<UserStatus />
 			<div className="maincontainer scrollable">
@@ -55,7 +56,7 @@ function App(): React.ReactElement
 					<Route path="/" element={<HomePage />}/>
 					<Route path="/profile/*" element={<ProfilePage />} />
 					{/* <Route path="/settings" element={< />} /> */}
-					<Route path="/settings" element={<Settings />}/>
+					<Route path="/settings" element={<Settings updatescam={updatescam} setupdatescam={setupdatescam}/>}/>
 				</Routes>
 			</div>
 		</div>

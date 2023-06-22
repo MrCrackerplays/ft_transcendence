@@ -43,6 +43,8 @@
 	justify-self: center; 
 	align-self: stretch; 
 	grid-area: SettingsPFPImage; 
+	max-width: 90%;
+	max-height: 90%;
   }
   .SettingsPFPUpload {
 	justify-self: stretch; 
@@ -82,15 +84,49 @@
 	grid-template-areas:
 	  ". . ."
 	  "SettingsChangeName SettingsNameInput SettingsNameSubmit"
-	  ". . .";
+	  "SettingsAllError SettingsAllError SettingsAllError";
 	grid-area: SettingsNamechange;
   }
   
-  .SettingsChangeName { grid-area: SettingsChangeName; }
-  
-  .SettingsNameInput { grid-area: SettingsNameInput; }
-  
-  .SettingsNameSubmit { grid-area: SettingsNameSubmit; }
+  .SettingsChangeName {
+	justify-self: end; 
+	align-self: center; 
+	grid-area: SettingsChangeName; 
+  }
+  .SettingsNameInput {
+	justify-self: stretch; 
+	align-self: center; 
+	grid-area: SettingsNameInput; 
+  }
+  .SettingsNameSubmit {
+	justify-self: start; 
+	align-self: center; 
+	grid-area: SettingsNameSubmit; 
+  }
+  .SettingsAllError {
+	justify-self: stretch; 
+	align-self: start; 
+	grid-area: SettingsAllError; 
+	text-align: center;
+  }
+  .SettingsChangeName p
+  {
+	font-size: 1.5rem;
+	color:white;
+  }
+  .SettingsNameInput input
+  {
+	font-size:1.5rem;
+	/* margin-left: 10%; */
+  }
+  .SettingsNameSubmit button
+  {
+	font-size: 1.5rem;
+  }
+  .SettingsNameSubmit button:hover
+  {
+	background-color: rgb(212, 210, 210)
+  }
   
   .SettingsQRCode {  display: grid;
 	grid-template-columns: 1fr 1fr 1fr;
@@ -104,7 +140,11 @@
 	grid-area: SettingsQRCode;
   }
   
-  .SettingsQRImg { grid-area: SettingsQRImg; }
+  .SettingsQRImg {
+	justify-self: center; 
+	align-self: center; 
+	grid-area: SettingsQRImg; 
+  }
   
   .SettingsEnableQR { grid-area: SettingsEnableQR; }
   
@@ -199,3 +239,49 @@
 	max-width:100%;
 	max-height:100%;
   }
+ 
+.errortext
+{
+	color:red;
+	font-size: 2rem;
+}
+
+.disable2fa
+{
+	width:100%;
+	background-color:rgb(151, 24, 24);
+	font-size: 2rem;
+	color:white;
+	border: 1px;
+}
+
+.disable2fa:hover
+{
+	background-color: rgb(178, 23, 23);;
+}
+
+.loading2fa
+{
+	width:100%;
+	background-color: rgb(178, 175, 175);
+	font-size: 2rem;
+	border: 1px;
+}
+
+.loading2fa:hover
+{
+	background-color: rgb(196, 192, 192);
+}
+
+.enabled2fa
+{
+	width:100%;
+	background-color: rgb(178, 175, 175);
+	font-size: 2rem;
+	border: 1px;
+}
+
+.enabled2fa:hover
+{
+	background-color: rgb(196, 192, 192);
+}
