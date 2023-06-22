@@ -4,6 +4,7 @@ import { Socket } from 'socket.io';
 @Injectable()
 export class MatchMakingService {
 	private queues: Map<string, Socket[]> = new Map();
+	private static gameModes
 
 	addClientToQueue(queue: string, client: Socket) {
 		client.join(queue);
