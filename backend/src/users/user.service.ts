@@ -233,7 +233,7 @@ export class UserService {
 		}
 
 		// TODO: hash stuff?
-		if (channel.password != null && channel.password == dto.password) {
+		if (channel.password != null && channel.password != dto.password) {
 			// wrong password
 			return null;
 		}

@@ -51,14 +51,17 @@
 .all-friends {
 	grid-area: all-friends;
 	padding: 5px;
+	padding-right: 0px;
 	overflow: auto;
 }
 
 .chatbox {
 	grid-area: chatbox;
 	display: grid;
-	padding: 5px;
+	padding-left: 5px;
+	padding-top: 5px;
 	grid-template-rows: 0fr 1fr 0fr;
+	position: relative;
 }
 
 .maincontainer {
@@ -75,8 +78,8 @@
 }
 
 .scrollable::-webkit-scrollbar {
-	height: 12px;
-	width: 12px;
+	height: 6px;
+	width: 6px;
 }
 
 .scrollable::-webkit-scrollbar-thumb {

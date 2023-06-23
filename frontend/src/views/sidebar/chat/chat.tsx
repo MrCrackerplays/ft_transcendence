@@ -1,22 +1,11 @@
 import { useEffect, useRef, useState } from "react"
 import { Socket, io } from "socket.io-client"
 import "./chat.css"
-import { Message, UserMessage, isUserMessage } from "./messagetypes";
+import { Message, UserMessage, isUserMessage, MenuItem } from "./messagetypes";
 import ChannelList from "./channellist";
 import ChatChannel from "./chatchannel";
 import { Channel } from "./channeltypes";
 import { useStateRef } from "./usestateref";
-
-function block_filter(message: UserMessage | Message) : UserMessage | Message {
-	if (isUserMessage(message)) {
-		let should_block = false;
-		//TODO: implement block check once added to the User entity
-		// should_block = true;
-		if (should_block)
-			message.content = "<blocked message>";
-	}
-	return message;
-}
 
 function Chat( {sender, sender_id} : {sender: string, sender_id: string}) {
 	const [isConnectionOpen, setIsConnectionOpen] = useState(false);
@@ -27,6 +16,7 @@ function Chat( {sender, sender_id} : {sender: string, sender_id: string}) {
 	const [banned, setBanned] = useState<string[]>([]);
 	const [owner, setOwner] = useState<string[]>([]);
 	const [admin, setAdmin] = useState<string[]>([]);
+	const [blocked, setBlocked] = useState<string[]>([]);
 	const [hasloaded, setHasLoaded] = useState(false);
 	
 	const [joinedChannels, setJoinedChannels, joinedChannelsRef] = useStateRef<string[]>([]);
@@ -34,6 +24,18 @@ function Chat( {sender, sender_id} : {sender: string, sender_id: string}) {
 
 	const ws = useRef<Socket>();
 
+	const hasJoined = (channel_id: string) => {
+		return joinedChannels.includes(channel_id);
+	}
+
+	const block_filter = (message: UserMessage | Message) : UserMessage | Message => {
+		if (isUserMessage(message)) {
+			const should_block = blocked.includes(message.sender_id);
+			if (should_block)
+				message.content = "<blocked message>";
+		}
+		return message;
+	}
 
 	const getMessageHistory = (channel_id : string) => {
 		return fetch("http://localhost:3000/self/channels/" + channel_id + "/messages", {
@@ -101,7 +103,7 @@ function Chat( {sender, sender_id} : {sender: string, sender_id: string}) {
 		setJoinedChannels(joined => [...joined, channel_id]);
 	};
 
-	const joinChannel = (channel_id : string) => {
+	const joinChannel = (channel_id : string, password: string | null = null) => {
 		if (banned.includes(channel_id)) {
 			console.log("you are banned from this channel");
 			return;
@@ -110,7 +112,7 @@ function Chat( {sender, sender_id} : {sender: string, sender_id: string}) {
 			setCurrentChannel(channel_id);
 			return;
 		}
-		ws.current?.emit("subscribe", {channel: channel_id, password: null}, (response: boolean) => {
+		ws.current?.emit("subscribe", {channel: channel_id, password: password}, (response: boolean) => {
 			console.log("emitting join");
 			ws.current?.emit("join", {channel: channel_id}, joinResponse);
 		});
@@ -304,11 +306,112 @@ function Chat( {sender, sender_id} : {sender: string, sender_id: string}) {
 			});
 		}
 
-		// return () => {
-		// 	console.log("Cleaning up...");
-		// 	ws.current?.close();
-		// }
+		if (!ws.current.hasListeners("promote")) {
+			ws.current.on("promote", (channel) => {
+				console.log("Received promote from:", channel);
+				setAdmin(admins => [...admins, channel]);
+				console.log("finished getting promoted");
+			});
+		}
+
+		if (!ws.current.hasListeners("demote")) {
+			ws.current.on("demote", (channel) => {
+				console.log("Received demote from:", channel);
+				setAdmin(admins => admins.filter((id) => id !== channel));
+				console.log("finished getting demoted");
+			});
+		}
+
+		if (!ws.current.hasListeners("block")) {
+			ws.current.on("block", (user_id) => {
+				console.log("Received block for:", user_id);
+				setBlocked(blocked => [...blocked, user_id]);
+				console.log("finished blocking user");
+			});
+		}
+
+		if (!ws.current.hasListeners("unblock")) {
+			ws.current.on("unblock", (user_id) => {
+				console.log("Received unblock for:", user_id);
+				setBlocked(blocked => blocked.filter((id) => id !== user_id));
+				console.log("finished unblocking user");
+			});
+		}
+
+		return () => {
+			console.log("Cleaning up...");
+			ws.current?.close();
+		}
 	}, []);
+
+	const getItems = (role: string): MenuItem[] => {
+		let items: MenuItem[] = [];
+		switch (role) {
+			case "owner":
+				items = items.concat([
+					{ label: 'Demote', action: ({channel, user}: {
+						channel: string,
+						user: string
+					}) => {
+						ws.current?.emit("demote", {channel: channel, user: user});
+					} },
+					{ label: 'Promote', action: ({channel, user}: {
+						channel: string,
+						user: string
+					}) => {
+						ws.current?.emit("promote", {channel: channel, user: user});
+					} },
+				]);
+			case "admin":
+				items = items.concat([
+					{ label: 'Unban', action: ({channel, user}: {
+						channel: string,
+						user: string
+					}) => {
+						ws.current?.emit("unban", {channel: channel, user: user});
+					} },
+					{ label: 'Ban', action: ({channel, user}: {
+						channel: string,
+						user: string
+					}) => {
+						ws.current?.emit("ban", {channel: channel, user: user});
+					} },
+					{ label: 'Unmute', action: ({channel, user}: {
+						channel: string,
+						user: string
+					}) => {
+						ws.current?.emit("unmute", {channel: channel, user: user});
+					} },
+					{ label: 'Mute', action: ({channel, user}: {
+						channel: string,
+						user: string
+					}) => {
+						ws.current?.emit("mute", {channel: channel, user: user});
+					} },
+					{ label: 'Kick', action: ({channel, user}: {
+						channel: string,
+						user: string
+					}) => {
+						ws.current?.emit("kick", {channel: channel, user: user});
+					} },
+				]);
+			case "user":
+				items = items.concat([
+					{ label: 'Unblock', action: (user: string) => {
+						ws.current?.emit("unblock", {user: user});
+					} },
+					{ label: 'Block', action: (user: string) => {
+						ws.current?.emit("block", {user: user});
+					} },
+					{ label: 'Invite to game', action: (user: string) => {
+						alert("beep boop you totally invited that person yup totally");
+						//TODO: invite to game idk how to yet, depends on game implementation
+					} },
+				]);
+		}
+		items.reverse();
+		return items;
+	}
 
 	if (currentChannel) {
 		return (
@@ -327,6 +430,7 @@ function Chat( {sender, sender_id} : {sender: string, sender_id: string}) {
 					leaveChannel={leaveChannel}
 					role={owner.includes(currentChannel) ? "owner" : (admin.includes(currentChannel) ? "admin" : "user")}
 					updateVisibility={updateVisibility}
+					getItems={getItems}
 				/>
 			</div>
 		)
@@ -347,6 +451,7 @@ function Chat( {sender, sender_id} : {sender: string, sender_id: string}) {
 					setAdmin={setAdmin}
 					hasloaded={hasloaded}
 					setHasLoaded={setHasLoaded}
+					hasJoined={hasJoined}
 				/>
 			</div>
 		)
