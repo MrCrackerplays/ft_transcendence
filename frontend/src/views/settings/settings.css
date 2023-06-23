@@ -64,7 +64,8 @@
 
   .sPFPInput:hover
   {
-	background-color: rgb(201, 201, 201)
+	background-color: rgb(201, 201, 201);
+	cursor:pointer;
   }
   .sPFPSubmit
   {
@@ -73,7 +74,8 @@
   }
   .sPFPSubmit:hover
   {
-	background-color: rgb(201, 201, 201)
+	background-color: rgb(201, 201, 201);
+	cursor:pointer;
   }
   
   .SettingsNamechange {  display: grid;
@@ -125,7 +127,8 @@
   }
   .SettingsNameSubmit button:hover
   {
-	background-color: rgb(212, 210, 210)
+	background-color: rgb(212, 210, 210);
+	cursor:pointer;
   }
   
   .SettingsQRCode {  display: grid;
@@ -172,6 +175,10 @@
 	width:100%;	
 	/* height:100%; */
 	font-size: 2rem;
+}
+
+.setShowDelete:hover{
+	background-color: rgb(181, 28, 28);;
 }
 
 .modaldelete {
@@ -227,6 +234,7 @@
   .cancelbutton:hover
   {
 	background-color: rgb(28, 28, 216);
+	cursor:pointer;
   }
 
   .deletebutton
@@ -237,6 +245,7 @@
   .deletebutton:hover
   {
 	background-color: rgb(191, 29, 29);
+	cursor:pointer;
   }
 
   .SPFPSize
@@ -264,7 +273,9 @@
 
 .disable2fa:hover
 {
-	background-color: rgb(178, 23, 23);;
+	background-color: rgb(178, 23, 23);
+	cursor:pointer;
+	
 }
 
 .loading2fa
@@ -278,6 +289,7 @@
 .loading2fa:hover
 {
 	background-color: rgb(196, 192, 192);
+	cursor:pointer;
 }
 
 .enabled2fa
@@ -291,6 +303,7 @@
 .enabled2fa:hover
 {
 	background-color: rgb(196, 192, 192);
+	cursor:pointer;
 }
 
 .QRSubmitButton
@@ -299,4 +312,10 @@
 	background-color: rgb(178, 175, 175);
 	font-size: 2rem;
 	border: 1px;
+}
+
+.QRSubmitButton:hover
+{
+	background-color: rgb(196, 192, 192);
+	cursor:pointer;
 }

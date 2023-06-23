@@ -7,19 +7,6 @@
 	background-color: rgb(38, 37, 37);
 }
 
-/* .friend-card:active
-{
-	background-color:red;
-} */
-
-.greenfriend{
-	background-color:green;
-}
-
-.redfriend{
-	background-color:red;
-}
-
 .online {
 	color: green;
 }
@@ -65,6 +52,10 @@
 	width: 45px;
 	height: 45px;
 	border-radius: 50%;
+}
+
+.fpfp-circle-image:hover{
+	cursor:pointer;
 }
 
 .fpfp-popover {

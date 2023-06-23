@@ -16,9 +16,11 @@
 
 .active:hover{
 	filter: brightness(80%);
+	cursor:pointer;
 }
 
 .inactive:hover
 {
-	filter: brightness(80%)
+	filter: brightness(80%);
+	cursor:pointer;
 }
