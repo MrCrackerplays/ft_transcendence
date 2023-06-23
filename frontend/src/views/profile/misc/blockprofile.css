@@ -1,6 +1,10 @@
-.add-friend-btn{
+.add-block-btn{
 	height:100%;
 	width:100%;
+	/* justify-content: right; */
+	/* align-items: right; */
+	/* text-align: right; */
+	/* box-sizing: content-box; */
 	/* min-width: 100%; */
 	/* max-width: 100%; */
 	font-size: 1rem;
@@ -9,13 +13,13 @@
 	font-weight:bold;
   }
 
-  .self-friend{
+  .self-block{
 	background-color: rgb(63, 61, 64);
   }
-  .add-friend{
+  .add-block{
 	background-color: rgb(43, 166, 194);
   }
 
-  .remove-friend{
+  .remove-block{
 	background-color: rgb(168, 10, 18);
   }
