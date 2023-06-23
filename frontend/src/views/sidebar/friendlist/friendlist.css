@@ -87,3 +87,13 @@
 	text-decoration: underline;
 	border-width: 2px;
 }
+
+.fmylink{
+	font-size:1.5rem;
+	color:black;
+}
+
+.fmylink:hover{
+	cursor:pointer;
+	text-decoration: underline;
+}

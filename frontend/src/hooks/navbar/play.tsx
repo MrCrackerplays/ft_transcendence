@@ -1,36 +1,49 @@
 import { Popover } from '@headlessui/react'
-import { Link } from "react-router-dom"
+import { Link, useNavigate } from "react-router-dom"
 import React, {useState} from 'react'
 import './navbar.css'
+import { Constants } from '../../../../shared/constants';
 
-function MyLink({ label, link }: { label: string, link: string })
+
+function GoToLink({ label, link }: { label: string, link: string })
 {
-	const [hovered, setHovered] = useState(false);
-  
-	const handleMouseOver = () => {
-	  setHovered(true);
-	};
-  
-	const handleMouseOut = () => {
-	  setHovered(false);
-	};
-  
-	const className = `my-link a ${hovered ? 'hovered' : ''}`;
+	const navigate = useNavigate();
+	async function handleClick()
+	{
+		navigate(`${link}`)
+	}
 	return (
-	  <Link to={link} className={className} onMouseOver={handleMouseOver} onMouseOut={handleMouseOut}>
-		{label}
-	  </Link>
-	);
+		<div className="mylink" onClick={handleClick}>
+			{label}
+		</div>
+	)
+}
+
+function MyLogOut({ label}: { label: string})
+{
+	async function handleClick()
+	{
+		const RESPONSE = await fetch(`${Constants.BACKEND_URL}/logout`, {
+			method: 'GET',
+			credentials: 'include'
+		});
+		console.log(RESPONSE)
+	}
+	return (
+		<div className="mylink" onClick={handleClick}>
+			{label}
+		</div>
+	)
 }
   
 function MyLinks()
 {
 	return (
 	  <div className='pfp-popover-content a'>
-		<MyLink label="Home" link="/"/>
-		<MyLink label="Profile" link="/profile" />
-		<MyLink label="Settings" link="/settings" />
-		<MyLink label="Logout" link="/logout" />
+		<GoToLink label="Home" link="/"/>
+		<GoToLink label="Profile" link="/profile" />
+		<GoToLink label="Settings" link="/settings" />
+		<MyLogOut label="Logout" />
 	  </div>
 	);
 }
