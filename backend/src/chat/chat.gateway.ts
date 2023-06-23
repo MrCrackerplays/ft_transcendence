@@ -4,7 +4,6 @@ import {
 	SubscribeMessage,
 	WebSocketGateway,
 	WebSocketServer,
-	WsResponse,
 	ConnectedSocket,
 } from '@nestjs/websockets';
 import { Server, Socket } from 'socket.io';
@@ -174,13 +173,10 @@ export class ChatGateway {
 		if (!channel) {
 			return {channel_id: channel_id, success: false, reason: "channel not found"};
 		}
-		// if (user.userName == "zach")
-		// 	return {channel_id: channel_id, success: false, reason: "zach is not allowed"};
 
 		const is_subscribed = (await this.userService.getChannels(user)).find(ch => ch.id == channel_id);
 		if (!is_subscribed) {
 			console.log("user is not subscribed");
-			// this.userService.subscribeToChannel(user, { channelID: channel_id, password: (await this.channelService.findOne(channel_id)).password });
 			return {channel_id: channel_id, success: false, reason: "not subscribed"};
 		}
 
