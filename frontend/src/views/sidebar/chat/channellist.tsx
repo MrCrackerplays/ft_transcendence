@@ -4,11 +4,11 @@ import ChannelEditor from "./channeleditor";
 
 function ChannelList(
 	{
-		sender, sender_id, joinChannel, createChannel, isConnectionOpen, channels, setChannels, banned, setOwner, setAdmin, hasloaded, setHasLoaded
+		sender, sender_id, joinChannel, createChannel, isConnectionOpen, channels, setChannels, banned, setOwner, setAdmin, hasloaded, setHasLoaded, hasJoined
 	} : {
 		sender: string,
 		sender_id: string,
-		joinChannel: (channel_id: string) => void,
+		joinChannel: (channel_id: string, password?: string | null) => void,
 		createChannel: (channel_name: string,
 		visibility: number,
 		password: string) => Promise<boolean>,
@@ -19,8 +19,9 @@ function ChannelList(
 		setOwner: (value: React.SetStateAction<string[]>) => void,
 		setAdmin: (value: React.SetStateAction<string[]>) => void,
 		hasloaded: boolean,
-		setHasLoaded: (value: boolean) => void
-	} ) {
+		setHasLoaded: (value: boolean) => void,
+		hasJoined: (channel_id: string) => boolean
+	} ): JSX.Element {
 	const [refresh, setRefresh] = useState(false);
 	const modal = useRef<HTMLDialogElement>(null);
 
@@ -85,7 +86,7 @@ function ChannelList(
 		channelarea = [<div key={0}>Loading...</div>, <i key={1} className="gg-spinner"></i>];
 	} else if (channels.length > 0) {
 		channelarea = channels.map((channel: Channel, index : number) => (
-			<ChannelComponent key={index} channel={channel} joinChannel={joinChannel} canJoin={isConnectionOpen && !banned.includes(channel.id)} />
+			<ChannelComponent key={index} channel={channel} joinChannel={joinChannel} canJoin={isConnectionOpen && !banned.includes(channel.id)} hasJoined={hasJoined} />
 		));
 	} else {
 		channelarea = [<div key={0}>No channels found!</div>];
@@ -125,7 +126,7 @@ function ChannelList(
 	);
 }
 
-function ChannelComponent({ channel, joinChannel, canJoin } : {channel: Channel, joinChannel: (channel_id: string) => void, canJoin: boolean}) {
+function ChannelComponent({ channel, joinChannel, canJoin, hasJoined } : { channel: Channel, joinChannel: (channel_id: string, password?: string | null) => void, canJoin: boolean, hasJoined: (channel_id: string) => boolean }): JSX.Element {
 	let icon = "";
 	let hover = "";
 	if (channel.visibility == 0 && channel.password) {
@@ -139,7 +140,15 @@ function ChannelComponent({ channel, joinChannel, canJoin } : {channel: Channel,
 		hover = "direct message";
 	}
 	return (
-		<div className="channel" onClick={() => {if (canJoin) joinChannel(channel.id)}}>
+		<div className="channel" onClick={() => {
+			if (canJoin) {
+				if (!hasJoined(channel.id) && channel.visibility == 0 && channel.password) {
+					joinChannel(channel.id, prompt("Enter channel password:"));
+				} else {
+					joinChannel(channel.id);
+				}
+			}
+		}}>
 			<div style={{overflowWrap:"anywhere"}}>{channel.name}</div>
 			<div style={{display:"flex"}}>
 				<i title={hover} className={icon}></i>

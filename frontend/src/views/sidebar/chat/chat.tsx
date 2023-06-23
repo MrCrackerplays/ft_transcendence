@@ -24,6 +24,9 @@ function Chat( {sender, sender_id} : {sender: string, sender_id: string}) {
 
 	const ws = useRef<Socket>();
 
+	const hasJoined = (channel_id: string) => {
+		return joinedChannels.includes(channel_id);
+	}
 
 	const block_filter = (message: UserMessage | Message) : UserMessage | Message => {
 		if (isUserMessage(message)) {
@@ -100,7 +103,7 @@ function Chat( {sender, sender_id} : {sender: string, sender_id: string}) {
 		setJoinedChannels(joined => [...joined, channel_id]);
 	};
 
-	const joinChannel = (channel_id : string) => {
+	const joinChannel = (channel_id : string, password: string | null = null) => {
 		if (banned.includes(channel_id)) {
 			console.log("you are banned from this channel");
 			return;
@@ -109,7 +112,7 @@ function Chat( {sender, sender_id} : {sender: string, sender_id: string}) {
 			setCurrentChannel(channel_id);
 			return;
 		}
-		ws.current?.emit("subscribe", {channel: channel_id, password: null}, (response: boolean) => {
+		ws.current?.emit("subscribe", {channel: channel_id, password: password}, (response: boolean) => {
 			console.log("emitting join");
 			ws.current?.emit("join", {channel: channel_id}, joinResponse);
 		});
@@ -448,6 +451,7 @@ function Chat( {sender, sender_id} : {sender: string, sender_id: string}) {
 					setAdmin={setAdmin}
 					hasloaded={hasloaded}
 					setHasLoaded={setHasLoaded}
+					hasJoined={hasJoined}
 				/>
 			</div>
 		)
