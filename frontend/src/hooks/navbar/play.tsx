@@ -1,6 +1,5 @@
 import { Popover } from '@headlessui/react'
-import { Link, useNavigate } from "react-router-dom"
-import React, {useState} from 'react'
+import { useNavigate } from "react-router-dom"
 import './navbar.css'
 import { Constants } from '../../../../shared/constants';
 

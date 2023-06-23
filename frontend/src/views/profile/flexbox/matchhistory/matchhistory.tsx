@@ -1,5 +1,5 @@
 import './matchhistory.css'
-import React, {useEffect, useState} from "react"
+import {useEffect, useState} from "react"
 import { PublicMatch } from "../../../../../../shared/public-match"
 import { Constants } from '../../../../../../shared/constants';
 import FetchUserMatchHistory from '../../../../hooks/fetch/FetchUserMatchHistory';
