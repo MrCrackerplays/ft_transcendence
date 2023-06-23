@@ -94,21 +94,16 @@ export class MatchMakingGateway {
 	@SubscribeMessage('player_movement')
 	handlePlayerMovement(client: Socket, action: string) {
 
-
 	}
-
-
 	//-----------------------------------//
 	@SubscribeMessage('leave_room')
 	handleLeaveRoom(client: Socket, room: string) {
 		client.leave(room);
 		client.emit("leftRoom", room);
-
 	}
 };
 
 import {GameState} from '../../../shared/gameTypes' ;
-
 export class GameRoom {
 
 	playerLeft: string;
@@ -116,9 +111,19 @@ export class GameRoom {
 	playerLeftSocket: Socket;
 	playerRightSocket: Socket;
 	roomName: string;
-	
+	GameState: GameState;
 
-GameState: GameState;
+	constructor(player1Id: string, player2Id: string, player1Socket: Socket, player2Socket: Socket) {
+		this.playerLeft = player1Id;
+		this.playerRight = player2Id;
+		this.playerLeftSocket = player1Socket;
+		this.playerRightSocket = player2Socket;
+	}
+
+	//methods for 1 room
+	updateGameState(action: string) { }
+
+
 
 
 };
