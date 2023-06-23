@@ -128,21 +128,24 @@ export class MatchMakingGateway {
 	}
 
 	private matchClientsInQueue(queue: string) {
-		const clients = this.queues.get(queue)
+		const clients = this.getClientsInQueue(queue);
 
 		if (clients && clients.length >= 2) {
 			const client1 = clients[0];
 			const client2 = clients[1];
+			//TODO: generate unique room key for each game.
 			const gameRoom = 'gameRoom';
+			this.moveClientsToRoom(client1, client2, gameRoom);
 		}
 	}
 
-	private moveClientsToRoom(client1: Socket, client2: Socket, room: string) {
+	private moveClientsToRoom(client1: Socket, client2: Socket, roomkey: string) {
 		const currentQueue = this.getClientRoom(client1);
 		this.removeClientFromQueue(currentQueue, client1);
 		this.removeClientFromQueue(currentQueue, client2);
 
-		
+		client1.join(roomkey);
+		client2.join(roomkey);
 	}
 
 	private getClientRoom(client: Socket): string {
