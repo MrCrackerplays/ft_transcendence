@@ -3,8 +3,9 @@
     "husky": "^8.0.3"
   },
   "scripts": {
-    "postinstall": "npm run postinstall:backend",
+    "postinstall": "npm run postinstall:backend && npm run postinstall:frontend",
     "postinstall:backend": "cd backend && npm install",
+    "postinstall:frontend": "cd frontend && npm install",
     "prepare": "husky install",
     "test": "npm run test:backend",
     "test:backend": "cd backend && npm test"
