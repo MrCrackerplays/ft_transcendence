@@ -28,6 +28,7 @@
     "@nestjs/passport": "^9.0.3",
     "@nestjs/platform-express": "^9.0.0",
     "@nestjs/platform-socket.io": "^9.4.2",
+    "@nestjs/serve-static": "^4.0.0",
     "@nestjs/typeorm": "^9.0.1",
     "@types/cookie-parser": "^1.4.3",
     "@types/hapi__joi": "^17.1.9",
