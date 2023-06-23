@@ -103,9 +103,9 @@ export class MatchMakingGateway {
 	}
 };
 
-import {GameState} from '../../../shared/gameTypes' ;
+import {GameState , PaddleAction , GameActionKind } from '../../../shared/pongTypes' ;
+import { makeReducer } from '../../../shared/pongReducer';
 export class GameRoom {
-
 	playerLeft: string;
 	playerRight: string;
 	playerLeftSocket: Socket;
@@ -121,9 +121,25 @@ export class GameRoom {
 	}
 
 	//methods for 1 room
-	updateGameState(action: string) { }
+	handlePlayerMovement(socketId: string, movement: PaddleAction) { //need to know which player is moving
+	
+		// Apply the reducer function to update the game state
+		const reducer = makeReducer(socketId);
+		const newGameState: GameState = reducer(this.GameState, {
+			kind: GameActionKind.overrideState,
+			value: this.GameState,
+		});
+	
+		// Update the game state in the room
+		this.GameState = newGameState;
+		// Broadcast the updated game state to both clients in the room
+		this.playerLeftSocket.emit('gameState', this.GameState);
+		this.playerRightSocket.emit('gameState', this.GameState);
+	}
 
-
-
-
+	handleMessage(socket: Socket, payload: any) {
+		// Handle the received message
+		const { movement } = payload;
+		this.handlePlayerMovement(socket.id, movement); //need to know which player is moving
+	}
 };
