@@ -18,6 +18,7 @@ import { parse } from 'cookie';
 import { CreateChannelDTO, Visibility } from '../../../shared/dto/channel.dto';
 import { Channel } from 'src/channel/channel.entity';
 
+const CHANNEL_PASSWORD_REGEX = /^([a-zA-Z0-9_\-]{3,16})$/;
 
 @WebSocketGateway({
 	cors: {
@@ -115,17 +116,41 @@ export class ChatGateway {
 		const user = await this.userFromSocket(client);
 		if (!user)
 			return false;
-		if (!name || !/^([a-zA-Z0-9_\-]{3,16})$/.test(name))
+		if (!name || !CHANNEL_PASSWORD_REGEX.test(name))
 			return false;
 		if (!password || password === "" || visibility == Visibility.PRIVATE)
 			password = null;
-		if (password && !/^([a-zA-Z0-9_\-]{3,16})$/.test(password))
+		if (password && !CHANNEL_PASSWORD_REGEX.test(password))
 			return false;
 		if (visibility != Visibility.PUBLIC && visibility != Visibility.PRIVATE)
 			return false;
 			//TODO: add a method for creating dm's or allow them using this method
 		let dto : CreateChannelDTO = { name: name, visibility: visibility, password: password };
 		this.channelService.create(user, dto);
+		return true;
+	}
+
+	@UseGuards(WsGuard)
+	@SubscribeMessage('updateChannel')
+	async updateChannel(@ConnectedSocket() client: Socket, @MessageBody("channel") channel_id : string, @MessageBody("visibility") visibility : Visibility, @MessageBody("password") password : string
+	): Promise<boolean> {
+		const user = await this.userFromSocket(client);
+		if (!user)
+			return false;
+		const channel = await this.channelService.get({ id: channel_id });
+		if (!channel || !this.canDoAction(user, channel, "update"))
+			return false;
+		if (channel.visibility == Visibility.DM)
+			return false;
+		if (!password || password === "" || visibility == Visibility.PRIVATE)
+			password = null;
+		if (password && !CHANNEL_PASSWORD_REGEX.test(password))
+			return false;
+		if (visibility != Visibility.PUBLIC && visibility != Visibility.PRIVATE)
+			return false;
+		channel.visibility = visibility;
+		channel.password = password;
+		channel.save();
 		return true;
 	}
 
