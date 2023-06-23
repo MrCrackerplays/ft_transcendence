@@ -93,3 +93,11 @@
 	text-decoration: underline;
 	border-width: 2px;
 }
+
+.mylink{
+	font-size:1.5rem;
+}
+.mylink:hover{
+	cursor:pointer;
+	text-decoration: underline;
+}
