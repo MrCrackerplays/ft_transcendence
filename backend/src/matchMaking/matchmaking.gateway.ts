@@ -3,9 +3,9 @@ import {
 	WebSocketGateway,
 	WebSocketServer,
 	OnGatewayConnection, OnGatewayDisconnect
-}	from '@nestjs/websockets'
+} from '@nestjs/websockets'
 import { Server, Socket } from 'socket.io';
-import  { Constants } from '../../../shared/constants'
+import { Constants } from '../../../shared/constants'
 
 import { JwtService } from '@nestjs/jwt';
 import { ConnectionService } from 'src/auth/connection/connection.service';
@@ -13,9 +13,10 @@ import { UserService } from 'src/users/user.service';
 import { User } from 'src/users/user.entity';
 import { Logger } from '@nestjs/common';
 import { parse } from 'cookie'
+import exp from 'constants';
 import { emit } from 'process';
 
-@WebSocketGateway ({
+@WebSocketGateway({
 	cors: {
 		origin: Constants.FRONTEND_URL,
 		credentials: true
@@ -31,15 +32,13 @@ export class MatchMakingGateway {
 		private jwtService: JwtService,
 		private connectionService: ConnectionService,
 		private userService: UserService
-	) {}
-
+	) { }
 	private userFromSocket(socket: Socket, result?: any): Promise<User> | undefined {
 		try {
 			if (!result) {
-				if (!socket.handshake.headers.cookie)
-				{
+				if (!socket.handshake.headers.cookie) {
 					Logger.log("Cookie's gone");
-					return ;
+					return;
 				}
 				const auth_cookie = parse(socket.handshake.headers.cookie).Authentication;
 				result = this.jwtService.verify(auth_cookie, { secret: process.env.JWT_SECRET })
@@ -48,17 +47,14 @@ export class MatchMakingGateway {
 				return connection.user;
 			});
 		}
-		catch (e){
+		catch (e) {
 		}
 		return undefined;
 	}
-
-	private	setStatus(user: User, newStatus: string)
-	{
+	private setStatus(user: User, newStatus: string) {
 		user.status = newStatus;
 		user.save();
 	}
-
 	afterInit(server: Server) {
 		Logger.log('waitlist')
 	}
@@ -68,7 +64,7 @@ export class MatchMakingGateway {
 		if (!client.handshake.headers.cookie)
 		{
 			Logger.log('Lost the Cookie');
-			return ;
+			return;
 		}
 		const auth_cookie = parse(client.handshake.headers.cookie).Authentication;
 		let result = undefined;
@@ -78,13 +74,12 @@ export class MatchMakingGateway {
 			throw new Error('Invalid Token');
 		} catch {
 			client.disconnect();
-			return ;
+			return;
 		}
 		this.userFromSocket(client, result).then(user => {
 			this.setStatus(user, 'in_queue');
 		})
 	}
-	
 	handleDisconnect(client: Socket) {
 		this.userFromSocket(client).then(user => {
 			if (!user)
@@ -94,6 +89,21 @@ export class MatchMakingGateway {
 		})
 		Logger.log(`disconnected ${client.id}`);
 	}
+  
+  
+	@SubscribeMessage('join_room')
+	handleJoinRoom(client: Socket, room: string) {
+		client.join(room);
+		client.emit("joinedRoom", room);
+
+	}
+	//-----------gameplay----------------//
+
+	@SubscribeMessage('player_movement')
+	handlePlayerMovement(client: Socket, action: string) {
+
+	}
+	//-----------------------------------//
 
 	handleJoinRoom(client: Socket, room: string) {
 		client.join(room);
@@ -105,6 +115,51 @@ export class MatchMakingGateway {
 		client.leave(room);
 		client.emit("leftRoom", room);
 	}
+  
+  
+
+};
+
+import {GameState , PaddleAction , GameActionKind } from '../../../shared/pongTypes' ;
+import { makeReducer } from '../../../shared/pongReducer';
+export class GameRoom {
+	playerLeft: string;
+	playerRight: string;
+	playerLeftSocket: Socket;
+	playerRightSocket: Socket;
+	roomName: string;
+	GameState: GameState;
+
+	constructor(player1Id: string, player2Id: string, player1Socket: Socket, player2Socket: Socket) {
+		this.playerLeft = player1Id;
+		this.playerRight = player2Id;
+		this.playerLeftSocket = player1Socket;
+		this.playerRightSocket = player2Socket;
+	}
+
+	//methods for 1 room
+	handlePlayerMovement(socketId: string, movement: PaddleAction) { //need to know which player is moving
+	
+		// Apply the reducer function to update the game state
+		const reducer = makeReducer(socketId);
+		const newGameState: GameState = reducer(this.GameState, {
+			kind: GameActionKind.overrideState,
+			value: this.GameState,
+		});
+	
+		// Update the game state in the room
+		this.GameState = newGameState;
+		// Broadcast the updated game state to both clients in the room
+		this.playerLeftSocket.emit('gameState', this.GameState);
+		this.playerRightSocket.emit('gameState', this.GameState);
+	}
+
+	handleMessage(socket: Socket, payload: any) {
+		// Handle the received message
+		const { movement } = payload;
+		this.handlePlayerMovement(socket.id, movement); //need to know which player is moving
+  }
+};
 	
 	@SubscribeMessage('join_room')
 	private addClientToQueue(client: Socket, queue: string) {
