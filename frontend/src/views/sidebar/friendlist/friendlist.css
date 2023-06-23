@@ -36,6 +36,10 @@
 	color: rebeccapurple;
 }
 
+.in_queue {
+	color: mediumslateblue;
+}
+
 .fpfp-flex-box {
 	display: flex;
 	align-items: center;
