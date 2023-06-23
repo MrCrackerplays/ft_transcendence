@@ -55,18 +55,11 @@ function App(): React.ReactElement
 				<Routes>
 					<Route path="/" element={<HomePage />}/>
 					<Route path="/profile/*" element={<ProfilePage />} />
-					{/* <Route path="/settings" element={< />} /> */}
 					<Route path="/settings" element={<Settings updatescam={updatescam} setupdatescam={setupdatescam}/>}/>
 				</Routes>
 			</div>
 		</div>
   );
 }
-
-//MAKE A USER CONST HERE
-//MAKE A UPADTE USER LATER TO REFETCH
-//REFETCHING WILL CAUSE USER TO REUPLOAD INFORMATION
-//HTIS MEANS ONLY 1 FETCH REQUIRED AND NOT MANY
-//^^ READ TAHT LATER ME
 
 export default App	

@@ -149,6 +149,13 @@
   .SettingsEnableQR { grid-area: SettingsEnableQR; }
   
   .SettingsQRInput { grid-area: SettingsQRInput; }
+
+  .SettingsQRInput input
+  {
+	font-size:1.84rem;
+	width:100%;
+	/* margin-left: 10%; */
+  }
   
   .SettingsQRSubmission { grid-area: SettingsQRSubmission; }
   
@@ -284,4 +291,12 @@
 .enabled2fa:hover
 {
 	background-color: rgb(196, 192, 192);
+}
+
+.QRSubmitButton
+{
+	width:100%;
+	background-color: rgb(178, 175, 175);
+	font-size: 2rem;
+	border: 1px;
 }

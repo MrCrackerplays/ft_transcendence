@@ -114,6 +114,7 @@ function Settings({updatescam, setupdatescam}) {
 	const [newusername, setnewusername] = useState("");
 	const [enabled2fa, setenabled2fa] = useState("Loading");
 	const [enable2faimg, setenabled2faimg] = useState(false);
+	const [code2fa, setcoda2fa] = useState("")
 
 	useEffect(() => {
 		async function qrEnabled(){
@@ -161,6 +162,11 @@ function Settings({updatescam, setupdatescam}) {
 			setupdatescam(updatescam + 1)
 		}
 	}
+	const submitQR = async () => {
+		//POST TO SUBMT QR GOES HERE LATER IDK
+		//PROBABLY SET ERROR HERE IF 2FA CODE WRONG
+		return ;
+	}
 	return (
 		<div className="setting-container">
 			<div className="Delete-Button">
@@ -201,8 +207,12 @@ function Settings({updatescam, setupdatescam}) {
 				<div className="SettingsEnableQR">
 					<QRButton buttontype={enabled2fa} setenabled2fa={() => setenabled2faimg(true)}/>
 				</div>
-				<div className="SettingsQRInput"></div>
-				<div className="SettingsQRSubmission"></div>
+				<div className="SettingsQRInput">
+					<input type="text" placeholder="Validate 2fa..." onChange={(e) => setcoda2fa(e.target.value)} value={code2fa} />
+				</div>
+				<div className="SettingsQRSubmission">
+					<button onClick={submitQR} className="QRSubmitButton">Submit</button>
+				</div>
 			</div>
 		</div>
 	)
