@@ -16,6 +16,10 @@ import { parse } from 'cookie'
 import exp from 'constants';
 import { emit } from 'process';
 
+// Game part imports
+import {GameState , PaddleAction , GameActionKind } from '../../../shared/pongTypes' ;
+import { makeReducer } from '../../../shared/pongReducer';
+
 @WebSocketGateway({
 	cors: {
 		origin: Constants.FRONTEND_URL,
@@ -104,63 +108,13 @@ export class MatchMakingGateway {
 
 	}
 	//-----------------------------------//
-
-	handleJoinRoom(client: Socket, room: string) {
-		client.join(room);
-		client.emit("joinedRoom");
-	}
 	
 	@SubscribeMessage('leave_room')
 	handleLeaveRoom(client: Socket, room: string) {
 		client.leave(room);
 		client.emit("leftRoom", room);
 	}
-  
-  
 
-};
-
-import {GameState , PaddleAction , GameActionKind } from '../../../shared/pongTypes' ;
-import { makeReducer } from '../../../shared/pongReducer';
-export class GameRoom {
-	playerLeft: string;
-	playerRight: string;
-	playerLeftSocket: Socket;
-	playerRightSocket: Socket;
-	roomName: string;
-	GameState: GameState;
-
-	constructor(player1Id: string, player2Id: string, player1Socket: Socket, player2Socket: Socket) {
-		this.playerLeft = player1Id;
-		this.playerRight = player2Id;
-		this.playerLeftSocket = player1Socket;
-		this.playerRightSocket = player2Socket;
-	}
-
-	//methods for 1 room
-	handlePlayerMovement(socketId: string, movement: PaddleAction) { //need to know which player is moving
-	
-		// Apply the reducer function to update the game state
-		const reducer = makeReducer(socketId);
-		const newGameState: GameState = reducer(this.GameState, {
-			kind: GameActionKind.overrideState,
-			value: this.GameState,
-		});
-	
-		// Update the game state in the room
-		this.GameState = newGameState;
-		// Broadcast the updated game state to both clients in the room
-		this.playerLeftSocket.emit('gameState', this.GameState);
-		this.playerRightSocket.emit('gameState', this.GameState);
-	}
-
-	handleMessage(socket: Socket, payload: any) {
-		// Handle the received message
-		const { movement } = payload;
-		this.handlePlayerMovement(socket.id, movement); //need to know which player is moving
-  }
-};
-	
 	@SubscribeMessage('join_room')
 	private addClientToQueue(client: Socket, queue: string) {
 		Logger.log(`joining queue ${queue}`)
@@ -214,4 +168,43 @@ export class GameRoom {
 	private getClientsInQueue(queue: string): Socket[] {
 		return this.queues.get(queue) || [];
 	}
+};
+
+export class GameRoom {
+	playerLeft: string;
+	playerRight: string;
+	playerLeftSocket: Socket;
+	playerRightSocket: Socket;
+	roomName: string;
+	GameState: GameState;
+
+	constructor(player1Id: string, player2Id: string, player1Socket: Socket, player2Socket: Socket) {
+		this.playerLeft = player1Id;
+		this.playerRight = player2Id;
+		this.playerLeftSocket = player1Socket;
+		this.playerRightSocket = player2Socket;
+	}
+
+	//methods for 1 room
+	handlePlayerMovement(socketId: string, movement: PaddleAction) { //need to know which player is moving
+	
+		// Apply the reducer function to update the game state
+		const reducer = makeReducer(socketId);
+		const newGameState: GameState = reducer(this.GameState, {
+			kind: GameActionKind.overrideState,
+			value: this.GameState,
+		});
+	
+		// Update the game state in the room
+		this.GameState = newGameState;
+		// Broadcast the updated game state to both clients in the room
+		this.playerLeftSocket.emit('gameState', this.GameState);
+		this.playerRightSocket.emit('gameState', this.GameState);
+	}
+
+	handleMessage(socket: Socket, payload: any) {
+		// Handle the received message
+		const { movement } = payload;
+		this.handlePlayerMovement(socket.id, movement); //need to know which player is moving
+  }
 };
