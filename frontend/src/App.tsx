@@ -1,7 +1,6 @@
 import { Route, Routes, useLocation, useNavigate } from 'react-router-dom'
 import ProfilePage from './views/profile/profile';
 import MyLoginPage from './views/login/login';
-import Temp from './views/profile/temp/temp';
 import isLoggedIn from './hooks/isLoggedIn/isLoggedIn'
 import LoginOTP from './views/loginotp/loginotp';
 import SetUp from './views/newuser/newuser';
@@ -12,11 +11,14 @@ import HomePage from './views/menu/home';
 import UserStatus from './hooks/userStatus/userStatus';
 import Sidebar from './views/sidebar/sidebar';
 import './App.css'
+import Settings from './views/settings/Settings';
+import SettingsOld from './views/settings/settingsold';
 
 function App(): React.ReactElement
 {
 	const [isLoading, setIsLoading] = useState(true)
 	const [isVerified, setIsVerified] = useState(false);
+	const [updatescam, setupdatescam] = useState(0);
 	const navigate = useNavigate();
 	const location = useLocation();
 
@@ -38,26 +40,26 @@ function App(): React.ReactElement
 		return (<div> </div>);
 	if (!isVerified)
 		return (
-				<Routes>
-					<Route path="/login" element={<MyLoginPage />}/>
-					<Route path="/loginOTP" element={<LoginOTP />}/>	
-					<Route path="/setup" element={<SetUp />} />
-				</Routes>
+			<Routes>
+				<Route path="/login" element={<MyLoginPage />}/>
+				<Route path="/loginOTP" element={<LoginOTP />}/>	
+				<Route path="/setup" element={<SetUp />} />
+			</Routes>
 		)
 	return (
 		<div id="loggedincontainer">
-			<MyNavBar/>
+			<MyNavBar updatescam={updatescam}/>
 			<Sidebar />
 			<UserStatus />
 			<div className="maincontainer scrollable">
 				<Routes>
 					<Route path="/" element={<HomePage />}/>
 					<Route path="/profile/*" element={<ProfilePage />} />
-					<Route path="/settings" element={<Temp />} />
-					<Route path="/temp" element={<Temp />}/>
+					<Route path="/settings" element={<Settings updatescam={updatescam} setupdatescam={setupdatescam}/>}/>
 				</Routes>
 			</div>
 		</div>
   );
 }
+
 export default App	

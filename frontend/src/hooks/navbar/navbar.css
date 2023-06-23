@@ -4,11 +4,13 @@
 	margin: 0px;
 	width: 100%;
 	min-height: 60px;
+	max-height: 60px;
 	background: linear-gradient(to right, rgb(38, 37, 37) 25%, rgb(38, 37, 37), white);
 	border-image: linear-gradient(to right, white, rgba(56, 2, 155, 0) 25%);
 	border-bottom: 2px solid transparent;
 	border-image-slice: 1;
 	width: 100%;
+	position:relative;
 }
 
 .website {
@@ -43,7 +45,11 @@
 	height: 50px;
 	width: 50px;
 	box-shadow: 0px 0px 10px 0px rgba(0, 0, 0, 0.75);
+}
 
+.pfp-button:hover
+{
+	cursor:pointer;
 }
 
 .pfp-circle-image {
@@ -56,12 +62,11 @@
 }
 
 .pfp-popover {
-	position: absolute;
-	top:3%;
+	position:absolute;
+	/* top: 3%; */
+	margin-top:37px;
 	right: 0;
 	transform: translateY(-50%);
-	/* background-color: white; */
-	/* box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1); */
 	padding: 1rem;
 	z-index: 8;
 }
