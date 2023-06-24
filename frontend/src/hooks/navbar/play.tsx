@@ -13,24 +13,22 @@ function GoToLink({ label, link }: { label: string, link: string })
 	}
 	return (
 		<div className="mylink" onClick={handleClick}>
-			{label}
+			<p>
+				{label}
+			</p>
 		</div>
 	)
 }
 
 function MyLogOut({ label}: { label: string})
 {
-	async function handleClick()
-	{
-		const RESPONSE = await fetch(`${Constants.BACKEND_URL}/logout`, {
-			method: 'GET',
-			credentials: 'include'
-		});
-		console.log(RESPONSE)
-	}
 	return (
-		<div className="mylink" onClick={handleClick}>
-			{label}
+		<div className="atodiv">
+			<a href={`${Constants.BACKEND_URL}/logout`}>
+				<p>
+					{label}
+				</p>
+			</a>
 		</div>
 	)
 }
