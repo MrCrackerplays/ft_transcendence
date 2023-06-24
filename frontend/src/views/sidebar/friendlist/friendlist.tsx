@@ -3,7 +3,7 @@ import FetchFriends from "../../../hooks/fetch/FetchFriends";
 import { useState, useEffect } from "react";
 import { PublicUser } from "../../../../../shared/public-user";
 import { Constants } from "../../../../../shared/constants";
-import { Link, useNavigate } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import { Popover } from '@headlessui/react';
 
 function ProfileLink({label, link}: {label:string, link: string})

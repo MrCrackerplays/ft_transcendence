@@ -11,8 +11,7 @@ import HomePage from './views/menu/home';
 import UserStatus from './hooks/userStatus/userStatus';
 import Sidebar from './views/sidebar/sidebar';
 import './App.css'
-import Settings from './views/settings/Settings';
-import SettingsOld from './views/settings/settingsold';
+import Settings from './views/settings/settings';
 
 function App(): React.ReactElement
 {

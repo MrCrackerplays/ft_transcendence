@@ -1,8 +1,6 @@
-import React, { useEffect, useState } from 'react'
+import { useEffect, useState } from 'react'
 import './settings.css'
 import { Constants } from '../../../../shared/constants';
-import { PublicUser } from '../../../../shared/public-user';
-import FetchSelf from '../../hooks/fetch/FetchSelf';
 import FetchQREnabled from '../../hooks/fetch/FetchQREnabled';
 
 

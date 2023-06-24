@@ -1,6 +1,6 @@
 import MyPopover from "./play";
 import './navbar.css'
-import { useContext, useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import FetchSelf from "../fetch/FetchSelf";
 import DefaultProfile, { PublicUser } from '../../../../shared/public-user';
 import { Constants } from "../../../../shared/constants";
