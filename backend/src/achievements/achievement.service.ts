@@ -5,13 +5,31 @@ import { Repository } from "typeorm";
 import { Achievement } from "./achievement.entity";
 import { CreateAchievementDTO } from "../../../shared/dto/create-achievement.dto"
 
+import achievements = require('../../../shared/achievements.json');
+
 @Injectable()
 export class AchievementService {
 	constructor(
 		@InjectRepository(Achievement) private achievementRepository: Repository<Achievement>,
-		) { }
+		) {
+			for (const ach of achievements) {
+				this.create({
+					name : ach.name,
+					description : ach.description,
+					imageURL : ach.imageurl
+				});
+			}
+		}
 
 	async create(dto: CreateAchievementDTO) : Promise<Achievement> {
+
+		const existing = await this.achievementRepository.findOneBy({
+			name: dto.name
+		});
+
+		if (existing != undefined && existing != null)
+			return ;
+
 		return this.achievementRepository.save(Achievement.createFromDTO(dto));
 	}
 

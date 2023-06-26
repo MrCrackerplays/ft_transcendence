@@ -295,4 +295,17 @@ export class UserService {
 
 		return (matches);
 	}
+
+	async unlockAchievement(user: User, achievement: string): Promise<void> {
+		const ach = await this.achievementRepository.findOneBy({
+			name: achievement
+		});
+
+		if (!ach)
+			return ;
+		
+		user.achievements.push(ach);
+		user.save();
+	}
+
 }
