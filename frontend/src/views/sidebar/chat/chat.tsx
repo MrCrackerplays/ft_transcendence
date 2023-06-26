@@ -7,7 +7,14 @@ import ChatChannel from "./chatchannel";
 import { Channel } from "./channeltypes";
 import { useStateRef } from "./usestateref";
 
-function Chat( {sender, sender_id} : {sender: string, sender_id: string}) {
+function Chat( {
+		sender, sender_id, setStartDM
+	} : {
+		sender: string,
+		sender_id: string,
+		setStartDM: (value: React.SetStateAction<(id: string) => void>) => void
+	}
+	) {
 	const [isConnectionOpen, setIsConnectionOpen] = useState(false);
 	const [history, setHistory] = useState<Map<string, UserMessage[] | Message[]>>(new Map());
 	const [messageBody, setMessageBody] = useState("");
@@ -121,30 +128,36 @@ function Chat( {sender, sender_id} : {sender: string, sender_id: string}) {
 	const sendMessage = () => {
 
 		//start debug
-		const magic_channel = "3e809453-5734-482c-aa2a-8fc311f0cd4e";
-		if (messageBody == "/ban") {
-			ws.current?.emit("ban", {channel: magic_channel, user: "bbfe03af-f997-4151-b2aa-ba4d818db83c"});
-			return;
-		}
-		if (messageBody == "/unban") {
-			ws.current?.emit("unban", {channel: magic_channel, user: "bbfe03af-f997-4151-b2aa-ba4d818db83c"});
-			return;
-		}
-		if (messageBody == "/mute") {
-			ws.current?.emit("mute", {channel: currentChannel, user: "bbfe03af-f997-4151-b2aa-ba4d818db83c"});
-			return;
-		}
-		if (messageBody == "/unmute") {
-			ws.current?.emit("unmute", {channel: currentChannel, user: "bbfe03af-f997-4151-b2aa-ba4d818db83c"});
-			return;
-		}
-		if (messageBody == "/leave") {
-			ws.current?.emit("leave", {channel: currentChannel});
-			return;
-		}
-		if (messageBody == "/kick") {
-			ws.current?.emit("kick", {channel: currentChannel, user: "bbfe03af-f997-4151-b2aa-ba4d818db83c"});
-			return;
+		if (messageBody.startsWith("/")) {
+			let message: string[] = messageBody.split(" ");
+			if (message.length == 1) {
+				if (message[0] == "/leave") {
+					ws.current?.emit("leave", {channel: currentChannel});
+					return;
+				}
+			}
+			if (message.length == 2) {
+				if (message[0] == "/ban") {
+					ws.current?.emit("ban", {channel: currentChannel, user: message[1]});
+					return;
+				}
+				if (message[0] == "/unban") {
+					ws.current?.emit("unban", {channel: currentChannel, user: message[1]});
+					return;
+				}
+				if (message[0] == "/mute") {
+					ws.current?.emit("mute", {channel: currentChannel, user: message[1]});
+					return;
+				}
+				if (message[0] == "/unmute") {
+					ws.current?.emit("unmute", {channel: currentChannel, user: message[1]});
+					return;
+				}
+				if (message[0] == "/kick") {
+					ws.current?.emit("kick", {channel: currentChannel, user: message[1]});
+					return;
+				}
+			}
 		}
 		//end debug
 
@@ -172,8 +185,18 @@ function Chat( {sender, sender_id} : {sender: string, sender_id: string}) {
 		);
 	};
 
+	function openDMChannel(id:string) {
+		ws.current?.emit("start_dm", {user: id}, (response: string) => {
+			console.log("start dm response", response);
+			if (response !== "") {
+				setCurrentChannel(response);
+				setJoinedChannels(joined => [...joined, response]);
+			}
+		});
+	}
+
 	useEffect(() => {
-		// setCurrentChannel("");
+		setStartDM(()=>openDMChannel);
 		console.log("subscribed to events?")
 		if (!ws.current)
 			ws.current = io("http://localhost:3000/chat", {withCredentials: true});

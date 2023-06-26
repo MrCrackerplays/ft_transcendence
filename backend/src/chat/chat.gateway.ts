@@ -183,6 +183,23 @@ export class ChatGateway {
 	}
 
 	@UseGuards(WsGuard)
+	@SubscribeMessage('start_dm')
+	async startDM(@ConnectedSocket() client: Socket, @MessageBody("user") user_id: string): Promise<string> {
+		const user = await this.userFromSocket(client);
+		if (!user)
+			return "";
+		const other_user = await this.userService.findOne(user_id);
+		if (!other_user)
+			return "";
+		const channel = await this.channelService.createDM(user, other_user);
+		if (!channel)
+			return "";
+		console.log("created/found dm channel", channel);
+		client.join("channel:" + channel.id);
+		return channel.id;
+	}
+
+	@UseGuards(WsGuard)
 	@SubscribeMessage('join')
 	async joinChannel(
 		@ConnectedSocket() client: Socket,
