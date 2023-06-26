@@ -1,7 +1,7 @@
 import { forwardRef, useRef } from "react";
 
-const ChannelEditor = forwardRef<HTMLDialogElement, {currentChannel: string, defaultvisibility: string, create_or_update_channel: (id_or_name: string, visibility: number, password: string) => Promise<boolean>}>(
-	({currentChannel, defaultvisibility, create_or_update_channel}, modal) => {
+const ChannelEditor = forwardRef<HTMLDialogElement, {currentChannel: string, defaultvisibility: string, create_or_update_channel: (id_or_name: string, visibility: number, password: string) => Promise<boolean>, on_success?: null | (() => void)}>(
+	({currentChannel, defaultvisibility, create_or_update_channel, on_success = null}, modal) => {
 		if (modal == null || typeof modal === 'function')
 			return (<></>);
 		const visibilityForm = useRef<HTMLFormElement>(null);
@@ -50,6 +50,9 @@ const ChannelEditor = forwardRef<HTMLDialogElement, {currentChannel: string, def
 					let success = await create_or_update_channel(currentChannel !== "" ? currentChannel : data.get("channel_name") as string, parseInt(visibility), password);
 					if (success) {
 						visibilityForm.current?.reset();
+						if (on_success !== null) {
+							on_success();
+						}
 					} else {
 						alert("Failed to " + mode + " channel!");
 					}

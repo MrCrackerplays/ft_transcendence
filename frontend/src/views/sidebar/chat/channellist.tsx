@@ -25,8 +25,6 @@ function ChannelList(
 	const [refresh, setRefresh] = useState(false);
 	const modal = useRef<HTMLDialogElement>(null);
 
-	const magic_channel = "3e809453-5734-482c-aa2a-8fc311f0cd4e";
-
 	const refreshChannels = () => {
 		setRefresh(true);
 		let joinedchannels = fetch("http://localhost:3000/self/channels/", {credentials: 'include'}).then(res => res.json());
@@ -96,12 +94,6 @@ function ChannelList(
 		<>
 		<div>
 			<button
-				aria-label="magic channel"
-				onClick={() => joinChannel(magic_channel)}
-				className="open-button"
-				disabled={!isConnectionOpen || banned.includes(magic_channel)}
-			>magic</button>
-			<button
 				aria-label="create channel"
 				onClick={() => {modal.current?.showModal();}}
 				disabled={!isConnectionOpen}
@@ -116,6 +108,7 @@ function ChannelList(
 				currentChannel=""
 				create_or_update_channel={createChannel}
 				defaultvisibility="public"
+				on_success={refreshChannels}
 			/>
 			<div>you are {sender} </div>
 		</div>
