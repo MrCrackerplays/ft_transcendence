@@ -24,7 +24,8 @@ function TestMatchMakingConnection() {
 		}
 
 		ws.current.on('connect', () => {
-			ws.current?.emit("join_room", "pong");
+			console.log('connection established');
+			ws.current?.emit("join_queue", "pong");
 			setIsConnectionOpen(true);
 		});
 
@@ -33,9 +34,10 @@ function TestMatchMakingConnection() {
 			console.log('Disconnected from pong');
 		});
 
-		ws.current.on('joinedRoom', () => {
+		ws.current.on('joined_queue', () => {
 			console.log("joined queue");
 		})
+
 		return () => {
 			ws.current?.close();
 			console.log("cleaning queue");

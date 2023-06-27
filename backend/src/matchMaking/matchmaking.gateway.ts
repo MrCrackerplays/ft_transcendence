@@ -1,4 +1,5 @@
 import {
+	MessageBody,
 	SubscribeMessage,
 	WebSocketGateway,
 	WebSocketServer,
@@ -31,12 +32,15 @@ export class MatchMakingGateway {
 	@WebSocketServer()
 	server: Server;
 	private queues: Map<string, Socket[]> = new Map();
+	private rooms: Map<string, GameRoom> = new Map();
+	private static roomIndex = 0;
 
 	constructor (
 		private jwtService: JwtService,
 		private connectionService: ConnectionService,
 		private userService: UserService
 	) { }
+
 	private userFromSocket(socket: Socket, result?: any): Promise<User> | undefined {
 		try {
 			if (!result) {
@@ -55,23 +59,11 @@ export class MatchMakingGateway {
 		}
 		return undefined;
 	}
-	private setStatus(user: User, newStatus: string) {
-		user.status = newStatus;
-		user.save();
-	}
-	afterInit(server: Server) {
-		Logger.log('waitlist')
-	}
-	
-	handleConnection(client: Socket) {
-		Logger.log(`new queue connection ${client.id}`);
-		if (!client.handshake.headers.cookie)
-		{
-			Logger.log('Lost the Cookie');
-			return;
-		}
+
+	private async setStatus(client: Socket, newStatus: string) {
 		const auth_cookie = parse(client.handshake.headers.cookie).Authentication;
 		let result = undefined;
+
 		try {
 			result = this.jwtService.verify(auth_cookie, { secret: process.env.JWT_SECRET });
 			if (!result)
@@ -80,27 +72,34 @@ export class MatchMakingGateway {
 			client.disconnect();
 			return;
 		}
-		this.userFromSocket(client, result).then(user => {
-			this.setStatus(user, 'in_queue');
-		})
+		const user = await this.userFromSocket(client, result)
+		user.status = newStatus;
+		user.save();
+		Logger.log(`${user.userName} status: ${user.status}`);
 	}
+
+	afterInit(server: Server) {
+		Logger.log('waitlist')
+	}
+	
+	handleConnection(client: Socket) {
+		if (!client.handshake.headers.cookie)
+		{
+			Logger.log('Lost the Cookie');
+			return;
+		}
+		Logger.log(`new queue connection ${client.id}`);
+	}
+
 	handleDisconnect(client: Socket) {
-		this.userFromSocket(client).then(user => {
-			if (!user)
-			return ;
-			this.setStatus(user, 'online');
-			console.log(`${user.status}`);
-		})
+		const currentQueue = this.getClientQueue(client);
+		if (currentQueue) {
+			this.removeClientFromQueue(currentQueue, client);
+		}
+		this.setStatus(client, 'online');
 		Logger.log(`disconnected ${client.id}`);
 	}
   
-  
-	@SubscribeMessage('join_room')
-	handleJoinRoom(client: Socket, room: string) {
-		client.join(room);
-		client.emit("joinedRoom", room);
-
-	}
 	//-----------gameplay----------------//
 
 	@SubscribeMessage('player_movement')
@@ -108,56 +107,73 @@ export class MatchMakingGateway {
 
 	}
 	//-----------------------------------//
-	
-	@SubscribeMessage('leave_room')
-	handleLeaveRoom(client: Socket, room: string) {
-		client.leave(room);
-		client.emit("leftRoom", room);
-	}
 
-	@SubscribeMessage('join_room')
-	private addClientToQueue(client: Socket, queue: string) {
+	@SubscribeMessage('join_queue')
+	async addClientToQueue(client: Socket, queue: string) {
 		Logger.log(`joining queue ${queue}`)
 		client.join(queue);
 		if (!this.queues.has(queue))
 			this.queues.set(queue, []);
 		this.queues.get(queue).push(client)
-		client.emit('joinedRoom');
+
+		await this.setStatus(client, 'in_queue')
+		this.matchClientsInQueue(queue);
 	}
 	
 	private removeClientFromQueue(queue: string, client: Socket) {
 		const clients  = this.queues.get(queue);
 		if (clients) {
 			const index = clients.indexOf(client);
-			if (index != -1) {
+			Logger.log(`client index to remove: ${index}`);
+			if (index != -1)
 				clients.splice(index, 1);
-			}
+			Logger.log(`queue length after removal: ${this.queues.get(queue).length}`)
 		}
 		client.leave(queue);
+		Logger.log('removed client from queue');
 	}
 
 	private matchClientsInQueue(queue: string) {
 		const clients = this.getClientsInQueue(queue);
 
+		Logger.log('Check for matches');
+
 		if (clients && clients.length >= 2) {
 			const client1 = clients[0];
 			const client2 = clients[1];
-			//TODO: generate unique room key for each game.
-			const gameRoom = 'gameRoom';
+			const gameRoom = `${queue}-${MatchMakingGateway.roomIndex}`;
+			if (MatchMakingGateway.roomIndex < Number.MAX_SAFE_INTEGER)
+				MatchMakingGateway.roomIndex++;
+			else
+				MatchMakingGateway.roomIndex = 0;
 			this.moveClientsToRoom(client1, client2, gameRoom);
 		}
 	}
 
-	private moveClientsToRoom(client1: Socket, client2: Socket, roomkey: string) {
-		const currentQueue = this.getClientRoom(client1);
-		this.removeClientFromQueue(currentQueue, client1);
-		this.removeClientFromQueue(currentQueue, client2);
+	private async moveClientsToRoom(client1: Socket, client2: Socket, roomkey: string) {
+		
+		console.log(`moving to ${roomkey}`);
+		if (!this.rooms.has(roomkey))
+		{
+			const user1id = (await this.userFromSocket(client1)).id;
+			const user2id = (await this.userFromSocket(client2)).id;
+			const newGame = new GameRoom(user1id, user2id, client1, client2);
+		
+			const currentQueue = this.getClientQueue(client1);
+			Logger.log(`queue length before removal: ${currentQueue.length}`);
+			this.removeClientFromQueue(currentQueue, client1);
+			this.removeClientFromQueue(currentQueue, client2);
 
-		client1.join(roomkey);
-		client2.join(roomkey);
+			this.rooms.set(roomkey, newGame);
+			this.rooms.get(roomkey).roomName = roomkey;
+			client1.join(roomkey);
+			this.setStatus(client1, 'ingame')
+			client2.join(roomkey);
+			this.setStatus(client2, 'ingame')
+		}
 	}
 
-	private getClientRoom(client: Socket): string {
+	private getClientQueue(client: Socket): string {
 		for (const [queue, clients] of this.queues) {
 			if (clients.includes(client))
 				return queue;
