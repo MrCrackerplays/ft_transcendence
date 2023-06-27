@@ -20,11 +20,11 @@ function BlockProfile({UUID} : {UUID : String})
 	useEffect(() => {
 		async function getBlocked()
 		{
+			setBlockArray(await FetchBlocked());
 			if (jsonData.id == UUID)
 			{
 				setBlockState("Self");
 			}
-			setBlockArray(await FetchBlocked());
 		}
 		getBlocked()
 	}, [jsonData])
