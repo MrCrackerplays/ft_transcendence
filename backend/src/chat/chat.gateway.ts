@@ -540,6 +540,7 @@ export class ChatGateway {
 					this.messageService.createMessage(channel, user, message).then((m) => {
 						console.log("sending message");
 						this.server.to("channel:" + channel_id).emit("message", {channel: channel_id, sender: m.author.userName, sender_id: m.author.id, content: m.content, date: m.date});
+						this.userService.unlockAchievement(user, "Send Message");
 					});
 				});
 			});
