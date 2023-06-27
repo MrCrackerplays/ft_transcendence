@@ -83,6 +83,11 @@ function BlockProfile({UUID} : {UUID : String})
 			setBlockState("Unblocked")
 	}
 	if (blockState == "Loading"){
+		return (
+			<form onSubmit={handleLoading}>
+				<button type="submit" className="add-block-btn self-block">Loading . . .</button>
+			</form>
+		)
 	}
 	//CANT REMOVE SELF && Removing friend that doenst exist is fien
 	if (blockState == "Blocked"){
