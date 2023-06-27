@@ -24,7 +24,7 @@ function App(): React.ReactElement
 	useEffect(() => {
 		const fetchData = async () => {
 			const data = await isLoggedIn();
-			if (!(data >= 200 && data <= 299))
+			if (!data)
 				navigate("/login");
 			else
 				setIsVerified(true);

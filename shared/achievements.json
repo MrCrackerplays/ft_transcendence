@@ -23,5 +23,10 @@
 	"name": "Played Pong!",
 	"description": "You played your first match of Pong!",
 	"imageurl": "https://cdn.discordapp.com/attachments/1094975702861877248/1101206223195492504/PlayPong.png"
+	},
+	{
+	"name": "Created an Account",
+	"description": "You created an account to Ball Busters!",
+	"imageurl": "https://cdn.discordapp.com/attachments/597032058233290779/1123212734578827274/GuyAccount_001.png"
 	}
 ]

@@ -12,6 +12,7 @@ import SearchBar from './misc/search';
 import MyStats from './misc/stats';
 import SelectBar from './selectbar/selectbar';
 import BlockProfile from './misc/blockprofile';
+import Achievements from './flexbox/achievements/achievements';
 
 function ProfilePage() {
 	const [isLoading, setIsLoading] = useState(true);
@@ -50,7 +51,7 @@ function ProfilePage() {
 					<BlockProfile UUID={jsonData.id}/>	
 				</div>
 				<div className="Stats"><MyStats user={jsonData}/></div>
-				<div className="FLEXBOX">{matchhistory ? <MatchHistory username={jsonData.userName}/> : "Achievements go here"}</div>
+				<div className="FLEXBOX">{matchhistory ? <MatchHistory username={jsonData.userName}/> : <Achievements achievements={jsonData.achievements}/>}</div>
 				<div className="Search"><SearchBar /></div>
 				<div className="NA"></div>
 		</div>
