@@ -20,11 +20,11 @@ function BlockProfile({UUID} : {UUID : String})
 	useEffect(() => {
 		async function getBlocked()
 		{
+			setBlockArray(await FetchBlocked());
 			if (jsonData.id == UUID)
 			{
 				setBlockState("Self");
 			}
-			setBlockArray(await FetchBlocked());
 		}
 		getBlocked()
 	}, [jsonData])
@@ -83,11 +83,6 @@ function BlockProfile({UUID} : {UUID : String})
 			setBlockState("Unblocked")
 	}
 	if (blockState == "Loading"){
-		return (
-			<form onSubmit={handleLoading}>
-				<button type="submit" className="add-block-btn self-block">Loading . . .</button>
-			</form>
-		)
 	}
 	//CANT REMOVE SELF && Removing friend that doenst exist is fien
 	if (blockState == "Blocked"){
