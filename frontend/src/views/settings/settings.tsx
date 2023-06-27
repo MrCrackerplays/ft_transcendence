@@ -4,36 +4,35 @@ import { Constants } from '../../../../shared/constants';
 import FetchQREnabled from '../../hooks/fetch/FetchQREnabled';
 
 
-async function deleteAccount()
-{
-	console.log("remove")
-	window.event?.preventDefault();
-	const RESPONSE = await fetch(`${Constants.BACKEND_URL}/remove`, {
-		method: 'POST',
-		credentials: 'include'
-	});
-	console.log(RESPONSE.ok);
-}
+// async function deleteAccount() {
+// 	console.log("remove")
+// 	window.event?.preventDefault();
+// 	const RESPONSE = await fetch(`${Constants.BACKEND_URL}/remove`, {
+// 		method: 'POST',
+// 		credentials: 'include'
+// 	});
+// }
 
-function ModalDelete({onClose})
-{
+function ModalDelete({ onClose }) {
 	return (
-	  <div className="modaldelete">
-		<div className="modaldelete-content">
-		  <h2>Delete Account</h2>
-		  <p>Are you sure you wish you delete your account?</p>
-		  <div className="modaldelete-buttons">
-		  <button onClick={deleteAccount} className="deletebutton">Delete</button>
-		  <button onClick={onClose} className="cancelbutton">Cancel</button>
-		  </div>
+		<div className="modaldelete">
+			<div className="modaldelete-content">
+				<h2>Delete Account</h2>
+				<p>Are you sure you wish you delete your account?</p>
+				<div className="modaldelete-buttons">
+					{/* <button onClick={deleteAccount} className="deletebutton">Delete Account!</button> */}
+					<form action={`${Constants.BACKEND_URL}/remove`} method='POST'>
+						<button type="submit" className="deletebutton">Delete</button>
+					</form>
+					<button onClick={onClose} className="cancelbutton">Cancel</button>
+				</div>
+			</div>
 		</div>
-	  </div>
 	);
 }
 
-function DeleteAccountButton({setTrue, setFalse, showDelete})
-{
-	return(
+function DeleteAccountButton({ setTrue, setFalse, showDelete }) {
+	return (
 		<div>
 			<button className="setShowDelete size" onClick={setTrue} >Delete Account</button>
 			{showDelete && <ModalDelete onClose={(setFalse)} />}
@@ -41,24 +40,22 @@ function DeleteAccountButton({setTrue, setFalse, showDelete})
 	)
 }
 
-function Modal2fa({onClose})
-{
+function Modal2fa({ onClose }) {
 	return (
-	  <div className="modaldelete">
-		<div className="modaldelete-content">
-		  <h2>Disable Two-factor authentication</h2>
-		  <p>Are you sure you wish you disable your Two-factor authentication?</p>
-		  <div className="modaldelete-buttons">
-		  <button className="deletebutton">Disable</button>
-		  <button onClick={onClose} className="cancelbutton">Cancel</button>
-		  </div>
+		<div className="modaldelete">
+			<div className="modaldelete-content">
+				<h2>Disable Two-factor authentication</h2>
+				<p>Are you sure you wish you disable your Two-factor authentication?</p>
+				<div className="modaldelete-buttons">
+					<button className="deletebutton">Disable</button>
+					<button onClick={onClose} className="cancelbutton">Cancel</button>
+				</div>
+			</div>
 		</div>
-	  </div>
 	);
 }
 
-function QRImg({enabled2fa})
-{
+function QRImg({ enabled2fa }) {
 	if (!enabled2fa)
 		return null;
 	const [twofa, setTwofa] = useState("");
@@ -73,28 +70,25 @@ function QRImg({enabled2fa})
 		}
 		getQR();
 	}, []);
-	return(
-		<img src={twofa} alt=""/>
+	return (
+		<img src={twofa} alt="" />
 	)
 }
 
-function QRButton({buttontype, setenabled2fa})
-{
+function QRButton({ buttontype, setenabled2fa }) {
 	const [showdisable, setshowdisable] = useState(false);
-	if (buttontype == "Loading")
-	{
+	if (buttontype == "Loading") {
 		return (
 			<div>
 				<button className="loading2fa">Loading...</button>
 			</div>
 		)
 	}
-	if (buttontype == "Enabled")
-	{
-		return(
+	if (buttontype == "Enabled") {
+		return (
 			<div>
 				<button className="disable2fa" onClick={() => setshowdisable(true)}>Disable 2fa</button>
-				{showdisable && <Modal2fa onClose={() => setshowdisable(false)}/>}
+				{showdisable && <Modal2fa onClose={() => setshowdisable(false)} />}
 			</div>
 		)
 	}
@@ -105,7 +99,7 @@ function QRButton({buttontype, setenabled2fa})
 	)
 }
 
-function Settings({updatescam, setupdatescam}) {
+function Settings({ updatescam, setupdatescam }) {
 	const [showDelete, setshowDelete] = useState(false);
 	const [showerror, setshowerror] = useState(false);
 	const [errorText, seterrorText] = useState("");
@@ -115,7 +109,7 @@ function Settings({updatescam, setupdatescam}) {
 	const [code2fa, setcoda2fa] = useState("")
 
 	useEffect(() => {
-		async function qrEnabled(){
+		async function qrEnabled() {
 			if (await FetchQREnabled() == true)
 				setenabled2fa("Enabled");
 			else
@@ -125,7 +119,7 @@ function Settings({updatescam, setupdatescam}) {
 	}, [])
 	const handlePFPSubmit = async (event) => {
 		if (event.target.file.files[0] === null)
-			return ;
+			return;
 		const formData = new FormData();
 		formData.append('file', event.target.file.files[0])
 		window.event?.preventDefault()
@@ -149,13 +143,11 @@ function Settings({updatescam, setupdatescam}) {
 				name: newusername
 			})
 		});
-		if (!RESPONSE.ok)
-		{
+		if (!RESPONSE.ok) {
 			setshowerror(true)
 			seterrorText(RESPONSE.statusText)
 		}
-		else
-		{
+		else {
 			setnewusername("")
 			setupdatescam(updatescam + 1)
 		}
@@ -163,16 +155,16 @@ function Settings({updatescam, setupdatescam}) {
 	const submitQR = async () => {
 		//POST TO SUBMT QR GOES HERE LATER IDK
 		//PROBABLY SET ERROR HERE IF 2FA CODE WRONG
-		return ;
+		return;
 	}
 	return (
 		<div className="setting-container">
 			<div className="Delete-Button">
-				<div className="SettingsDeleteButtonSubmit"><DeleteAccountButton setTrue={() => setshowDelete(true)} setFalse={() => setshowDelete(false)} showDelete={showDelete}/></div>
+				<div className="SettingsDeleteButtonSubmit"><DeleteAccountButton setTrue={() => setshowDelete(true)} setFalse={() => setshowDelete(false)} showDelete={showDelete} /></div>
 			</div>
 			<div className="SettingsPFP">
 				<div className="SettingsPFPImage">
-					<img key={updatescam} className="SPFPSize" src={`${Constants.FETCH_SELF_PFP}`} alt=""/>
+					<img key={updatescam} className="SPFPSize" src={`${Constants.FETCH_SELF_PFP}`} alt="" />
 				</div>
 				<div className="SettingsPFPUpload">
 					<form onSubmit={handlePFPSubmit}>
@@ -182,7 +174,7 @@ function Settings({updatescam, setupdatescam}) {
 				</div>
 			</div>
 			<div className="SettingsNamechange">
-				<div className="SettingsChangeName">	
+				<div className="SettingsChangeName">
 					<p>Change Name:</p>
 				</div>
 				<div className="SettingsNameInput">
@@ -192,18 +184,18 @@ function Settings({updatescam, setupdatescam}) {
 					<button onClick={handleUserNamesubmit}>Submit</button>
 				</div>
 				<div className="SettingsAllError">
-				{showerror && (
-					<div id="error-bar">
-						<p className="errortext">{errorText}</p>
-					</div>)}
+					{showerror && (
+						<div id="error-bar">
+							<p className="errortext">{errorText}</p>
+						</div>)}
 				</div>
 			</div>
 			<div className="SettingsQRCode">
 				<div className="SettingsQRImg">
-					<QRImg enabled2fa={enable2faimg}/>
+					<QRImg enabled2fa={enable2faimg} />
 				</div>
 				<div className="SettingsEnableQR">
-					<QRButton buttontype={enabled2fa} setenabled2fa={() => setenabled2faimg(true)}/>
+					<QRButton buttontype={enabled2fa} setenabled2fa={() => setenabled2faimg(true)} />
 				</div>
 				<div className="SettingsQRInput">
 					<input type="text" placeholder="Validate 2fa..." onChange={(e) => setcoda2fa(e.target.value)} value={code2fa} />

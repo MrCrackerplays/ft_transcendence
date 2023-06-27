@@ -4,8 +4,8 @@ async function isLoggedIn()
 		credentials: 'include'
 		});
 	if (!isLogin.ok)
-		return (500)
-	return (isLogin.status)
+		return (false)
+	return (true)
 }
 
 export default isLoggedIn;
