@@ -1,4 +1,4 @@
-.add-friend-btn{
+.add-block-btn{
 	height:100%;
 	width:100%;
 	font-size: 1rem;
@@ -7,27 +7,27 @@
 	font-weight:bold;
   }
 
-  .self-friend{
+  .self-block{
 	background-color: rgb(63, 61, 64);
   }
-  .add-friend{
+  .add-block{
 	background-color: rgb(43, 166, 194);
   }
 
-  .remove-friend{
+  .remove-block{
 	background-color: rgb(168, 10, 18);
   }
 
-  .self-friend:hover{
+  .self-block:hover{
 	background-color: rgb(87, 84, 88);
 	cursor:pointer;
   }
-  .add-friend:hover{
+  .add-block:hover{
 	background-color: rgb(44, 180, 210);
 	cursor:pointer;
   }
 
-  .remove-friend:hover{
+  .remove-block:hover{
 	background-color: rgb(187, 13, 22);
 	cursor:pointer;
   }

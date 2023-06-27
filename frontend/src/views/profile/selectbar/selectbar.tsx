@@ -1,9 +1,4 @@
-import { useEffect, useState } from 'react';
-import { PublicMatch } from '../../../../../shared/public-match';
-import FetchMatchHistory from '../../../hooks/fetch/FetchSelfMatchHistory';
 import './selectbar.css'
-import DefaultMatch from '../../../../../shared/public-match';
-import MatchHistory from '../flexbox/matchhistory/matchhistory';
 
 function SelectBar({matchhistory, setmatchhistory}){	
 	function matchbutton(){

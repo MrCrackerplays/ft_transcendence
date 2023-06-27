@@ -2,8 +2,7 @@
 import React from "react";
 import { useReducer, useEffect } from 'react';
 import "./pong.css";
-import { pongConstants , GameState , GameAction , GameActionKind , PaddleAction , PaddleState , BallState , } from '../../../../shared/pongTypes';
-import { makeReducer } from '../../../../shared/pongReducer';
+import { makeReducer, GameState, PaddleAction, GameActionKind, pongConstants } from "./pongReducer";
 
 type SocketMagicInput = {
 	overrideState: (newState: GameState) => void
