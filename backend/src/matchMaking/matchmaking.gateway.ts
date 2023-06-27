@@ -94,7 +94,7 @@ export class MatchMakingGateway {
 	handleDisconnect(client: Socket) {
 		const currentQueue = this.getClientQueue(client);
 		if (currentQueue) {
-			this.removeClientFromQueue(currentQueue, client);
+			this.removeClientFromQueue(client, currentQueue);
 		}
 		this.setStatus(client, 'online');
 		Logger.log(`disconnected ${client.id}`);
@@ -120,7 +120,7 @@ export class MatchMakingGateway {
 		this.matchClientsInQueue(queue);
 	}
 	
-	private removeClientFromQueue(queue: string, client: Socket) {
+	private removeClientFromQueue(client: Socket, queue: string) {
 		const clients  = this.queues.get(queue);
 		if (clients) {
 			const index = clients.indexOf(client);
@@ -160,9 +160,8 @@ export class MatchMakingGateway {
 			const newGame = new GameRoom(user1id, user2id, client1, client2);
 		
 			const currentQueue = this.getClientQueue(client1);
-			Logger.log(`queue length before removal: ${currentQueue.length}`);
-			this.removeClientFromQueue(currentQueue, client1);
-			this.removeClientFromQueue(currentQueue, client2);
+			this.removeClientFromQueue(client1, currentQueue);
+			this.removeClientFromQueue(client2, currentQueue);
 
 			this.rooms.set(roomkey, newGame);
 			this.rooms.get(roomkey).roomName = roomkey;
