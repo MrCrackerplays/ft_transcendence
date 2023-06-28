@@ -1,16 +1,26 @@
 import React, { useEffect, useRef, useState } from "react";
+import { useNavigate } from 'react-router-dom';
 import { Socket, io } from "socket.io-client";
 import { Constants } from "../../../../../shared/constants";
+import '../../menu/home.css';
+import PongGame from "../../../hooks/game/pong";
 
-function TestMatchMakingConnection() {
-	const [isConnectionOpen, setIsConnectionOpen] = useState(false);
-	const ws = useRef<Socket>();
+function CancelButton() {
+	const navigate = useNavigate();
 
-	const joinQueue = (gamemode: string) => {
-		ws.current?.emit("subscribe", {gamemode}, (response: boolean) => {
-			console.log("emit join queue");
-		});
+	function handleClick() {
+		navigate('/');
 	}
+
+	return (
+		<button className="button" onClick={() => handleClick()}>Cancel</button>
+	)
+}
+
+function MatchMakingQueue(gamemode: {gamemode: string}) {
+	const [isConnectionOpen, setIsConnectionOpen] = useState(false);
+	const [activeGame, setActiveGame] = useState(false);
+	const ws = useRef<Socket>();
 
 	useEffect(() => {
 		if (!ws.current) {
@@ -23,30 +33,55 @@ function TestMatchMakingConnection() {
 			console.log('connect with current socket');
 		}
 
-		ws.current.on('connect', () => {
+		ws.current.on('new_connection', () => {
 			console.log('connection established');
-			ws.current?.emit("join_queue", "pong");
+			ws.current?.emit("join_queue", gamemode);
 			setIsConnectionOpen(true);
 		});
 
 		ws.current.on('disconnect', () => {
-			setIsConnectionOpen(false);
 			console.log('Disconnected from pong');
+			setActiveGame(false);
+			setIsConnectionOpen(false);
 		});
 
 		ws.current.on('joined_queue', () => {
 			console.log("joined queue");
-		})
+		});
+
+		ws.current.on('start_game', () => {
+			setActiveGame(true);
+		});
 
 		return () => {
 			ws.current?.close();
 			console.log("cleaning queue");
 		}
 	}, []);
-	
+
+	const renderGame = () => {
+		switch (activeGame) {
+			case false:
+				return (
+					<div>
+						<p className="text">Waiting for opponent...</p>
+						<CancelButton></CancelButton>
+					</div>
+				)
+			case true:
+				return (
+					<PongGame />
+				)
+		}
+	}
+
 	return (
-		<p>pong</p>
+		<div className="menu">
+			{renderGame()}
+		</div>
 	)
+
+	
 }
 
-export default TestMatchMakingConnection;
+export default MatchMakingQueue;

@@ -13,6 +13,7 @@ import Sidebar from './views/sidebar/sidebar';
 import './App.css'
 import Settings from './views/settings/settings';
 import TestMatchMakingConnection from './views/profile/temp/tempgame';
+import MatchMakingQueue from './views/profile/temp/tempgame';
 
 function App(): React.ReactElement
 {
@@ -56,7 +57,8 @@ function App(): React.ReactElement
 					<Route path="/" element={<HomePage />}/>
 					<Route path="/profile/*" element={<ProfilePage />} />
 					<Route path="/settings" element={<Settings updatescam={updatescam} setupdatescam={setupdatescam}/>}/>
-					<Route path="/playpong" element={<TestMatchMakingConnection />} />
+					<Route path="/classic" element={<MatchMakingQueue gamemode='classic'/>} />
+					<Route path="/solo" element={<MatchMakingQueue gamemode='solo'/>} />
 				</Routes>
 			</div>
 		</div>

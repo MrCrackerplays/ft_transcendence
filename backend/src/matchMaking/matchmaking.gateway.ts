@@ -33,6 +33,7 @@ export class MatchMakingGateway {
 	server: Server;
 	private queues: Map<string, Socket[]> = new Map();
 	private rooms: Map<string, GameRoom> = new Map();
+	private clientsInGame: Map<string, GameRoom> = new Map();
 	private static roomIndex = 0;
 
 	constructor (
@@ -78,6 +79,18 @@ export class MatchMakingGateway {
 		Logger.log(`${user.userName} status: ${user.status}`);
 	}
 
+	private async statusOnDisconnect(client: Socket) {
+		const user = await this.userFromSocket(client);
+
+		if (user.status != 'offline') {
+			Logger.log('user is online');
+			user.status = 'online';
+			user.save();
+		}
+		else
+			Logger.log('user is offline');
+	}
+
 	afterInit(server: Server) {
 		Logger.log('waitlist')
 	}
@@ -88,7 +101,14 @@ export class MatchMakingGateway {
 			Logger.log('Lost the Cookie');
 			return;
 		}
-		Logger.log(`new queue connection ${client.id}`);
+		this.isClientInGame(client).then((result: boolean) => {
+			if (!result) {
+				client.emit('new_connection');
+				Logger.log(`new queue connection ${client.id}`);
+			} else {
+				client.emit('start_game');
+			}
+		}).catch(e => console.error(e));
 	}
 
 	handleDisconnect(client: Socket) {
@@ -96,7 +116,7 @@ export class MatchMakingGateway {
 		if (currentQueue) {
 			this.removeClientFromQueue(client, currentQueue);
 		}
-		this.setStatus(client, 'online');
+		this.statusOnDisconnect(client);
 		Logger.log(`disconnected ${client.id}`);
 	}
   
@@ -109,15 +129,15 @@ export class MatchMakingGateway {
 	//-----------------------------------//
 
 	@SubscribeMessage('join_queue')
-	async addClientToQueue(client: Socket, queue: string) {
-		Logger.log(`joining queue ${queue}`)
-		client.join(queue);
-		if (!this.queues.has(queue))
-			this.queues.set(queue, []);
-		this.queues.get(queue).push(client)
+	async addClientToQueue(client: Socket, queue: {gamemode: string}) {
+		Logger.log(`joining queue ${queue.gamemode}`)
+		client.join(queue.gamemode);
+		if (!this.queues.has(queue.gamemode))
+			this.queues.set(queue.gamemode, []);
+		this.queues.get(queue.gamemode).push(client)
 
 		await this.setStatus(client, 'in_queue')
-		this.matchClientsInQueue(queue);
+		this.matchClientsInQueue(queue.gamemode);
 	}
 	
 	private removeClientFromQueue(client: Socket, queue: string) {
@@ -152,7 +172,7 @@ export class MatchMakingGateway {
 
 	private async moveClientsToRoom(client1: Socket, client2: Socket, roomkey: string) {
 		
-		console.log(`moving to ${roomkey}`);
+		Logger.log(`moving to ${roomkey}`)
 		if (!this.rooms.has(roomkey))
 		{
 			const user1id = (await this.userFromSocket(client1)).id;
@@ -165,10 +185,16 @@ export class MatchMakingGateway {
 
 			this.rooms.set(roomkey, newGame);
 			this.rooms.get(roomkey).roomName = roomkey;
+
 			client1.join(roomkey);
+			this.clientsInGame.set(user1id, newGame);
 			this.setStatus(client1, 'ingame')
+
 			client2.join(roomkey);
+			this.clientsInGame.set(user1id, newGame);
 			this.setStatus(client2, 'ingame')
+
+			this.server.to(roomkey).emit('start_game');
 		}
 	}
 
@@ -182,6 +208,25 @@ export class MatchMakingGateway {
 
 	private getClientsInQueue(queue: string): Socket[] {
 		return this.queues.get(queue) || [];
+	}
+
+	private async isClientInGame(client: Socket): Promise<boolean> {
+		const userId = (await this.userFromSocket(client)).id;
+		const userGame = this.clientsInGame.get(userId);
+
+		Logger.log('Check for reconnecting client');
+		if (userGame != undefined) {
+			Logger.log('The client is reconnecting');
+			client.join(userGame.roomName);
+			if (userId == userGame.playerLeft)
+				userGame.playerLeftSocket = client;
+			else
+				userGame.playerRightSocket = client;
+			this.setStatus(client, 'ingame');
+			return true;
+		}
+		Logger.log('The client is connecting fresh');
+		return false;
 	}
 };
 

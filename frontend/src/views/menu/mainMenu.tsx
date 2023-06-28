@@ -1,7 +1,10 @@
-import { useState } from 'react'
+import React, { useState, useEffect, useRef } from 'react'
 import { useNavigate } from 'react-router-dom';
+import { Socket, io } from "socket.io-client";
+import { Constants } from '../../../../shared/constants';
 import './home.css'
-import MatchMakingButton from "../../hooks/matchMaking/matchMakingButton"
+import TestMatchMakingConnection from '../profile/temp/tempgame';
+import MatchMakingQueue from '../profile/temp/tempgame';
 
 function NavButton({label}) {
 	const navigate = useNavigate();
@@ -38,11 +41,26 @@ const Menu = () => {
 		return (
 			<div className='menu'>
 				<p className='text'>GAMEMODE</p>
-				<NavButton label={'playpong'} />
-				<NavButton label={'gamemode2'} />
-				{/* <button className='button'>gamemode1</button>
-				<button className='button'>gamemode2</button> */}
+				<NavButton label={'classic'} />
+				<NavButton label={'solo'} />
+				{/* <button className='button' onClick={() => {
+					setActiveMenu('classicQueue');}}>Classic Pong</button>
+				<button className='button' onClick={() => {
+					setActiveMenu('soloQueue');
+				}}>Solo Pong</button> */}
 				<button className='button' onClick={() =>setActiveMenu('home')}>return</button>
+			</div>
+		)
+	}
+
+	const matchQueue = (gamemode: string) => {
+		console.log(`gamemode = ${gamemode}`);
+		return (
+			<div className='menu'>
+				<MatchMakingQueue gamemode={gamemode}/>
+				<button className='button' onClick={() => {
+					setActiveMenu('home');
+				}}>Cancel</button>
 			</div>
 		)
 	}
@@ -53,8 +71,12 @@ const Menu = () => {
 				return mainMenu();
 			case 'play':
 				return playMenu();
+			case 'classicQueue':
+				return matchQueue('classic');
+			case 'soloQueue':
+				return matchQueue('solo');
 			default:
-				return null;
+				return mainMenu();
 		}
 	};
 
