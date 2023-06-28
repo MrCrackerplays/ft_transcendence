@@ -17,6 +17,7 @@ import { User } from 'src/users/user.entity';
 import { parse } from 'cookie';
 import { CreateChannelDTO, Visibility } from '../../../shared/dto/channel.dto';
 import { Channel } from 'src/channel/channel.entity';
+import { genSalt, hash } from 'bcrypt';
 
 const CHANNEL_PASSWORD_REGEX = /^([a-zA-Z0-9_\-]{3,16})$/;
 
@@ -72,6 +73,17 @@ export class ChatGateway {
 			"unblock",
 		];
 		return useractions.includes(action);
+	}
+
+	private async getChannel(channel_id: string, relations: string[] = []): Promise<Channel> {
+		try {
+			const channel = await this.channelService.findOneRelations(channel_id, relations);
+			if (!channel)
+				return null;
+			return channel;
+		} catch (e) {
+			return null;
+		}
 	}
 
 	afterInit(server: Server): void {
@@ -137,7 +149,7 @@ export class ChatGateway {
 		const user = await this.userFromSocket(client);
 		if (!user)
 			return false;
-		const channel = await this.channelService.get({ id: channel_id });
+		const channel = await this.getChannel(channel_id);
 		if (!channel || !this.canDoAction(user, channel, "update"))
 			return false;
 		if (channel.visibility == Visibility.DM)
@@ -149,7 +161,8 @@ export class ChatGateway {
 		if (visibility != Visibility.PUBLIC && visibility != Visibility.PRIVATE)
 			return false;
 		channel.visibility = visibility;
-		channel.password = password;
+		channel.salt = await genSalt();
+		channel.password = await hash(password, channel.salt);;
 		channel.save();
 		return true;
 	}
@@ -160,7 +173,7 @@ export class ChatGateway {
 		const user = await this.userFromSocket(client);
 		if (!user)
 			return false;
-		const channel = await this.channelService.get({ id: channel_id });
+		const channel = await this.getChannel(channel_id);
 		if (!channel || (channel.owner && channel.owner.id != user.id))
 			return false;
 		console.log("no deletion allowed yet, will crash")
@@ -226,7 +239,7 @@ export class ChatGateway {
 		this.userFromSocket(client).then(user => {
 			if (!user)
 				return;
-			this.channelService.get({ id: channel_id }).then(channel => {
+			this.getChannel(channel_id, ['members']).then(channel => {
 				if (!channel)
 					return;
 				console.log("kick event");
@@ -239,9 +252,13 @@ export class ChatGateway {
 							Logger.error("channel has no members", "kickUser");
 							return;
 						}
+						console.log("AAAAAAAA",channel.members);
+						console.log("mien klomp", target_user_id, channel.members.filter(member => member.id != target_user_id));
 						channel.members = channel.members.filter(member => member.id != target_user_id);
+						console.log("BBBBBBBB",channel.members);
 						channel.admins = channel.admins.filter(admin => admin.id != target_user_id);
 						channel.save();
+						console.log("CCCCCCCC",channel.members);
 						this.server.to("user:" + target_user_id).emit("kick", channel_id );
 						this.server.in("user:" + target_user_id).socketsLeave("channel:" + channel_id);
 					}
@@ -258,7 +275,7 @@ export class ChatGateway {
 		@MessageBody("channel") channel_id: string
 	): void {
 		this.userFromSocket(client).then(user => {
-			this.channelService.get({ id: channel_id }).then(channel => {
+			this.getChannel(channel_id, ['members']).then(channel => {
 				console.log("leave event", channel, user);
 				if (!channel)
 					return;
@@ -324,7 +341,7 @@ export class ChatGateway {
 		this.userFromSocket(client).then(user => {
 			if (!user)
 				return;
-			this.channelService.get({ id: channel_id }).then(async channel => {
+			this.getChannel(channel_id, ['members']).then(async channel => {
 				if (!channel)
 					return;
 				console.log("ban event");
@@ -363,7 +380,7 @@ export class ChatGateway {
 		this.userFromSocket(client).then(user => {
 			if (!user)
 				return;
-			this.channelService.get({ id: channel_id }).then(async channel => {
+			this.getChannel(channel_id, ['members']).then(async channel => {
 				if (!channel)
 					return;
 				console.log("unban event");
@@ -395,7 +412,7 @@ export class ChatGateway {
 		this.userFromSocket(client).then(user => {
 			if (!user)
 				return;
-			this.channelService.get({ id: channel_id }).then(async channel => {
+			this.getChannel(channel_id).then(async channel => {
 				if (!channel)
 					return;
 				console.log("mute event");
@@ -427,7 +444,7 @@ export class ChatGateway {
 		this.userFromSocket(client).then(user => {
 			if (!user)
 				return;
-			this.channelService.get({ id: channel_id }).then(async channel => {
+			this.getChannel(channel_id).then(async channel => {
 				if (!channel)
 					return;
 				console.log("unmute event");
@@ -459,7 +476,7 @@ export class ChatGateway {
 		this.userFromSocket(client).then(user => {
 			if (!user)
 				return;
-			this.channelService.get({ id: channel_id }).then(async channel => {
+			this.getChannel(channel_id, ['members']).then(async channel => {
 				if (!channel)
 					return;
 				console.log("promote event");
@@ -497,7 +514,7 @@ export class ChatGateway {
 		this.userFromSocket(client).then(user => {
 			if (!user)
 				return;
-			this.channelService.get({ id: channel_id }).then(async channel => {
+			this.getChannel(channel_id).then(async channel => {
 				if (!channel)
 					return;
 				console.log("demote event");
@@ -526,7 +543,7 @@ export class ChatGateway {
 			this.userFromSocket(socket).then(user => {
 				if (!user)
 					return;
-				this.channelService.findOne(channel_id).then(channel => {
+				this.getChannel(channel_id, ['members']).then(channel => {
 					if (!channel)
 						return;
 
