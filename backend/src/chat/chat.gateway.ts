@@ -53,8 +53,6 @@ export class ChatGateway {
 	}
 
 	private canDoAction(user: User, channel: Channel, action: string): boolean {
-		console.log("user", user);
-		console.log("channel", channel);
 		if (channel.owner && channel.owner.id == user.id)
 			return true;
 		const is_admin: boolean = channel.admins && channel.admins.find(admin => admin.id == user.id) != undefined;
@@ -252,13 +250,9 @@ export class ChatGateway {
 							Logger.error("channel has no members", "kickUser");
 							return;
 						}
-						console.log("AAAAAAAA",channel.members);
-						console.log("mien klomp", target_user_id, channel.members.filter(member => member.id != target_user_id));
 						channel.members = channel.members.filter(member => member.id != target_user_id);
-						console.log("BBBBBBBB",channel.members);
 						channel.admins = channel.admins.filter(admin => admin.id != target_user_id);
 						channel.save();
-						console.log("CCCCCCCC",channel.members);
 						this.server.to("user:" + target_user_id).emit("kick", channel_id );
 						this.server.in("user:" + target_user_id).socketsLeave("channel:" + channel_id);
 					}
