@@ -14,18 +14,22 @@ import { ChannelService } from 'src/channel/channel.service';
 import { UserService } from 'src/users/user.service';
 import { User } from 'src/users/user.entity';
 import { Match } from 'src/matches/match.entity';
-import { AchievementService } from 'src/achievements/achievement.service';
 import { Achievement } from 'src/achievements/achievement.entity';
+import { ChatController } from './chat.controller';
+import { AuthService } from 'src/auth/auth.service';
 
 @Module({
   imports: [TypeOrmModule.forFeature([Connection, Message,
     Channel, User, Match,
-    Achievement//only loaded because userservice got mad otherwise
+    Achievement,//only loaded because userservice got mad otherwise
   ])],
   providers: [ChatGateway, JwtService, ConnectionService, MessageService, 
     ChannelService,
     UserService,
-    AchievementService//only loaded because userservice got mad otherwise
+    AuthService,
+  ],
+  controllers: [
+    ChatController
   ],
 })
 export class ChatModule {}

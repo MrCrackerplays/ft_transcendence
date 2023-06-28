@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import { Message, UserMessage, isUserMessage, MenuItem } from "./messagetypes";
 import ChannelEditor from "./channeleditor";
+import { Constants } from "../../../../../shared/constants";
 
 type menuSettings = {x: number, y: number, boundX: number, boundY: number, show: boolean, target: string};
 
@@ -131,13 +132,13 @@ function channelOptions(role: role, isConnectionOpen: boolean, currentChannel: s
 		<button
 			aria-label="Delete channel"
 			onClick={() => deleteChannel(currentChannel)}
-			className="close-button"
+			className="chat-button"
 			disabled={!isConnectionOpen}
 		>Delete channel</button>
 		<button
 			aria-label="Edit channel"
 			onClick={makeModalVisible}
-			className="close-button"
+			className="chat-button"
 			disabled={!isConnectionOpen}
 		>Edit channel</button>
 		</>
@@ -148,15 +149,22 @@ function channelOptions(role: role, isConnectionOpen: boolean, currentChannel: s
 			<button
 				aria-label="Return to channel list"
 				onClick={() => setCurrentChannel("")}
-				className="close-button"
+				className="chat-button"
 				disabled={!isConnectionOpen}
 			>Return to channel list</button>
 			<button
 				aria-label="Leave channel"
 				onClick={() => leaveChannel(currentChannel)}
-				className="close-button"
+				className="chat-button"
 				disabled={!isConnectionOpen}
 			>Leave channel</button>
+			{/* copy currentChannel to clipboard */}
+			<button
+				aria-label="Copy channel link"
+				onClick={() => navigator.clipboard.writeText(`${Constants.BACKEND_URL}/chat-invite/${currentChannel}`)}
+				className="chat-button"
+				disabled={!isConnectionOpen}
+			>Copy channel invite</button>
 			{extraoptions}
 		</div>
 	);

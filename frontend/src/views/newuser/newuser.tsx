@@ -32,7 +32,19 @@ function SetUp()
 			return (false);
 		}
 		if (RESPONSE.status == 200)
+		{
+			const RESPONSE2 = await fetch(`${Constants.BACKEND_URL}/self/achievements`, {
+				method: 'POST',
+				credentials: 'include',
+				headers: {
+					'content-type': "application/json"
+				},
+				body: JSON.stringify({
+					name: "Created an Account"
+				})
+			});
 			navigate("/profile")
+		}
 		setShowError(false);
 	}
 	return (
