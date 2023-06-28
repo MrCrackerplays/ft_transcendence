@@ -85,8 +85,8 @@ function ChannelList(
 	if (!hasloaded) {
 		channelarea = [<div key={0}>Loading...</div>, <i key={1} className="gg-spinner"></i>];
 	} else if (channels.length > 0) {
-		channelarea = channels.map((channel: Channel, index : number) => (
-			<ChannelComponent key={index} channel={channel} joinChannel={joinChannel} canJoin={isConnectionOpen && !banned.includes(channel.id)} hasJoined={hasJoined} />
+		channelarea = channels.map((channel: Channel) => (
+			<ChannelComponent key={channel.id} channel={channel} joinChannel={joinChannel} canJoin={isConnectionOpen && !banned.includes(channel.id)} hasJoined={hasJoined} />
 		));
 	} else {
 		channelarea = [<div key={0}>No channels found!</div>];
