@@ -84,7 +84,7 @@ function UserMessageComponent({ message, sender, setMenu } : { message: UserMess
 					return;
 				let bounds = e.currentTarget.parentElement.parentElement.parentElement.parentElement.getBoundingClientRect();
 				//makes the click x and y coordinates relative to the chatbox
-				setMenu({x: e.clientX - bounds.left, y: e.clientY - bounds.top, boundX: bounds.width, boundY: bounds.height, show: true, target: message.sender});
+				setMenu({x: e.clientX - bounds.left, y: e.clientY - bounds.top, boundX: bounds.width, boundY: bounds.height, show: true, target: message.sender_id});
 			}}
 		>{message.sender}</a>;
 	let date_element = <sub>{new Date(message.date).toLocaleString()}</sub>;
