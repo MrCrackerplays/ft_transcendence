@@ -19,17 +19,17 @@ import { ChatController } from './chat.controller';
 import { AuthService } from 'src/auth/auth.service';
 
 @Module({
-  imports: [TypeOrmModule.forFeature([Connection, Message,
-    Channel, User, Match,
-    Achievement,//only loaded because userservice got mad otherwise
-  ])],
-  providers: [ChatGateway, JwtService, ConnectionService, MessageService, 
-    ChannelService,
-    UserService,
-    AuthService,
-  ],
-  controllers: [
-    ChatController
-  ],
+	imports: [TypeOrmModule.forFeature([Connection, Message,
+		Channel, User, Match,
+		Achievement,//only loaded because userservice got mad otherwise
+	])],
+	providers: [ChatGateway, JwtService, ConnectionService, MessageService,
+		ChannelService,
+		UserService,
+		AuthService,
+	],
+	controllers: [
+		ChatController
+	],
 })
-export class ChatModule {}
+export class ChatModule { }
