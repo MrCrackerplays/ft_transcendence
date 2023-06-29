@@ -232,7 +232,7 @@ function ChatChannel(
 					<textarea
 						id="message-input"
 						className="message-box"
-						placeholder="Type your message here..."
+						placeholder={muted? "You have been muted..." : "Type your message here..."}
 						value={messageBody}
 						onKeyDown={(e) => {
 							if (e.key == "Enter" && e.shiftKey == false) {
@@ -243,6 +243,7 @@ function ChatChannel(
 						}}
 						onChange={(e) => { setMessageBody(e.target.value) }}
 						autoComplete="off"
+						disabled={muted}
 						required
 					/>
 					<button
@@ -250,7 +251,7 @@ function ChatChannel(
 						onClick={sendMessage}
 						className="send-button"
 						disabled={!isConnectionOpen || muted}
-					>Send</button>
+					>{muted ? "Muted" : "Send"}</button>
 					<ChannelEditor
 						ref={modal}
 						currentChannel={currentChannel}
