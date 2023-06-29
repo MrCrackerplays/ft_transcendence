@@ -226,13 +226,6 @@ function Chat({ sender, sender_id }: { sender: string, sender_id: string }) {
 			});
 		}
 
-		if (!ws.current.hasListeners("joinmessage")) {
-			ws.current.on("joinmessage", (message) => {
-				console.log("Received joinmessage:", message);
-				updateHistory(message.channel, message);
-			});
-		}
-
 		if (!ws.current.hasListeners("leave")) {
 			ws.current.on("leave", (channel: string) => {
 				console.log("Received leave from:", channel);
