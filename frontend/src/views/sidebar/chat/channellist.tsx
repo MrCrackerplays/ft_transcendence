@@ -84,7 +84,7 @@ function ChannelList(
 		channelarea = [<div key={0}>Loading...</div>, <i key={1} className="gg-spinner"></i>];
 	} else if (channels.length > 0) {
 		channelarea = channels.map((channel: Channel) => (
-			<ChannelComponent key={channel.id} channel={channel} joinChannel={joinChannel} canJoin={isConnectionOpen && !banned.includes(channel.id)} hasJoined={hasJoined} />
+			<ChannelComponent key={channel.id} channel={channel} joinChannel={joinChannel} isConnectionOpen={isConnectionOpen} isBanned={banned.includes(channel.id)} hasJoined={hasJoined} />
 		));
 	} else {
 		channelarea = [<div key={0}>No channels found!</div>];
@@ -119,7 +119,7 @@ function ChannelList(
 	);
 }
 
-function ChannelComponent({ channel, joinChannel, canJoin, hasJoined }: { channel: Channel, joinChannel: (channel_id: string, password?: string | null) => void, canJoin: boolean, hasJoined: (channel_id: string) => boolean }): JSX.Element {
+function ChannelComponent({ channel, joinChannel, isConnectionOpen, isBanned, hasJoined }: { channel: Channel, joinChannel: (channel_id: string, password?: string | null) => void, isConnectionOpen: boolean, isBanned: boolean, hasJoined: (channel_id: string) => boolean }): JSX.Element {
 	let icon = "";
 	let hover = "";
 	if (channel.visibility == 0 && channel.password) {
@@ -134,7 +134,7 @@ function ChannelComponent({ channel, joinChannel, canJoin, hasJoined }: { channe
 	}
 	return (
 		<div className="channel" onClick={() => {
-			if (canJoin) {
+			if (isConnectionOpen && !isBanned) {
 				if (!hasJoined(channel.id) && channel.visibility == 0 && channel.password) {
 					joinChannel(channel.id, prompt("Enter channel password:"));
 				} else {
@@ -149,8 +149,8 @@ function ChannelComponent({ channel, joinChannel, canJoin, hasJoined }: { channe
 					aria-label="open channel"
 					onClick={() => { }}
 					className="open-button"
-					disabled={!canJoin}
-				>open</button>
+					disabled={!isConnectionOpen || isBanned}
+				>{isBanned ? "banned" : "open"}</button>
 			</div>
 		</div>
 	);
