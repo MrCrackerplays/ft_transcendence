@@ -243,13 +243,14 @@ export class GameRoom {
 		this.playerRight = player2Id;
 		this.playerLeftSocket = player1Socket;
 		this.playerRightSocket = player2Socket;
+		this.GameState = {} as GameState; // Initialize GameState with an empty object or provide the appropriate initial state UNFINISHED
 	}
 
 	//methods for 1 room
-	handlePlayerMovement(socketId: string, movement: PaddleAction) { //need to know which player is moving
+	handlePlayerMovement(socket: Socket, movement: PaddleAction, player: string) { //need to know which player is moving
 	
 		// Apply the reducer function to update the game state
-		const reducer = makeReducer(socketId);
+		const reducer = makeReducer(player);
 		const newGameState: GameState = reducer(this.GameState, {
 			kind: GameActionKind.overrideState,
 			value: this.GameState,
@@ -265,6 +266,6 @@ export class GameRoom {
 	handleMessage(socket: Socket, payload: any) {
 		// Handle the received message
 		const { movement } = payload;
-		this.handlePlayerMovement(socket.id, movement); //need to know which player is moving
+		this.handlePlayerMovement(socket, movement, this.playerLeft); //need to know which player is moving
   }
 };

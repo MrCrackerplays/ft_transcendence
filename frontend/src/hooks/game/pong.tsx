@@ -106,8 +106,6 @@ const PongGame = () => {
 		return () => clearInterval(interval);
 	}, []);
 
-
-
 	const lPaddle = 0.5 - pongConstants.paddleHeight / 4;
 	const kPaddle = lPaddle / (1 - pongConstants.paddleHeight / 2);
 
