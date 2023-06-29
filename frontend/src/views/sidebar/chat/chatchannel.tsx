@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import { Message, UserMessage, isUserMessage, MenuItem } from "./messagetypes";
 import ChannelEditor from "./channeleditor";
+import { useNavigate } from "react-router-dom";
 import { Constants } from "../../../../../shared/constants";
 
 type menuSettings = { x: number, y: number, boundX: number, boundY: number, show: boolean, target: string };
@@ -68,17 +69,26 @@ function UserMenuComponent({ channel, menusettings, setMenu, items }: { channel:
 
 
 function UserMessageComponent({ message, sender, setMenu }: { message: UserMessage; sender: string, setMenu: (menusettings: menuSettings) => void }): JSX.Element {
+	const navigate = useNavigate();
 	let alignment = "leftalign";
-	let sender_element = <a href={`/profile/${message.sender}`}
+	let sender_element = <div className="message-sender"
+		onClick={() => {
+			navigate(`/profile/${message.sender}`);
+		}}
 		onContextMenu={(e) => {
 			e.preventDefault();
 			console.log(e);
+			if (e.ctrlKey) {
+				console.log("copied user id to clipboard");
+				navigator.clipboard.writeText(message.sender_id);
+				return;
+			}
 			/*
 				chatbox <-what we want to get the bounds from
 					chat-history
 						message
 							message-header
-								anchor tag(<a>) <- what currentTarget is
+								div tag(<div>) <- what currentTarget is
 			*/
 			if (!e.currentTarget.parentElement?.parentElement?.parentElement?.parentElement)
 				return;
@@ -86,7 +96,7 @@ function UserMessageComponent({ message, sender, setMenu }: { message: UserMessa
 			//makes the click x and y coordinates relative to the chatbox
 			setMenu({ x: e.clientX - bounds.left, y: e.clientY - bounds.top, boundX: bounds.width, boundY: bounds.height, show: true, target: message.sender_id });
 		}}
-	>{message.sender}</a>;
+	>{message.sender}</div>;
 	let date_element = <sub>{new Date(message.date).toLocaleString()}</sub>;
 	let message_top = (
 		<div className="message-header">

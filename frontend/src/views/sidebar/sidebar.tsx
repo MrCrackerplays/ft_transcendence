@@ -7,6 +7,7 @@ import MyFriendsList from "./friendlist/friendlist"
 function Sidebar() {
 	const [isLoading, setIsLoading] = useState(true);
 	const [jsonData, setJsonData] = useState<PublicUser>(DefaultProfile());
+	const [startDM, setStartDM] = useState<(id:string) => void>((id: string)=>console.log("DM not set"));
 
 	useEffect(() => {
 		const getdata = async () => {
@@ -21,11 +22,11 @@ function Sidebar() {
 		if (!jsonData)
 			chat = (<div><h1>Couldn't load chat: User Not Found</h1></div>);
 		else
-			chat = (<Chat sender={jsonData.userName} sender_id={jsonData.id} />)
+			chat = (<Chat sender={jsonData.userName} sender_id={jsonData.id} setStartDM={setStartDM} />)
 	}
 	return(
 		<div className="sidebarcontainer">
-  			<MyFriendsList />
+  			<MyFriendsList startDM={startDM} />
   			{chat}
 		</div>
 	)

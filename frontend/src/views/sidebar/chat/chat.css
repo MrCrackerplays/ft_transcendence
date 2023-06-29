@@ -32,9 +32,9 @@
 	color: dodgerblue;
 }
 
-.message-header>a {
-	color: dodgerblue;
-	text-decoration: none;
+.message-sender:hover {
+	cursor:pointer;
+	text-decoration: underline;
 }
 
 .generic-message {
