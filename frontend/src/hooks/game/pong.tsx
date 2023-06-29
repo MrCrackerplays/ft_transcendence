@@ -14,9 +14,18 @@ type SocketMagicOutput = {
 //https://en.wikipedia.org/wiki/WebSocket
 const SocketMagic: (input: SocketMagicInput) => SocketMagicOutput = (input) => {
 
+
+	//write action to server -> player action sent to server
 	const socket = new WebSocket("ws://localhost:8080/ws");
 	const playerMovement: (movement: PaddleAction) => void = (movement) => {
-		socket.send(JSON.stringify({ movement: movement }));
+
+		const toSend = {
+			event: "playerMovement",
+			payload: {
+				movement: movement
+			}
+		};
+		socket.send(JSON.stringify(toSend));
 	};
 	
 	//open connection when game start
@@ -33,7 +42,7 @@ const SocketMagic: (input: SocketMagicInput) => SocketMagicOutput = (input) => {
 		// this.setState({state: newState});
 	};
 
-	//write action to server -> player action sent to server
+	
 
 	// Fired when a connection with a WebSocket is closed
 	socket.onclose = function (event) {
