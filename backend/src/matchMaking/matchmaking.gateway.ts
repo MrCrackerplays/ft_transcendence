@@ -125,6 +125,14 @@ export class MatchMakingGateway {
 	handlePlayerMovement(client: Socket, action: string) {
 
 	}
+
+
+	@SubscribeMessage('gameOver')
+	handleGameOver(client: Socket, payload: any) {
+		// Handle the game over event
+		// You can access the client information and the payload data if needed
+		// Perform any necessary actions, such as updating the game state or notifying other players
+	}
 	//-----------------------------------//
 
 	@SubscribeMessage('join_queue')
