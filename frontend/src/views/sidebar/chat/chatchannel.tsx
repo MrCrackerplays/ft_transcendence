@@ -116,7 +116,7 @@ function UserMessageComponent({ message, sender, setMenu }: { message: UserMessa
 
 function MessageComponent({ message }: { message: Message }): JSX.Element {
 	return (
-		<div className="message join-message">
+		<div className="message generic-message">
 			<i>
 				{message.content}
 			</i>
@@ -126,12 +126,15 @@ function MessageComponent({ message }: { message: Message }): JSX.Element {
 
 function channelOptions(role: role, isConnectionOpen: boolean, currentChannel: string, setCurrentChannel: (channel: string) => void, deleteChannel: (channel: string) => Promise<boolean>, leaveChannel: (channel: string) => Promise<boolean>, makeModalVisible: () => void): JSX.Element {
 	let extraoptions = <></>;
-	if (role == "owner" || role == "admin") {
+	if (role == "owner") {
 		extraoptions = (
 			<>
 				<button
 					aria-label="Delete channel"
-					onClick={() => deleteChannel(currentChannel)}
+					onClick={() => {
+						if (prompt("Are you sure you want to delete the channel? Type DELETE to confirm.") === "DELETE")
+							deleteChannel(currentChannel);
+					}}
 					className="chat-button"
 					disabled={!isConnectionOpen}
 				>Delete channel</button>
