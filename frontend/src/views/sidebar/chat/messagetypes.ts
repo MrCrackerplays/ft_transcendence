@@ -15,4 +15,4 @@ export function isUserMessage(message: UserMessage | Message): message is UserMe
 	return (message as UserMessage).sender !== undefined;
 }
 
-export type MenuItem = {label: string, action: (arg: any)=>void};
+export type MenuItem = { label: string, action: (arg: any) => void };

@@ -1,4 +1,5 @@
-#chat-history, #channel-list {
+#chat-history,
+#channel-list {
 	overflow: auto;
 }
 
@@ -16,7 +17,7 @@
 }
 
 .message {
-	box-shadow: 0 1px 0 lightblue ;
+	box-shadow: 0 1px 0 lightblue;
 	padding-top: 0.5rem;
 	padding-bottom: 0.5rem;
 }
@@ -30,7 +31,8 @@
 	justify-content: space-between;
 	color: dodgerblue;
 }
-.message-header > a {
+
+.message-header>a {
 	color: dodgerblue;
 	text-decoration: none;
 }
@@ -39,11 +41,12 @@
 	text-align: center;
 }
 
-.leftalign{
-	text-align: left;;
+.leftalign {
+	text-align: left;
+	;
 }
 
-.rightalign{
+.rightalign {
 	text-align: right;
 }
 
@@ -67,7 +70,7 @@ dialog::backdrop {
 	background-color: rgba(0, 0, 0, 0.5);
 }
 
-dialog > form {
+dialog>form {
 	display: grid;
 }
 
@@ -79,7 +82,7 @@ dialog > form {
 .channel {
 	display: flex;
 	justify-content: space-between;
-	box-shadow: 0 1px 0 lightblue ;
+	box-shadow: 0 1px 0 lightblue;
 	padding-top: 0.5rem;
 	padding-bottom: 0.5rem;
 }
@@ -112,6 +115,7 @@ dialog > form {
 	/* margin-top: -12px */
 	margin-right: 2px;
 }
+
 .gg-lock::after {
 	content: "";
 	display: block;
@@ -128,7 +132,7 @@ dialog > form {
 
 /* https://css.gg/spinner */
 .gg-spinner {
-	transform: scale(var(--ggs,1))
+	transform: scale(var(--ggs, 1))
 }
 
 .gg-spinner,
@@ -149,8 +153,7 @@ dialog > form {
 }
 
 .gg-spinner::before {
-	animation: spinner 1s
-	cubic-bezier(.6,0,.4,1) infinite;
+	animation: spinner 1s cubic-bezier(.6, 0, .4, 1) infinite;
 	border: 3px solid transparent;
 	border-top-color: currentColor
 }
@@ -161,16 +164,21 @@ dialog > form {
 }
 
 @keyframes spinner {
-	0% { transform: rotate(0deg) }
-	to { transform: rotate(359deg) }
-} 
+	0% {
+		transform: rotate(0deg)
+	}
+
+	to {
+		transform: rotate(359deg)
+	}
+}
 
 /* https://css.gg/shield */
 .gg-shield {
 	box-sizing: border-box;
 	position: relative;
 	display: block;
-	transform: scale(var(--ggs,1));
+	transform: scale(var(--ggs, 1));
 	width: 14px;
 	height: 4px;
 	background: currentColor;
@@ -205,7 +213,7 @@ dialog > form {
 /* https://css.gg/user */
 .gg-user {
 	display: block;
-	transform: scale(var(--ggs,1));
+	transform: scale(var(--ggs, 1));
 	box-sizing: border-box;
 	width: 12px;
 	height: 18px

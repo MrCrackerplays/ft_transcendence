@@ -36,7 +36,7 @@ export class ChatGateway {
 		private messageService: MessageService,
 		private channelService: ChannelService,
 		private userService: UserService,
-		) { }
+	) { }
 
 	private userFromSocket(socket: Socket, result?: any): Promise<User> | undefined {
 		try {
@@ -111,7 +111,7 @@ export class ChatGateway {
 
 	@UseGuards(WsGuard)
 	@SubscribeMessage('create')
-	async createChannel(@ConnectedSocket() client: Socket, @MessageBody("name") name : string, @MessageBody("visibility") visibility : Visibility, @MessageBody("password") password : string
+	async createChannel(@ConnectedSocket() client: Socket, @MessageBody("name") name: string, @MessageBody("visibility") visibility: Visibility, @MessageBody("password") password: string
 	): Promise<boolean> {
 		const user = await this.userFromSocket(client);
 		if (!user)
@@ -124,15 +124,15 @@ export class ChatGateway {
 			return false;
 		if (visibility != Visibility.PUBLIC && visibility != Visibility.PRIVATE)
 			return false;
-			//TODO: add a method for creating dm's or allow them using this method
-		let dto : CreateChannelDTO = { name: name, visibility: visibility, password: password };
+		//TODO: add a method for creating dm's or allow them using this method
+		let dto: CreateChannelDTO = { name: name, visibility: visibility, password: password };
 		this.channelService.create(user, dto);
 		return true;
 	}
 
 	@UseGuards(WsGuard)
 	@SubscribeMessage('updateChannel')
-	async updateChannel(@ConnectedSocket() client: Socket, @MessageBody("channel") channel_id : string, @MessageBody("visibility") visibility : Visibility, @MessageBody("password") password : string
+	async updateChannel(@ConnectedSocket() client: Socket, @MessageBody("channel") channel_id: string, @MessageBody("visibility") visibility: Visibility, @MessageBody("password") password: string
 	): Promise<boolean> {
 		const user = await this.userFromSocket(client);
 		if (!user)
@@ -156,7 +156,7 @@ export class ChatGateway {
 
 	@UseGuards(WsGuard)
 	@SubscribeMessage('delete')
-	async deleteChannel(@ConnectedSocket() client: Socket, @MessageBody("channel") channel_id : string): Promise<boolean> {
+	async deleteChannel(@ConnectedSocket() client: Socket, @MessageBody("channel") channel_id: string): Promise<boolean> {
 		const user = await this.userFromSocket(client);
 		if (!user)
 			return false;
@@ -172,7 +172,7 @@ export class ChatGateway {
 
 	@UseGuards(WsGuard)
 	@SubscribeMessage('subscribe')
-	async subscribeChannel(@ConnectedSocket() client: Socket, @MessageBody("channel") channel_id, @MessageBody("password") password : string): Promise<Boolean> {
+	async subscribeChannel(@ConnectedSocket() client: Socket, @MessageBody("channel") channel_id, @MessageBody("password") password: string): Promise<Boolean> {
 		const user = await this.userFromSocket(client);
 		if (!user)
 			return false;
@@ -187,33 +187,33 @@ export class ChatGateway {
 	async joinChannel(
 		@ConnectedSocket() client: Socket,
 		@MessageBody("channel") channel_id: string
-	): Promise<{channel_id: string, success: boolean, reason: string}> {
+	): Promise<{ channel_id: string, success: boolean, reason: string }> {
 		console.log("join channel event", channel_id);
 		const user = await this.userFromSocket(client);
 		if (!user) {
-			return {channel_id: channel_id, success: false, reason: "user not found"};
+			return { channel_id: channel_id, success: false, reason: "user not found" };
 		}
 		console.log("user:", user);
 		const channel = await this.channelService.findOne(channel_id);
 		if (!channel) {
-			return {channel_id: channel_id, success: false, reason: "channel not found"};
+			return { channel_id: channel_id, success: false, reason: "channel not found" };
 		}
 
 		const is_subscribed = (await this.userService.getChannels(user)).find(ch => ch.id == channel_id);
 		if (!is_subscribed) {
 			console.log("user is not subscribed");
-			return {channel_id: channel_id, success: false, reason: "not subscribed"};
+			return { channel_id: channel_id, success: false, reason: "not subscribed" };
 		}
 
 		const is_banned = channel.banned.find(banned => banned.id == user.id);
 		if (is_banned) {
 			console.log("user is banned");
-			return {channel_id: channel_id, success: false, reason: "banned"};
+			return { channel_id: channel_id, success: false, reason: "banned" };
 		}
 
 		this.server.in("user:" + user.id).socketsJoin("channel:" + channel_id);
 		this.server.to("channel:" + channel_id).emit("joinmessage", { channel: channel_id, content: user.userName + " has joined the channel" });
-		return {channel_id: channel_id, success: true, reason: "Success"};
+		return { channel_id: channel_id, success: true, reason: "Success" };
 	}
 
 	@UseGuards(WsGuard)
@@ -242,7 +242,7 @@ export class ChatGateway {
 						channel.members = channel.members.filter(member => member.id != target_user_id);
 						channel.admins = channel.admins.filter(admin => admin.id != target_user_id);
 						channel.save();
-						this.server.to("user:" + target_user_id).emit("kick", channel_id );
+						this.server.to("user:" + target_user_id).emit("kick", channel_id);
 						this.server.in("user:" + target_user_id).socketsLeave("channel:" + channel_id);
 					}
 				}
@@ -269,7 +269,7 @@ export class ChatGateway {
 				channel.members = channel.members.filter(member => member.id != user.id);
 				channel.admins = channel.admins.filter(admin => admin.id != user.id);
 				channel.save();
-				this.server.to("user:" + user.id).emit("leave", channel_id );
+				this.server.to("user:" + user.id).emit("leave", channel_id);
 				this.server.in("user:" + user.id).socketsLeave("channel:" + channel_id);
 				console.log("leave event end");
 			});
@@ -291,7 +291,7 @@ export class ChatGateway {
 					return;
 				user.blocked.push(target_user);
 				user.save();
-				this.server.to("user:" + user.id).emit("block", target_user_id );
+				this.server.to("user:" + user.id).emit("block", target_user_id);
 			});
 		});
 		console.log("block event end");
@@ -309,7 +309,7 @@ export class ChatGateway {
 			console.log("unblock event");
 			user.blocked = user.blocked.filter(blocked => blocked.id != target_user_id);
 			user.save();
-			this.server.to("user:" + user.id).emit("unblock", target_user_id );
+			this.server.to("user:" + user.id).emit("unblock", target_user_id);
 		});
 		console.log("unblock event end");
 	}
@@ -344,7 +344,7 @@ export class ChatGateway {
 						channel.admins = channel.admins.filter(admin => admin.id != target_user_id);
 						channel.banned.push(target);
 						channel.save();
-						this.server.to("user:" + target_user_id).emit("ban", channel_id );
+						this.server.to("user:" + target_user_id).emit("ban", channel_id);
 						this.server.in("user:" + target_user_id).socketsLeave("channel:" + channel_id);
 					}
 				}
@@ -377,7 +377,7 @@ export class ChatGateway {
 							return;
 						channel.banned = channel.banned.filter(banned => banned.id != target.id);
 						channel.save();
-						this.server.to("user:" + target_user_id).emit("unban", channel_id );
+						this.server.to("user:" + target_user_id).emit("unban", channel_id);
 					}
 				}
 				console.log("unban event end");
@@ -409,7 +409,7 @@ export class ChatGateway {
 							return;
 						channel.muted.push(target);
 						channel.save();
-						this.server.to("user:" + target_user_id).emit("mute", channel_id );
+						this.server.to("user:" + target_user_id).emit("mute", channel_id);
 					}
 				}
 				console.log("mute event end");
@@ -441,7 +441,7 @@ export class ChatGateway {
 							return;
 						channel.muted = channel.muted.filter(muted => muted.id != target.id);
 						channel.save();
-						this.server.to("user:" + target_user_id).emit("unmute", channel_id );
+						this.server.to("user:" + target_user_id).emit("unmute", channel_id);
 					}
 				}
 				console.log("unmute event end");
@@ -479,7 +479,7 @@ export class ChatGateway {
 							return;
 						channel.admins.push(target);
 						channel.save();
-						this.server.to("user:" + target_user_id).emit("promote", channel_id );
+						this.server.to("user:" + target_user_id).emit("promote", channel_id);
 					}
 				}
 				console.log("promote event end");
@@ -511,7 +511,7 @@ export class ChatGateway {
 							return;
 						channel.admins = channel.admins.filter(admin => admin.id != target.id);
 						channel.save();
-						this.server.to("user:" + target_user_id).emit("demote", channel_id );
+						this.server.to("user:" + target_user_id).emit("demote", channel_id);
 					}
 				}
 				console.log("demote event end");
@@ -521,7 +521,7 @@ export class ChatGateway {
 
 	@UseGuards(WsGuard)
 	@SubscribeMessage('message')
-	receiveMessage(@ConnectedSocket() socket: Socket, @MessageBody("channel") channel_id : string, @MessageBody("message") message: string): void {
+	receiveMessage(@ConnectedSocket() socket: Socket, @MessageBody("channel") channel_id: string, @MessageBody("message") message: string): void {
 		try {
 			this.userFromSocket(socket).then(user => {
 				if (!user)
@@ -539,7 +539,7 @@ export class ChatGateway {
 
 					this.messageService.createMessage(channel, user, message).then((m) => {
 						console.log("sending message");
-						this.server.to("channel:" + channel_id).emit("message", {channel: channel_id, sender: m.author.userName, sender_id: m.author.id, content: m.content, date: m.date});
+						this.server.to("channel:" + channel_id).emit("message", { channel: channel_id, sender: m.author.userName, sender_id: m.author.id, content: m.content, date: m.date });
 						this.userService.unlockAchievement(user, "Send Message");
 					});
 				});
