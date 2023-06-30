@@ -6,6 +6,7 @@ import ChannelList from "./channellist";
 import ChatChannel from "./chatchannel";
 import { Channel } from "./channeltypes";
 import { useStateRef } from "./usestateref";
+import { Constants } from "../../../../../shared/constants";
 
 function Chat( {
 		sender, sender_id, setStartDM
@@ -45,7 +46,7 @@ function Chat( {
 	}
 
 	const getMessageHistory = (channel_id: string) => {
-		return fetch("http://localhost:3000/self/channels/" + channel_id + "/messages", {
+		return fetch(`${Constants.BACKEND_URL}/self/channels/` + channel_id + "/messages", {
 			credentials: 'include'
 		});
 	};
@@ -199,7 +200,7 @@ function Chat( {
 		setStartDM(()=>openDMChannel);
 		console.log("subscribed to events?")
 		if (!ws.current)
-			ws.current = io("http://localhost:3000/chat", { withCredentials: true });
+			ws.current = io(`${Constants.BACKEND_URL}/chat`, { withCredentials: true });
 		else if (ws.current.disconnected)
 			ws.current.connect();
 		// ws.current.emit("create", {channel: "coolerchannel"});

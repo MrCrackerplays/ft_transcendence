@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import { Channel } from "./channeltypes";
 import ChannelEditor from "./channeleditor";
+import { Constants } from "../../../../../shared/constants";
 
 function ChannelList(
 	{
@@ -27,8 +28,8 @@ function ChannelList(
 
 	const refreshChannels = () => {
 		setRefresh(true);
-		let joinedchannels = fetch("http://localhost:3000/self/channels/", { credentials: 'include' }).then(res => res.json());
-		let publicchannels = fetch("http://localhost:3000/channels", { credentials: 'include' }).then(res => res.json());
+		let joinedchannels = fetch(`${Constants.BACKEND_URL}/self/channels/`, { credentials: 'include' }).then(res => res.json());
+		let publicchannels = fetch(`${Constants.BACKEND_URL}/channels`, { credentials: 'include' }).then(res => res.json());
 
 		let owner: Set<string> = new Set();
 		let admin: Set<string> = new Set();

@@ -18,12 +18,13 @@ import { parse } from 'cookie';
 import { CreateChannelDTO, Visibility } from '../../../shared/dto/channel.dto';
 import { Channel } from 'src/channel/channel.entity';
 import { genSalt, hash } from 'bcrypt';
+import { Constants } from '../../../shared/constants';
 
 const CHANNEL_PASSWORD_REGEX = /^([a-zA-Z0-9_\-]{3,16})$/;
 
 @WebSocketGateway({
 	cors: {
-		origin: 'http://localhost:5173',
+		origin: `${Constants.FRONTEND_URL}`,
 		credentials: true
 	},
 	namespace: 'chat',
