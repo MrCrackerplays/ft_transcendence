@@ -53,7 +53,6 @@ const SocketMagic: (input: SocketMagicInput) => SocketMagicOutput = (input) => {
 				}
 				// this.setState({state: newState});
 			};
-
 			wbSocket.current.onclose = (event) => {
 				console.log('WebSocket connection closed:', event.code, event.reason);
 				if (reconnectAttempts < maxReconnectAttempts) {
@@ -71,8 +70,6 @@ const SocketMagic: (input: SocketMagicInput) => SocketMagicOutput = (input) => {
 					cleanup();
 				}
 			};
-
-			// Fired when a connection with a WebSocket has been closed because of an error
 			wbSocket.current.onerror = (event) => {
 				console.error('WebSocket connection error:', event);
 				sendGameOverSignal();
@@ -133,6 +130,7 @@ const PongGame = () => {
 		time: 0,
 		gameOver: false,
 		winner: "",
+		singlemode: true,
 	};
 	const [state, dispatch] = useReducer(makeReducer(playerID), initialState);
 

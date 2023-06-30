@@ -252,8 +252,39 @@ export class GameRoom {
 		this.playerRightSocket = player2Socket;
 		if (player2Id == null) //gamemode == single if userID2 = null
 			this.Singlemode = true;
+		else
+			this.Singlemode = false;
 		this.GameState = {} as GameState; // Initialize GameState with an empty object or provide the appropriate initial state UNFINISHED
 	}
+
+	initiateGame() {
+
+		this.GameState = {
+			leftPaddle: {
+				playerID: this.playerLeft,
+				paddlePosition: 0.5,
+				action: PaddleAction.None,
+				score: 0,
+				moved: false,
+			},
+			rightPaddle: {
+				playerID: this.playerRight,
+				paddlePosition: 0.5,
+				action: PaddleAction.None,
+				score: 0,
+				moved: false,
+			},
+			ball: {
+				velocity: { x: 0, y: 0 },
+				position: { x: 0.5, y: 0.5 },
+			},
+			time: 0,
+			gameOver: false,
+			winner: '',
+			singlemode = this.Singlemode,
+
+		}
+	};
 
 	handleMessage(socket: Socket, payload: any) {
 		// Handle the received message

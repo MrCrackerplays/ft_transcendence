@@ -7,8 +7,8 @@ export enum PaddleAction {
 }
 
 export type GameAction = {
-	kind : GameActionKind,
-	value : any,
+	kind: GameActionKind,
+	value: any,
 };
 
 export enum GameActionKind {
@@ -39,16 +39,17 @@ export type GameState = {
 	time: number,
 	gameOver: boolean,
 	winner: string,
+	singlemode: boolean,
 };
 
 export const pongConstants = {
-	paddleHeight : 0.3,
-	paddleWidth : 0.02,
-	framePaddleGap : 0.03,
-	paddleSpeed : 0.5,
-	ballHeight : 0.04,
-	ballWidth : 0.04,
-	timeDlta : 0.02,
+	paddleHeight: 0.3,
+	paddleWidth: 0.02,
+	framePaddleGap: 0.03,
+	paddleSpeed: 0.5,
+	ballHeight: 0.04,
+	ballWidth: 0.04,
+	timeDlta: 0.02,
 };
 
 function checkPaddleBoarder(paddlePosition) {//up and down boader frame for paddle
@@ -107,44 +108,46 @@ function updateBall(state: GameState, timeDlta: number) {
 				state.leftPaddle.moved = true;
 			}
 			if (state.leftPaddle.paddlePosition > 0 || state.leftPaddle.paddlePosition < 0) {
-				if (state.ball.velocity.y == 0 && state.leftPaddle.paddlePosition > 0){
+				if (state.ball.velocity.y == 0 && state.leftPaddle.paddlePosition > 0) {
 					state.ball.velocity.y += 0.05;
 					state.ball.velocity.x -= 0.005;
 				}
-					
+
 				else if (state.ball.velocity.y == 0 && state.leftPaddle.paddlePosition < 0)
 					state.ball.velocity.y -= 0.05;
 				else if (state.ball.velocity.y > 0)
 					state.ball.velocity.y += 0.2;
 				else
 					state.ball.velocity.y -= 0.2;
-			} 
+			}
 			updateBallPosition(state, timeDlta);
 		} else {
 			state.ball.position = { x: 0, y: 0 };
 			state.rightPaddle.score += 1;
 			state.leftPaddle.moved = false;
 			state.rightPaddle.moved = false;
-			state.ball.velocity =  {x: 0.5, y: 0.0};
+			state.ball.velocity = { x: 0.5, y: 0.0 };
 		}
 	} else if (isBallAtRightWall) {
-		// if (willBounceRightPaddle) {
-		// 	state.ball.velocity = { x : -ball.velocity.x, y : ball.velocity.y };
-		// 	if (state.rightPaddle.moved == false) {
-		// 		state.ball.velocity.x *= 1.5;
-		// 		state.rightPaddle.moved = true;
-		// 	}
-		// 	updateBallPosition(state, timeDlta);
-		// } else {
-		// 	state.ball.position = { x : 0, y : 0 };
-		// 	state.leftPaddle.score += 1;
-		// 	state.rightPaddle.moved = false;
-		// 	state.leftPaddle.moved = false;
-		// 	state.ball.velocity =  {x: -0.3, y: 0.0};
-		// }
-		//all right wall is paddle, pong with shadow KEEP
-		state.ball.velocity = { x: -ball.velocity.x, y: ball.velocity.y };
-		updateBallPosition(state, timeDlta);
+		if (state.singlemode == true) {
+			state.ball.velocity = { x: -ball.velocity.x, y: ball.velocity.y };
+			updateBallPosition(state, timeDlta);
+		} else {
+			if (willBounceRightPaddle) { //all right wall is paddle, pong with shadow
+				state.ball.velocity = { x: -ball.velocity.x, y: ball.velocity.y };
+				if (state.rightPaddle.moved == false) {
+					state.ball.velocity.x *= 1.5;
+					state.rightPaddle.moved = true;
+				}
+				updateBallPosition(state, timeDlta);
+			} else {
+				state.ball.position = { x: 0, y: 0 };
+				state.leftPaddle.score += 1;
+				state.rightPaddle.moved = false;
+				state.leftPaddle.moved = false;
+				state.ball.velocity = { x: -0.3, y: 0.0 };
+			}
+		}
 	}
 	if (state.leftPaddle.score == 10) {
 		state.gameOver = true;
@@ -156,7 +159,7 @@ function updateBall(state: GameState, timeDlta: number) {
 };
 
 export const makeReducer = (playerID: string) => {
-	
+
 	const reducer = (state: GameState, action: GameAction) => {
 		let newState = structuredClone(state);
 		if (newState.gameOver) {
