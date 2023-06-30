@@ -38,6 +38,7 @@ export type GameState = {
 	time: number,
 	gameOver: boolean,
 	winner: string,
+	singlemode: boolean,
 };
 
 export const pongConstants = {

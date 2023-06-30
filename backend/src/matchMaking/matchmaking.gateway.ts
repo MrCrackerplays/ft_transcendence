@@ -243,7 +243,7 @@ export class GameRoom {
 	playerRightSocket: Socket;
 	roomName: string;
 	GameState: GameState;
-	Singlemode: boolean; //true for 1v1, false for 2v2
+	singlemode: boolean; //true for 1v1, false for 2v2
 
 	constructor(player1Id: string, player2Id: string, player1Socket: Socket, player2Socket: Socket) {
 		this.playerLeft = player1Id;
@@ -251,14 +251,13 @@ export class GameRoom {
 		this.playerLeftSocket = player1Socket;
 		this.playerRightSocket = player2Socket;
 		if (player2Id == null) //gamemode == single if userID2 = null
-			this.Singlemode = true;
+			this.singlemode = true;
 		else
-			this.Singlemode = false;
+			this.singlemode = false;
 		this.GameState = {} as GameState; // Initialize GameState with an empty object or provide the appropriate initial state UNFINISHED
 	}
 
 	initiateGame() {
-
 		this.GameState = {
 			leftPaddle: {
 				playerID: this.playerLeft,
@@ -281,8 +280,7 @@ export class GameRoom {
 			time: 0,
 			gameOver: false,
 			winner: '',
-			singlemode = this.Singlemode,
-
+			singlemode: this.singlemode,
 		}
 	};
 

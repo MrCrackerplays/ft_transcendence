@@ -2,7 +2,8 @@
 import React from "react";
 import { useReducer, useEffect, useRef } from 'react';
 import "./pong.css";
-import { makeReducer, GameState, PaddleAction, GameActionKind, pongConstants } from "./pongReducer";
+import { GameState, PaddleAction, GameActionKind, pongConstants } from '../../../../shared/pongTypes';
+import { makeReducer } from '../../../../shared/pongReducer';
 
 // SocketMagicInput - Input object for the SocketMagic function
 // @property overrideState - Function to override the client state with a new state received from the server
@@ -83,7 +84,7 @@ const SocketMagic: (input: SocketMagicInput) => SocketMagicOutput = (input) => {
 			const toSend = {
 				event: 'gameOver',
 				payload: {
-					// Include any relevant data about the game over event
+					// data about the game over event?
 				},
 			};
 			wbSocket.current.send(JSON.stringify(toSend));
