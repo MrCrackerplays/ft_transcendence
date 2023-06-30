@@ -123,15 +123,19 @@ export class MatchMakingGateway {
 
 	@SubscribeMessage('playerMovement')
 	handlePlayerMovement(client: Socket, action: string) {
-
+		const room = this.clientsInGame.get(client.id);
+		if (room) {
+			room.handleMessage(client, action);
+		}
 	}
-
 
 	@SubscribeMessage('gameOver')
 	handleGameOver(client: Socket, payload: any) {
-		// Handle the game over event
-		// You can access the client information and the payload data if needed
-		// Perform any necessary actions, such as updating the game state or notifying other players
+		const room = this.clientsInGame.get(client.id);
+		if (room) {
+			room.handleGameOver(client, payload);
+			//unfinished
+		}
 	}
 	//-----------------------------------//
 
@@ -254,7 +258,8 @@ export class GameRoom {
 			this.singlemode = true;
 		else
 			this.singlemode = false;
-		this.GameState = {} as GameState; // Initialize GameState with an empty object or provide the appropriate initial state UNFINISHED
+		this.GameState = {} as GameState; 
+		this.initiateGame();
 	}
 
 	initiateGame() {
@@ -294,7 +299,7 @@ export class GameRoom {
 		} else if (socket === this.playerRightSocket) {
 			currentPlayer = this.playerRight;
 		} else {
-			// Handle the case when the socket doesn't belong to either player
+			//socket doesn't belong to players - possible?
 			return;
 		}
 
@@ -313,4 +318,9 @@ export class GameRoom {
 		this.playerRightSocket.emit('gameState', this.GameState);
 	}
 
+	handleGameOver(socket: Socket, payload: any) {
+		
+		this.GameState.gameOver = true;
+		this.GameState.winner = payload.winner;
+	};
 };
