@@ -37,18 +37,15 @@ const Menu = () => {
 	}
 
 	const playMenu = () => {
-		//TODO: rename gamemodes, and connect to matchmaking.
+		//TODO: rename gamemodes if need be.
 		return (
 			<div className='menu'>
 				<p className='text'>GAMEMODE</p>
 				<NavButton label={'classic'} />
 				<NavButton label={'solo'} />
-				{/* <button className='button' onClick={() => {
-					setActiveMenu('classicQueue');}}>Classic Pong</button>
 				<button className='button' onClick={() => {
-					setActiveMenu('soloQueue');
-				}}>Solo Pong</button> */}
-				<button className='button' onClick={() =>setActiveMenu('home')}>return</button>
+					setActiveMenu('home')
+				}}>return</button>
 			</div>
 		)
 	}

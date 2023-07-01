@@ -5,6 +5,11 @@ import { Constants } from "../../../../../shared/constants";
 import '../../menu/home.css';
 import PongGame from "../../../hooks/game/pong";
 
+const returnToHome = () => {
+	const navigate = useNavigate();
+	navigate('/');
+}
+
 function CancelButton() {
 	const navigate = useNavigate();
 
@@ -51,6 +56,11 @@ function MatchMakingQueue(gamemode: {gamemode: string}) {
 
 		ws.current.on('start_game', () => {
 			setActiveGame(true);
+		});
+		
+		ws.current.on('end_game', () => {
+			setActiveGame(false);
+			returnToHome();
 		});
 
 		return () => {

@@ -130,6 +130,15 @@ export class MatchMakingGateway {
 	@SubscribeMessage('join_queue')
 	async addClientToQueue(client: Socket, queue: {gamemode: string}) {
 		Logger.log(`joining queue ${queue.gamemode}`)
+		if (queue.gamemode == 'solo')
+		{
+			const newGame = new GameRoom((await this.userFromSocket(client)).id, null, client, null);
+			this.rooms.set(`${queue}-${MatchMakingGateway.roomIndex}`, newGame);
+			client.join((`${queue}-${MatchMakingGateway.roomIndex}`));
+			this.setStatus(client, 'inGame');
+			client.emit('start_game');
+			return ;
+		}
 		client.join(queue.gamemode);
 		if (!this.queues.has(queue.gamemode))
 			this.queues.set(queue.gamemode, []);
@@ -179,6 +188,7 @@ export class MatchMakingGateway {
 			const newGame = new GameRoom(user1id, user2id, client1, client2);
 		
 			const currentQueue = this.getClientQueue(client1);
+			Logger.log(`MATCHMAKING: gamemode - ${currentQueue}`);
 			this.removeClientFromQueue(client1, currentQueue);
 			this.removeClientFromQueue(client2, currentQueue);
 
