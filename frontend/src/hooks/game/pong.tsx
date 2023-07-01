@@ -1,5 +1,4 @@
-import { useReducer, useEffect } from 'react';
-import React, { useRef } from 'react';
+import { useReducer, useEffect, useRef } from 'react';
 
 import "./pong.css";
 import { GameState, PaddleAction, GameActionKind, pongConstants } from '../../../../shared/pongTypes';
@@ -8,6 +7,7 @@ import { Socket, io } from "socket.io-client";
 import { Constants } from "../../../../shared/constants";
 
 type SocketMagicInput = {
+	wbSocket: React.MutableRefObject<Socket | null>; 
 	overrideState: (newState: GameState) => void
 };
 type SocketMagicOutput = {
@@ -21,28 +21,27 @@ const SocketMagic: (input: SocketMagicInput) => SocketMagicOutput = (input) => {
 	let maxReconnectAttempts = 5;
 	let reconnectAttempts = 0;
 
-	const wbSocket = useRef<Socket | null>(null);
 	const connectWebSocket = () => {
-		if (!wbSocket.current) {
+		if (!input.wbSocket.current) {
 			console.log(`${Constants.BACKEND_URL}/matchMakingGateway`);
-			wbSocket.current = io(`${Constants.BACKEND_URL}/matchMakingGateway`, {withCredentials: true}); //io('ws://localhost:3000/game'); //io(`${Constants.BACKEND_URL}/matchMakingGateway`, {withCredentials: true}); // io('ws://localhost:5173/solo', {withCredentials: true});
-			wbSocket.current.on('connect', () => {
+			input.wbSocket.current = io(`${Constants.BACKEND_URL}/matchMakingGateway`, {withCredentials: true}); //io('ws://localhost:3000/game'); //io(`${Constants.BACKEND_URL}/matchMakingGateway`, {withCredentials: true}); // io('ws://localhost:5173/solo', {withCredentials: true});
+			input.wbSocket.current.on('connect', () => {
 				console.log('WebSocket connection established');
 				reconnectAttempts = 0;
 			});
 
-			wbSocket.current.on('message', (data) => {
+			input.wbSocket.current.on('message', (data) => {
 				const newState = JSON.parse(data) as GameState;
 				input.overrideState(newState);
 
 				if (newState.gameOver) {
-					if (wbSocket.current) {
-						wbSocket.current.disconnect();
+					if (input.wbSocket.current) {
+						input.wbSocket.current.disconnect();
 					}
 				}
 			});
 
-			wbSocket.current.on('disconnect', (reason) => {
+			input.wbSocket.current.on('disconnect', (reason) => {
 				console.log('WebSocket connection closed:', reason);
 				if (reconnectAttempts < maxReconnectAttempts) {
 					reconnectAttempts++;
@@ -60,7 +59,7 @@ const SocketMagic: (input: SocketMagicInput) => SocketMagicOutput = (input) => {
 				}
 			});
 
-			wbSocket.current.on('error', (error) => {
+			input.wbSocket.current.on('error', (error) => {
 				console.error('WebSocket connection error:', error);
 				sendGameOverSignal();
 				cleanup();
@@ -69,32 +68,32 @@ const SocketMagic: (input: SocketMagicInput) => SocketMagicOutput = (input) => {
 	};
 
 	const sendGameOverSignal = () => {
-		if (wbSocket.current) {
+		if (input.wbSocket.current) {
 			const toSend = {
 				event: 'gameOver',
 				payload: {
 					// data about the game over event?
 				},
 			};
-			wbSocket.current.emit('message', JSON.stringify(toSend));
+			input.wbSocket.current.emit('message', JSON.stringify(toSend));
 		}
 	};
 
 	const playerMovement: (movement: PaddleAction) => void = (movement) => {
-		if (wbSocket.current) {
+		if (input.wbSocket.current) {
 			const toSend = {
 				event: 'playerMovement',
 				payload: {
 					movement: movement,
 				},
 			};
-			wbSocket.current.emit('message', JSON.stringify(toSend));
+			input.wbSocket.current.emit('message', JSON.stringify(toSend));
 		}
 	};
 
 	const cleanup = () => {
-		if (wbSocket.current) {
-			wbSocket.current.disconnect();
+		if (input.wbSocket.current) {
+			input.wbSocket.current.disconnect();
 		}
 		if (reconnectTimer) {
 			clearTimeout(reconnectTimer);
@@ -124,6 +123,7 @@ const PongGame = () => {
 		singlemode: true,
 	};
 	const [state, dispatch] = useReducer(makeReducer(playerID), initialState);
+	const wbSocket = useRef<Socket | null>(null);
 
 	useEffect(() => {
 		// socket magic
@@ -131,6 +131,7 @@ const PongGame = () => {
 			dispatch({ kind: GameActionKind.overrideState, value: newState });
 		};
 		const input: SocketMagicInput = {
+			wbSocket: wbSocket,
 			overrideState: overrideState,
 		};
 		const output = SocketMagic(input);
