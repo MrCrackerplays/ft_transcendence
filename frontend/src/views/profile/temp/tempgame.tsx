@@ -35,7 +35,7 @@ function MatchMakingQueue(gamemode: {gamemode: string}) {
 
 		ws.current.on('new_connection', () => {
 			console.log('connection established');
-			ws.current?.emit("join_queue", gamemode);
+			ws.current?.emit("join_queue", gamemode.gamemode); //was gamemode as object, needed as string
 			setIsConnectionOpen(true);
 		});
 
@@ -70,7 +70,10 @@ function MatchMakingQueue(gamemode: {gamemode: string}) {
 				)
 			case true:
 				return (
+					<div> 
+						<p className="text">Game is starting...</p>
 					<PongGame />
+					</div>
 				)
 		}
 	}

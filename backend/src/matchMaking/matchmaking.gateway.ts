@@ -121,6 +121,20 @@ export class MatchMakingGateway {
 
 	//-----------gameplay----------------//
 
+	@SubscribeMessage('new_connection') // "new_connection" event
+	async handleNewConnection(client: Socket) {
+		const queue = { gamemode: 'solo' };
+		Logger.log(`joining queue ${queue.gamemode}`)
+		client.join(queue.gamemode);
+		if (!this.queues.has(queue.gamemode))
+			this.queues.set(queue.gamemode, []);
+		this.queues.get(queue.gamemode).push(client)
+
+		await this.setStatus(client, 'in_queue')
+		this.matchClientsInQueue(queue.gamemode);
+	}
+
+
 	@SubscribeMessage('playerMovement')
 	handlePlayerMovement(client: Socket, action: string) {
 		const room = this.clientsInGame.get(client.id);
@@ -143,6 +157,18 @@ export class MatchMakingGateway {
 	async addClientToQueue(client: Socket, queue: { gamemode: string }) {
 		Logger.log(`joining queue ${queue.gamemode}`)
 		client.join(queue.gamemode);
+
+		//adding solo mode
+		if (queue.gamemode == 'solo') {
+			const user = await this.userFromSocket(client);
+			const gameRoom = new GameRoom(user.id, null, client, null);
+			this.rooms.set(user.id, gameRoom);
+			this.clientsInGame.set(user.id, gameRoom);
+			this.setStatus(client, 'ingame');
+			this.server.to(user.id).emit('start_game');
+			return;
+		}
+
 		if (!this.queues.has(queue.gamemode))
 			this.queues.set(queue.gamemode, []);
 		this.queues.get(queue.gamemode).push(client)
@@ -258,7 +284,7 @@ export class GameRoom {
 			this.singlemode = true;
 		else
 			this.singlemode = false;
-		this.GameState = {} as GameState; 
+		this.GameState = {} as GameState;
 		this.initiateGame();
 	}
 
@@ -290,7 +316,6 @@ export class GameRoom {
 	};
 
 	handleMessage(socket: Socket, payload: any) {
-		// Handle the received message
 		const { movement } = payload;
 
 		let currentPlayer: string;
@@ -314,12 +339,16 @@ export class GameRoom {
 		this.GameState = newGameState;
 
 		// Broadcast the updated game state to both clients in the room
-		this.playerLeftSocket.emit('gameState', this.GameState);
-		this.playerRightSocket.emit('gameState', this.GameState);
+		if (this.singlemode) {
+			this.playerLeftSocket.emit('gameState', this.GameState);
+		} else {
+			this.playerLeftSocket.emit('gameState', this.GameState);
+			this.playerRightSocket.emit('gameState', this.GameState);
+		}
 	}
 
 	handleGameOver(socket: Socket, payload: any) {
-		
+
 		this.GameState.gameOver = true;
 		this.GameState.winner = payload.winner;
 	};

@@ -1,81 +1,70 @@
+import { useReducer, useEffect } from 'react';
+import React, { useRef } from 'react';
 
-import React from "react";
-import { useReducer, useEffect, useRef } from 'react';
 import "./pong.css";
 import { GameState, PaddleAction, GameActionKind, pongConstants } from '../../../../shared/pongTypes';
 import { makeReducer } from '../../../../shared/pongReducer';
+import { Socket, io } from "socket.io-client";
+import { Constants } from "../../../../shared/constants";
 
-// SocketMagicInput - Input object for the SocketMagic function
-// @property overrideState - Function to override the client state with a new state received from the server
 type SocketMagicInput = {
 	overrideState: (newState: GameState) => void
 };
-
-// SocketMagicOutput - Output object returned by the SocketMagic function
-// @property playerMovement - Function to send player movements to the server
 type SocketMagicOutput = {
 	playerMovement: (movement: PaddleAction) => void
 };
 
-// SocketMagic - handling game communication
-// @param input - Object containing a function to override the client state
-// @returns Object with a function to send player movements
-
-// connectWebSocket - Establishes a WebSocket connection with the server and handles WebSocket events
-// + manages reconnection attempts and sends a game over signal when the maximum number of reconnect attempts is reached.
-// sendGameOverSignal - Sends a game over signal to the server indicating that the game has ended.
-// playerMovement - Sends the player movement (paddle action )to the server.
-// cleanup - Cleans up the WebSocket and timer
 const SocketMagic: (input: SocketMagicInput) => SocketMagicOutput = (input) => {
-	const wbSocket = useRef<WebSocket | null>(null);
+	
 	let reconnectTimer: NodeJS.Timeout | null = null;
 	let reconnectDelay = 5000; // milliseconds
 	let maxReconnectAttempts = 5;
 	let reconnectAttempts = 0;
 
+	const wbSocket = useRef<Socket | null>(null);
 	const connectWebSocket = () => {
 		if (!wbSocket.current) {
-			wbSocket.current = new WebSocket('ws://localhost:3000/game');
-			wbSocket.current.onopen = () => {
+			console.log(`${Constants.BACKEND_URL}/matchMakingGateway`);
+			wbSocket.current = io(`${Constants.BACKEND_URL}/matchMakingGateway`, {withCredentials: true}); //io('ws://localhost:3000/game'); //io(`${Constants.BACKEND_URL}/matchMakingGateway`, {withCredentials: true}); // io('ws://localhost:5173/solo', {withCredentials: true});
+			wbSocket.current.on('connect', () => {
 				console.log('WebSocket connection established');
 				reconnectAttempts = 0;
-			};
+			});
 
-			// Read state from server -> Get the true state from the server -> Override client state
-			wbSocket.current.onmessage = (event) => {
-				const data = event.data;
-				console.log(data);
+			wbSocket.current.on('message', (data) => {
 				const newState = JSON.parse(data) as GameState;
 				input.overrideState(newState);
-				//if score 10 found -> game over
+
 				if (newState.gameOver) {
-					if (wbSocket.current)
-						wbSocket.current.close();
+					if (wbSocket.current) {
+						wbSocket.current.disconnect();
+					}
 				}
-				// this.setState({state: newState});
-			};
-			wbSocket.current.onclose = (event) => {
-				console.log('WebSocket connection closed:', event.code, event.reason);
+			});
+
+			wbSocket.current.on('disconnect', (reason) => {
+				console.log('WebSocket connection closed:', reason);
 				if (reconnectAttempts < maxReconnectAttempts) {
 					reconnectAttempts++;
-					reconnectTimer = setTimeout(() => { //reconnect after a delay
+					reconnectTimer = setTimeout(() => {
 						connectWebSocket();
 					}, reconnectDelay);
 					console.log(
 						`Reconnecting in ${reconnectDelay / 1000} seconds (Attempt ${reconnectAttempts}/${maxReconnectAttempts})`
 					);
-					reconnectDelay *= 2; // Increase reconnect delay
+					reconnectDelay *= 2;
 				} else {
 					console.log('Max reconnect attempts reached. Connection could not be established.');
 					sendGameOverSignal();
 					cleanup();
 				}
-			};
-			wbSocket.current.onerror = (event) => {
-				console.error('WebSocket connection error:', event);
+			});
+
+			wbSocket.current.on('error', (error) => {
+				console.error('WebSocket connection error:', error);
 				sendGameOverSignal();
 				cleanup();
-			};
+			});
 		}
 	};
 
@@ -87,7 +76,7 @@ const SocketMagic: (input: SocketMagicInput) => SocketMagicOutput = (input) => {
 					// data about the game over event?
 				},
 			};
-			wbSocket.current.send(JSON.stringify(toSend));
+			wbSocket.current.emit('message', JSON.stringify(toSend));
 		}
 	};
 
@@ -99,18 +88,18 @@ const SocketMagic: (input: SocketMagicInput) => SocketMagicOutput = (input) => {
 					movement: movement,
 				},
 			};
-			wbSocket.current.send(JSON.stringify(toSend));
+			wbSocket.current.emit('message', JSON.stringify(toSend));
 		}
 	};
 
 	const cleanup = () => {
 		if (wbSocket.current) {
-		  wbSocket.current.close();
+			wbSocket.current.disconnect();
 		}
 		if (reconnectTimer) {
-		  clearTimeout(reconnectTimer);
+			clearTimeout(reconnectTimer);
 		}
-	  };
+	};
 
 	// Start WebSocket connection
 	connectWebSocket();
@@ -119,6 +108,7 @@ const SocketMagic: (input: SocketMagicInput) => SocketMagicOutput = (input) => {
 		playerMovement: playerMovement,
 	};
 };
+
 
 const PongGame = () => {
 	const playerID = "player1";
@@ -282,3 +272,107 @@ export default PongGame;
 // 		playerMovement: playerMovement
 // 	};
 // }
+
+//default socket approach:
+// SocketMagic - handling game communication
+// @param input - Object containing a function to override the client state
+// @returns Object with a function to send player movements
+
+// connectWebSocket - Establishes a WebSocket connection with the server and handles WebSocket events
+// + manages reconnection attempts and sends a game over signal when the maximum number of reconnect attempts is reached.
+// sendGameOverSignal - Sends a game over signal to the server indicating that the game has ended.
+// playerMovement - Sends the player movement (paddle action )to the server.
+// cleanup - Cleans up the WebSocket and timer
+// const SocketMagic: (input: SocketMagicInput) => SocketMagicOutput = (input) => {
+// 	const wbSocket = useRef<WebSocket | null>(null);
+// 	let reconnectTimer: NodeJS.Timeout | null = null;
+// 	let reconnectDelay = 5000; // milliseconds
+// 	let maxReconnectAttempts = 5;
+// 	let reconnectAttempts = 0;
+
+// 	const connectWebSocket = () => {
+// 		if (!wbSocket.current) {
+// 			wbSocket.current = new WebSocket('ws://localhost:3000/game');
+// 			wbSocket.current.onopen = () => {
+// 				console.log('WebSocket connection established');
+// 				reconnectAttempts = 0;
+// 			};
+
+// 			// Read state from server -> Get the true state from the server -> Override client state
+// 			wbSocket.current.onmessage = (event) => {
+// 				const data = event.data;
+// 				console.log(data);
+// 				const newState = JSON.parse(data) as GameState;
+// 				input.overrideState(newState);
+// 				//if score 10 found -> game over
+// 				if (newState.gameOver) {
+// 					if (wbSocket.current)
+// 						wbSocket.current.close();
+// 				}
+// 				// this.setState({state: newState});
+// 			};
+// 			wbSocket.current.onclose = (event) => {
+// 				console.log('WebSocket connection closed:', event.code, event.reason);
+// 				if (reconnectAttempts < maxReconnectAttempts) {
+// 					reconnectAttempts++;
+// 					reconnectTimer = setTimeout(() => { //reconnect after a delay
+// 						connectWebSocket();
+// 					}, reconnectDelay);
+// 					console.log(
+// 						`Reconnecting in ${reconnectDelay / 1000} seconds (Attempt ${reconnectAttempts}/${maxReconnectAttempts})`
+// 					);
+// 					reconnectDelay *= 2; // Increase reconnect delay
+// 				} else {
+// 					console.log('Max reconnect attempts reached. Connection could not be established.');
+// 					sendGameOverSignal();
+// 					cleanup();
+// 				}
+// 			};
+// 			wbSocket.current.onerror = (event) => {
+// 				console.error('WebSocket connection error:', event);
+// 				sendGameOverSignal();
+// 				cleanup();
+// 			};
+// 		}
+// 	};
+
+// 	const sendGameOverSignal = () => {
+// 		if (wbSocket.current) {
+// 			const toSend = {
+// 				event: 'gameOver',
+// 				payload: {
+// 					// data about the game over event?
+// 				},
+// 			};
+// 			wbSocket.current.send(JSON.stringify(toSend));
+// 		}
+// 	};
+
+// 	const playerMovement: (movement: PaddleAction) => void = (movement) => {
+// 		if (wbSocket.current) {
+// 			const toSend = {
+// 				event: 'playerMovement',
+// 				payload: {
+// 					movement: movement,
+// 				},
+// 			};
+// 			wbSocket.current.send(JSON.stringify(toSend));
+// 		}
+// 	};
+
+// 	const cleanup = () => {
+// 		if (wbSocket.current) {
+// 		  wbSocket.current.close();
+// 		}
+// 		if (reconnectTimer) {
+// 		  clearTimeout(reconnectTimer);
+// 		}
+// 	  };
+
+// 	// Start WebSocket connection
+// 	connectWebSocket();
+
+// 	return {
+// 		playerMovement: playerMovement,
+// 	};
+// };
