@@ -1,7 +1,7 @@
 import { forwardRef, useRef } from "react";
 
-const ChannelEditor = forwardRef<HTMLDialogElement, {currentChannel: string, defaultvisibility: string, create_or_update_channel: (id_or_name: string, visibility: number, password: string) => Promise<boolean>}>(
-	({currentChannel, defaultvisibility, create_or_update_channel}, modal) => {
+const ChannelEditor = forwardRef<HTMLDialogElement, {currentChannel: string, defaultvisibility: string, create_or_update_channel: (id_or_name: string, visibility: number, password: string) => Promise<boolean>, on_success?: null | (() => void)}>(
+	({currentChannel, defaultvisibility, create_or_update_channel, on_success = null}, modal) => {
 		if (modal == null || typeof modal === 'function')
 			return (<></>);
 		const visibilityForm = useRef<HTMLFormElement>(null);
@@ -9,7 +9,7 @@ const ChannelEditor = forwardRef<HTMLDialogElement, {currentChannel: string, def
 		let nameinput = (<></>);
 		if (currentChannel === "") {
 			nameinput = (
-				<input type="text" name="channel_name" placeholder="channel name" minLength={3} maxLength={16} pattern="^([a-zA-Z0-9_\-]*)$" required/>
+				<input type="text" name="channel_name" placeholder="channel name" minLength={3} maxLength={16} pattern="^([a-zA-Z0-9_\-]*)$" required />
 			);
 		}
 
@@ -50,6 +50,9 @@ const ChannelEditor = forwardRef<HTMLDialogElement, {currentChannel: string, def
 					let success = await create_or_update_channel(currentChannel !== "" ? currentChannel : data.get("channel_name") as string, parseInt(visibility), password);
 					if (success) {
 						visibilityForm.current?.reset();
+						if (on_success !== null) {
+							on_success();
+						}
 					} else {
 						alert("Failed to " + mode + " channel!");
 					}
@@ -58,13 +61,13 @@ const ChannelEditor = forwardRef<HTMLDialogElement, {currentChannel: string, def
 					<div className="edit_channel_visibility">
 						<label>
 							<input type="radio" name="visibility" value="public" id={mode + "public"} defaultChecked={defaultvisibility == "public"}
-							 />
+							/>
 							public
 						</label>
 						<label>
 							<input type="radio" name="visibility" value="protected" id={mode + "protected"} />
 							protected
-							<input type="password" name="password" placeholder="password" minLength={3} maxLength={16} pattern="^([a-zA-Z0-9_\-]*)$" style={{marginLeft:"5px"}} />
+							<input type="password" name="password" placeholder="password" minLength={3} maxLength={16} pattern="^([a-zA-Z0-9_\-]*)$" style={{ marginLeft: "5px" }} />
 						</label>
 						<label>
 							<input type="radio" name="visibility" value="private" id={mode + "private"} />

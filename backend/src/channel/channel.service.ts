@@ -9,6 +9,7 @@ import { Message } from "src/channel/message/message.entity";
 import { MessageService } from "src/channel/message/message.service";
 import { User } from "src/users/user.entity";
 import { PublicChannel } from "./public-channel.interface";
+import { genSalt, hash } from "bcrypt";
 
 @Injectable()
 export class ChannelService {
@@ -47,7 +48,9 @@ export class ChannelService {
 		channel.name = dto.name;
 		channel.messages = [];
 		channel.visibility = dto.visibility;
-		channel.password = dto.password;
+		channel.salt = await genSalt();
+		channel.password = await hash(dto.password, channel.salt);
+		console.log("creating channel with hash", channel.password, "salted by", channel.salt);
 		channel.owner = owner;
 		channel.members = [ owner ];
 		channel.admins = [];
@@ -194,6 +197,10 @@ export class ChannelService {
 
 	findOne(id: string): Promise<Channel | null> {
 		return this.channelRepository.findOneBy({ id });
+	}
+
+	findOneRelations(id: string, relations: string[] = []): Promise<Channel | null> {
+		return this.channelRepository.findOne({ where: { id }, relations });
 	}
 
 	async removeOne(id: string): Promise<void> {

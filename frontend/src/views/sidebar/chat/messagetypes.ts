@@ -12,7 +12,8 @@ export type Message = {
 }
 
 export function isUserMessage(message: UserMessage | Message): message is UserMessage {
-	return (message as UserMessage).sender !== undefined;
+	let m : UserMessage = message as UserMessage;
+	return m.sender !== undefined && m.sender !== "null" && m.sender_id !== undefined && m.sender_id !== "null";
 }
 
-export type MenuItem = {label: string, action: (arg: any)=>void};
+export type MenuItem = { label: string, action: (arg: any) => void };
