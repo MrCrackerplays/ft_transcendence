@@ -50,3 +50,8 @@ export const pongConstants = {
 	ballWidth : 0.04,
 	timeDlta : 0.02,
 };
+
+export enum GameMode {
+	CLASSIC = "classic",
+	SOLO = "solo",
+};

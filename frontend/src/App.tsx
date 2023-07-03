@@ -59,8 +59,8 @@ function App(): React.ReactElement
 					<Route path="/profile/*" element={<ProfilePage />} />
 					<Route path="/settings" element={<Settings updatescam={updatescam} setupdatescam={setupdatescam}/>}/>
 					<Route path="/classic" element={<MatchMakingQueue gamemode='classic'/>} />
-					{/* <Route path="/solo" element={<MatchMakingQueue gamemode='solo'/>} /> */}
-					<Route path="/solo" element={<PongGame gamemode='solo'/>} />
+					<Route path="/solo" element={<MatchMakingQueue gamemode='solo'/>} />
+					{/* <Route path="/solo" element={<PongGame gamemode='solo'/>} /> */}
 				</Routes>
 			</div>
 		</div>

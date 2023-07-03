@@ -1,4 +1,4 @@
-import { useReducer, useEffect, useRef } from 'react';
+import { useReducer, useEffect, useRef, MutableRefObject } from 'react';
 
 import "./pong.css";
 import { GameState, PaddleAction, GameActionKind, pongConstants } from '../../../../shared/pongTypes';
@@ -7,19 +7,42 @@ import { Socket, io } from "socket.io-client";
 import { Constants } from "../../../../shared/constants";
 
 type SocketMagicInput = {
-	wbSocket: React.MutableRefObject<Socket | null>; 
+	wbSocket: MutableRefObject<Socket | undefined>
 	overrideState: (newState: GameState) => void
 };
 type SocketMagicOutput = {
 	playerMovement: (movement: PaddleAction) => void
 };
 
-const SocketMagic: (input: SocketMagicInput) => SocketMagicOutput = (input) => {
+const SocketMagic: (input: SocketMagicInput) => SocketMagicOutput | undefined = (input) => {
 	
+
+	const wbSocket = input.wbSocket;
+	const socket = input.wbSocket.current;
+
+
 	let reconnectTimer: NodeJS.Timeout | null = null;
 	let reconnectDelay = 5000; // milliseconds
 	let maxReconnectAttempts = 5;
 	let reconnectAttempts = 0;
+
+
+	if (!socket) {
+		console.log('socket is undefined');
+		return undefined;
+	}
+
+	console.log('socket is defined');
+	socket.on('pong_state', (newState: GameState) => {
+		console.log(`WebSocket message received: ${JSON.stringify(newState)}`);
+		input.overrideState(newState);
+
+		if (newState.gameOver) {
+			if (wbSocket.current) {
+				wbSocket.current.disconnect();
+			}
+		}
+	});
 
 	const connectWebSocket = () => {
 		if (!input.wbSocket.current) {
@@ -103,15 +126,14 @@ const SocketMagic: (input: SocketMagicInput) => SocketMagicOutput = (input) => {
 	};
 
 	// Start WebSocket connection
-	connectWebSocket();
+	//connectWebSocket();
 
 	return {
 		playerMovement: playerMovement,
 	};
 };
 
-
-const PongGame = (gamemode: {gamemode: string}) => {
+const PongGame = (props: { webSocketRef: MutableRefObject<Socket | undefined> }) => {
 	const playerID = "player1";
 	const opponentID = "player2";
 
@@ -125,7 +147,8 @@ const PongGame = (gamemode: {gamemode: string}) => {
 		singlemode: true,
 	};
 	const [state, dispatch] = useReducer(makeReducer(playerID), initialState);
-	const wbSocket = useRef<Socket | null>(null);
+	//const wbSocket = useRef<Socket | null>(null);
+	const wbSocket = props.webSocketRef;
 
 	useEffect(() => {
 		// socket magic
@@ -142,16 +165,22 @@ const PongGame = (gamemode: {gamemode: string}) => {
 		const handleKeyDown = (event) => {
 			if (event.key === "ArrowUp") {
 				dispatch({ kind: GameActionKind.arrowUp, value: null });
-				output.playerMovement(PaddleAction.Up);
+				if (output){
+					output.playerMovement(PaddleAction.Up);
+				}
 			} else if (event.key === "ArrowDown") {
 				dispatch({ kind: GameActionKind.arrowDown, value: null });
-				output.playerMovement(PaddleAction.Down);
+				if (output){
+					output.playerMovement(PaddleAction.Down);
+				}
 			}
 		};
 		const handleKeyUp = (event) => {
 			if (event.key === "ArrowUp" || event.key === "ArrowDown") {
 				dispatch({ kind: GameActionKind.StopMovement, value: null });
-				output.playerMovement(PaddleAction.None);
+				if (output){
+					output.playerMovement(PaddleAction.None);
+				}
 			}
 		};
 		window.addEventListener("keydown", handleKeyDown);
