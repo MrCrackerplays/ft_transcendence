@@ -19,6 +19,14 @@
 	font-family: "Courier New", Courier, monospace;
 }
 
+.matchesCenter
+{
+	padding-left:10%;
+	color:white;
+	font-size:2rem;
+	text-align: center;
+}
+
 .match-card
 {
 	/* height:100%; */
