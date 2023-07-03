@@ -115,7 +115,7 @@ export class MatchMakingGateway {
 			this.removeClientFromQueue(client, currentQueue);
 		}
 		this.statusOnDisconnect(client);
-		Logger.log(`disconnected ${client.id}`);
+		Logger.log(`disconnected from game ${client.id}`);
 	}
 
 	//-----------gameplay----------------//
@@ -203,13 +203,16 @@ export class MatchMakingGateway {
 			this.removeClientFromQueue(client2, currentQueue);
 
 			this.rooms.set(roomkey, newGame);
+			Logger.log(`added room ${roomkey} to map`);
 			this.rooms.get(roomkey).roomName = roomkey;
 
 			client1.join(roomkey);
+			Logger.log(`added ${user1id} to ${roomkey}`);
 			this.clientsInGame.set(user1id, newGame);
 			this.setStatus(client1, 'ingame')
 
 			client2.join(roomkey);
+			Logger.log(`added ${user2id} to ${roomkey}`);
 			this.clientsInGame.set(user1id, newGame);
 			this.setStatus(client2, 'ingame')
 
