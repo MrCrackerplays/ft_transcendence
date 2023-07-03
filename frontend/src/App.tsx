@@ -14,6 +14,7 @@ import './App.css'
 import Settings from './views/settings/settings';
 import TestMatchMakingConnection from './views/profile/temp/tempgame';
 import MatchMakingQueue from './views/profile/temp/tempgame';
+import PongGame from './hooks/game/pong';
 
 function App(): React.ReactElement
 {
@@ -58,7 +59,8 @@ function App(): React.ReactElement
 					<Route path="/profile/*" element={<ProfilePage />} />
 					<Route path="/settings" element={<Settings updatescam={updatescam} setupdatescam={setupdatescam}/>}/>
 					<Route path="/classic" element={<MatchMakingQueue gamemode='classic'/>} />
-					<Route path="/solo" element={<MatchMakingQueue gamemode='solo'/>} />
+					{/* <Route path="/solo" element={<MatchMakingQueue gamemode='solo'/>} /> */}
+					<Route path="/solo" element={<PongGame gamemode='solo'/>} />
 				</Routes>
 			</div>
 		</div>

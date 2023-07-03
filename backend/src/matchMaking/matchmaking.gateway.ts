@@ -37,6 +37,7 @@ export class MatchMakingGateway {
 	private static roomIndex = 0;
 
 	constructor(
+		
 		private jwtService: JwtService,
 		private connectionService: ConnectionService,
 		private userService: UserService
@@ -133,8 +134,6 @@ export class MatchMakingGateway {
 		await this.setStatus(client, 'in_queue')
 		this.matchClientsInQueue(queue.gamemode);
 	}
-
-
 	@SubscribeMessage('playerMovement')
 	handlePlayerMovement(client: Socket, action: string) {
 		const room = this.clientsInGame.get(client.id);
