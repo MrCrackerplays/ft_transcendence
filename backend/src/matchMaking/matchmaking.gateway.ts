@@ -21,6 +21,9 @@ import { emit } from 'process';
 import { GameState, PaddleAction, GameActionKind, GameMode } from '../../../shared/pongTypes';
 import { makeReducer } from '../../../shared/pongReducer';
 import { GameRoom } from './gameRoom';
+import { Cron } from '@nestjs/schedule';
+import { EventEmitter } from 'events';
+
 
 @WebSocketGateway({
 	cors: {
@@ -38,6 +41,7 @@ export class MatchMakingGateway {
 	private roomsByKey: Map<string, GameRoom> = new Map();
 	private clientsInGameByUserID: Map<string, GameRoom> = new Map();
 	private roomIndex = 0;
+	private readonly eventEmitter: EventEmitter = new EventEmitter();
 
 	constructor(
 		private jwtService: JwtService,
@@ -95,7 +99,9 @@ export class MatchMakingGateway {
 	}
 
 	afterInit(server: Server) {
-		Logger.log('waitlist')
+		Logger.log('waitlist');
+		this.server = server;
+		this.startRoomUpdates();
 	}
 
 	handleConnection(client: Socket) {
@@ -141,11 +147,26 @@ export class MatchMakingGateway {
 	}
 
 
+	// @SubscribeMessage('playerMovement')
+	// handlePlayerMovement(client: Socket, action: string) {
+	// 	Logger.log("batman wanna GAME playerMovement");
+	// 	const room = this.clientsInGameByUserID.get(client.id);
+	// 	if (room) {
+	// 		room.handleMessage(client, action);
+	// 	}
+	// }
+
+
+	//NOT WORKINGF
 	@SubscribeMessage('playerMovement')
-	handlePlayerMovement(client: Socket, action: string) {
+	handlePlayerMovement(client: Socket, data: { movement: PaddleAction }) {
+		Logger.log('Received player movement:');
+		const { movement } = data;
+		Logger.log('Received player movement:', movement);
+
 		const room = this.clientsInGameByUserID.get(client.id);
 		if (room) {
-			room.handleMessage(client, action);
+			room.handleMessage(client, movement);
 		}
 	}
 
@@ -157,6 +178,59 @@ export class MatchMakingGateway {
 			//unfinished
 		}
 	}
+
+	//ISSUE with schedualeModule, cannot fix it, trying another approach
+	// loopThroughRooms() {
+	// 	this.clientsInGameByUserID.forEach((room) => {
+	// 	  this.emitGameStateToPlayers(room);
+	// 	});
+	//   }
+	
+	//   emitGameStateToPlayers(room: GameRoom) {
+	// 	const { playerLeftSocket, playerRightSocket, gameState } = room;
+	// 	Logger.log(`batman emitGameStateToPlayers`);
+		// if (room.singlemode) {
+		//   playerLeftSocket.emit('gameState', gameState);
+		// } else {
+		//   playerLeftSocket.emit('gameState', gameState);
+		//   playerRightSocket.emit('gameState', gameState);
+		// }
+	//   }
+	
+	// @Cron('*/3 * * * * *') // every 3 seconds
+	// updateActiveRooms() {
+	// 	Logger.log(`batman updateActiveRooms`);
+	// 	this.loopThroughRooms();
+	// }
+
+	//try2 - event emitter
+	private emitGameStateToPlayers(room: GameRoom) {
+		const { playerLeftSocket, playerRightSocket, gameState } = room;
+		if (room.singlemode) {
+			playerLeftSocket.emit('pong_state', gameState);
+		} else {
+			playerLeftSocket.emit('pong_state', gameState);
+			playerRightSocket.emit('pong_state', gameState);
+		}
+	}
+
+
+	updateRooms() {
+		this.roomsByKey.forEach((room) => {
+		  //Logger.log(`batman updateRooms`);
+		  this.emitGameStateToPlayers(room);
+		});
+	}
+	  
+	  //call from init
+	startRoomUpdates() {
+		Logger.log(`batman startRoomUpdates`);
+		setInterval(() => {
+		  this.updateRooms();
+		}, 1000000); //in milliseconds
+	}
+	
+
 	//-----------------------------------//
 
 	private roomKeyForSoloUser(userID: string): string {
@@ -245,7 +319,7 @@ export class MatchMakingGateway {
 
 			if (client2) {
 				client2.join(roomkey);
-				this.clientsInGameByUserID.set(user1id, newGameRoom);
+				this.clientsInGameByUserID.set(user2id, newGameRoom);
 				this.setStatus(client2, UserStatus.INGAME)
 				client2.emit('pong_state', newGameRoom.gameState);
 			}

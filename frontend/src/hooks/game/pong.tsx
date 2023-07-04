@@ -26,12 +26,10 @@ const SocketMagic: (input: SocketMagicInput) => SocketMagicOutput | undefined = 
 	let maxReconnectAttempts = 5;
 	let reconnectAttempts = 0;
 
-
 	if (!socket) {
 		console.log('socket is undefined');
 		return undefined;
 	}
-
 	console.log('socket is defined');
 	socket.on('pong_state', (newState: GameState) => {
 		console.log(`WebSocket message received: ${JSON.stringify(newState)}`);
@@ -44,10 +42,10 @@ const SocketMagic: (input: SocketMagicInput) => SocketMagicOutput | undefined = 
 		}
 	});
 
-	const connectWebSocket = () => {
+	const connectWebSocket = () => { //not used as socket from tempgame is sent as input (ref)
 		if (!input.wbSocket.current) {
 			console.log(`${Constants.BACKEND_URL}/matchMakingGateway`);
-			input.wbSocket.current = io(`${Constants.BACKEND_URL}/matchMakingGateway`, {withCredentials: true}); //io('ws://localhost:3000/game'); //io(`${Constants.BACKEND_URL}/matchMakingGateway`, {withCredentials: true}); // io('ws://localhost:5173/solo', {withCredentials: true});
+			input.wbSocket.current = io(`${Constants.BACKEND_URL}/matchMakingGateway`, {withCredentials: true});
 			input.wbSocket.current.on('connect', () => {
 				console.log('WebSocket connection established');
 				reconnectAttempts = 0;
@@ -112,6 +110,7 @@ const SocketMagic: (input: SocketMagicInput) => SocketMagicOutput | undefined = 
 					movement: movement,
 				},
 			};
+			console.log(`WebSocket message received: ${JSON.stringify(movement)}`);
 			input.wbSocket.current.emit('message', JSON.stringify(toSend));
 		}
 	};
