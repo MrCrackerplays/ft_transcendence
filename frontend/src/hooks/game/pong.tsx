@@ -32,7 +32,7 @@ const SocketMagic: (input: SocketMagicInput) => SocketMagicOutput | undefined = 
 	}
 	console.log('socket is defined');
 	socket.on('pong_state', (newState: GameState) => {
-		console.log(`WebSocket message received: ${JSON.stringify(newState)}`);
+		console.log(`backend time: ${JSON.stringify(newState.time)}`);
 		input.overrideState(newState);
 
 		if (newState.gameOver) {
@@ -104,14 +104,15 @@ const SocketMagic: (input: SocketMagicInput) => SocketMagicOutput | undefined = 
 
 	const playerMovement: (movement: PaddleAction) => void = (movement) => {
 		if (input.wbSocket.current) {
-			const toSend = {
-				event: 'playerMovement',
-				payload: {
-					movement: movement,
-				},
-			};
-			console.log(`WebSocket message received: ${JSON.stringify(movement)}`);
-			input.wbSocket.current.emit('message', JSON.stringify(toSend));
+			// const toSend = {
+			// 	event: 'playerMovement',
+			// 	payload: {
+			// 		movement: movement,
+			// 	},
+			// };
+			console.log(`front message sent: ${JSON.stringify(movement)}`);
+			//input.wbSocket.current.emit('message', JSON.stringify(toSend));
+			input.wbSocket.current.emit('playerMovement', {movement});
 		}
 	};
 
@@ -145,6 +146,7 @@ const PongGame = (props: { webSocketRef: MutableRefObject<Socket | undefined> })
 		winner: "",
 		singlemode: true,
 	};
+
 	const [state, dispatch] = useReducer(makeReducer(playerID), initialState);
 	//const wbSocket = useRef<Socket | null>(null);
 	const wbSocket = props.webSocketRef;
@@ -192,7 +194,9 @@ const PongGame = (props: { webSocketRef: MutableRefObject<Socket | undefined> })
 
 	//BALL MOVEMENT
 	useEffect(() => {
+		
 		const interval = setInterval(() => {
+			// console.log(`frontend time: ${JSON.stringify(state.time)}`);
 			dispatch({ kind: GameActionKind.updateTime, value: null });
 		}, pongConstants.timeDlta * 1000);
 		return () => clearInterval(interval);

@@ -1,8 +1,8 @@
 
 export enum PaddleAction {
-	Up,
-	Down,
-	None,
+	Up = 'up',
+	Down = 'down',
+	None = 'none',
 }
 
 export type GameAction = {

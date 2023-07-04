@@ -48,21 +48,21 @@ export class GameRoom {
 		this.gameState = {
 			leftPaddle: {
 				playerID: this.playerLeft,
-				paddlePosition: 0.5,
+				paddlePosition: 0,
 				action: PaddleAction.None,
 				score: 0,
 				moved: false,
 			},
 			rightPaddle: {
 				playerID: this.playerRight,
-				paddlePosition: 0.5,
+				paddlePosition: 0,
 				action: PaddleAction.None,
 				score: 0,
 				moved: false,
 			},
 			ball: {
-				velocity: { x: 0, y: 0 },
-				position: { x: 0.5, y: 0.5 },
+				velocity: { x: 0.5, y: 0 },
+				position: { x: 0, y: 0 },
 			},
 			time: 0,
 			gameOver: false,

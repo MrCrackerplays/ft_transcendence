@@ -20,6 +20,7 @@ import { emit } from 'process';
 // Game part imports
 import { GameState, PaddleAction, GameActionKind, GameMode } from '../../../shared/pongTypes';
 import { makeReducer } from '../../../shared/pongReducer';
+import { pongConstants } from '../../../shared/pongTypes';
 import { GameRoom } from './gameRoom';
 import { Cron } from '@nestjs/schedule';
 import { EventEmitter } from 'events';
@@ -218,6 +219,15 @@ export class MatchMakingGateway {
 	updateRooms() {
 		this.roomsByKey.forEach((room) => {
 		  //Logger.log(`batman updateRooms`);
+		  // Apply the reducer function to update the game state
+		const reducer = makeReducer(null);
+		const newGameState: GameState = reducer(room.gameState, {
+			kind: GameActionKind.updateTime,
+			value: null,
+		});
+
+		// Update the game state in the room
+		room.gameState = newGameState;
 		  this.emitGameStateToPlayers(room);
 		});
 	}
@@ -227,9 +237,8 @@ export class MatchMakingGateway {
 		Logger.log(`batman startRoomUpdates`);
 		setInterval(() => {
 		  this.updateRooms();
-		}, 1000000); //in milliseconds
+		}, pongConstants.timeDlta * 1000); //in milliseconds
 	}
-	
 
 	//-----------------------------------//
 
