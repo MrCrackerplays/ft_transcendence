@@ -18,9 +18,8 @@ import exp from 'constants';
 import { emit } from 'process';
 
 // Game part imports
-import { GameState, PaddleAction, GameActionKind } from '../../../shared/pongTypes';
+import { GameState, PaddleAction, GameActionKind, startGameState } from '../../../shared/pongTypes';
 import { makeReducer } from '../../../shared/pongReducer';
-
 
 export class GameRoom {
 	playerLeft: string;
@@ -48,27 +47,31 @@ export class GameRoom {
 		this.gameState = {
 			leftPaddle: {
 				playerID: this.playerLeft,
-				paddlePosition: 0,
-				action: PaddleAction.None,
-				score: 0,
-				moved: false,
+				paddlePosition: startGameState.leftPaddle.paddlePosition,
+				action: startGameState.leftPaddle.action,
+				score: startGameState.leftPaddle.score,
+				moved: startGameState.leftPaddle.moved,
 			},
 			rightPaddle: {
 				playerID: this.playerRight,
-				paddlePosition: 0,
-				action: PaddleAction.None,
-				score: 0,
-				moved: false,
+				paddlePosition: startGameState.rightPaddle.paddlePosition,
+				action: startGameState.rightPaddle.action,
+				score: startGameState.rightPaddle.score,
+				moved: startGameState.rightPaddle.moved,
 			},
 			ball: {
-				velocity: { x: 0.5, y: 0 },
-				position: { x: 0, y: 0 },
+				velocity: startGameState.ball.velocity,
+				position: startGameState.ball.position,
 			},
-			time: 0,
-			gameOver: false,
-			winner: '',
-			singlemode: this.singlemode,
+			time: startGameState.time,
+			gameOver: startGameState.gameOver,
+			winner: startGameState.winner,
+			singlemode: startGameState.singlemode,
 		}
+		if (this.singlemode)
+			this.gameState.singlemode = true;
+		else
+			this.gameState.singlemode = false;
 	};
 
 	handleMessage(socket: Socket, payload: any) {

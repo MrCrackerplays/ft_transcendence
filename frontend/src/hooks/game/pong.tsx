@@ -1,10 +1,10 @@
 import { useReducer, useEffect, useRef, MutableRefObject } from 'react';
 
 import "./pong.css";
-import { GameState, PaddleAction, GameActionKind, pongConstants } from '../../../../shared/pongTypes';
+import { GameState, PaddleAction, GameActionKind, pongConstants , startGameState } from '../../../../shared/pongTypes';
 import { makeReducer } from '../../../../shared/pongReducer';
 import { Socket, io } from "socket.io-client";
-import { Constants } from "../../../../shared/constants";
+import { Constants  } from "../../../../shared/constants";
 
 type SocketMagicInput = {
 	wbSocket: MutableRefObject<Socket | undefined>
@@ -51,17 +51,17 @@ const SocketMagic: (input: SocketMagicInput) => SocketMagicOutput | undefined = 
 				reconnectAttempts = 0;
 			});
 
-			input.wbSocket.current.on('message', (data) => {
-				const newState = JSON.parse(data) as GameState;
-				console.log('upd gameState');
-				input.overrideState(newState);
+			// input.wbSocket.current.on('message', (data) => {
+			// 	const newState = JSON.parse(data) as GameState;
+			// 	console.log('upd gameState');
+			// 	input.overrideState(newState);
 
-				if (newState.gameOver) {
-					if (input.wbSocket.current) {
-						input.wbSocket.current.disconnect();
-					}
-				}
-			});
+			// 	if (newState.gameOver) {
+			// 		if (input.wbSocket.current) {
+			// 			input.wbSocket.current.disconnect();
+			// 		}
+			// 	}
+			// });
 
 			input.wbSocket.current.on('disconnect', (reason) => {
 				console.log('WebSocket connection closed:', reason);
@@ -133,19 +133,72 @@ const SocketMagic: (input: SocketMagicInput) => SocketMagicOutput | undefined = 
 	};
 };
 
-const PongGame = (props: { webSocketRef: MutableRefObject<Socket | undefined> }) => {
+const PongGame = (props: { webSocketRef: MutableRefObject<Socket | undefined>;  gamemode: { gamemode: string } }) => {
 	const playerID = "player1";
 	const opponentID = "player2";
 
+	// const initialState: GameState = {
+	// 	leftPaddle: { playerID: playerID, paddlePosition: 0, action: PaddleAction.None, score: 0, moved: false },
+	// 	rightPaddle: { playerID: opponentID, paddlePosition: 0, action: PaddleAction.None, score: 0, moved: false },
+	// 	ball: { velocity: { x: 0.5, y: 0.0 }, position: { x: 0, y: 0 } }, //if have time, add random velocity start
+	// 	time: 0,
+	// 	gameOver: false,
+	// 	winner: "",
+	// 	singlemode: true,
+	// };
+
+	const mode: boolean = props.gamemode.gamemode === 'solo' ? true : false;
 	const initialState: GameState = {
-		leftPaddle: { playerID: playerID, paddlePosition: 0, action: PaddleAction.None, score: 0, moved: false },
-		rightPaddle: { playerID: opponentID, paddlePosition: 0, action: PaddleAction.None, score: 0, moved: false },
-		ball: { velocity: { x: 0.5, y: 0.0 }, position: { x: 0, y: 0 } }, //if have time, add random velocity start
-		time: 0,
-		gameOver: false,
-		winner: "",
-		singlemode: true,
+		leftPaddle: { 
+			playerID: playerID, 
+			paddlePosition: startGameState.leftPaddle.paddlePosition, 
+			action: startGameState.leftPaddle.action, 
+			score: startGameState.leftPaddle.score, 
+			moved: startGameState.leftPaddle.moved },
+		rightPaddle: { 
+			playerID: opponentID, 
+			paddlePosition: startGameState.rightPaddle.paddlePosition, 
+			action: startGameState.rightPaddle.action, 
+			score: startGameState.rightPaddle.score, 
+			moved: startGameState.rightPaddle.moved },
+		ball: { 
+			velocity: startGameState.ball.velocity, 
+			position: startGameState.ball.position },
+		time: startGameState.time,
+		gameOver: startGameState.gameOver,
+		winner: startGameState.winner,
+		singlemode: mode,
 	};
+
+	// function getInitialState(gamemode: string): GameState {
+	// 	const mode: boolean = gamemode === 'solo' ? true : false;
+	// 	const initialState: GameState = {
+	// 	  leftPaddle: { 
+	// 		playerID: playerID, 
+	// 		paddlePosition: startGameState.leftPaddle.paddlePosition, 
+	// 		action: startGameState.leftPaddle.action, 
+	// 		score: startGameState.leftPaddle.score, 
+	// 		moved: startGameState.leftPaddle.moved 
+	// 	  },
+	// 	  rightPaddle: { 
+	// 		playerID: opponentID, 
+	// 		paddlePosition: startGameState.rightPaddle.paddlePosition, 
+	// 		action: startGameState.rightPaddle.action, 
+	// 		score: startGameState.rightPaddle.score, 
+	// 		moved: startGameState.rightPaddle.moved 
+	// 	  },
+	// 	  ball: { 
+	// 		velocity: startGameState.ball.velocity, 
+	// 		position: startGameState.ball.position 
+	// 	  },
+	// 	  time: startGameState.time,
+	// 	  gameOver: startGameState.gameOver,
+	// 	  winner: startGameState.winner,
+	// 	  singlemode: mode,
+	// 	};
+	// 	return initialState;
+	//   }
+	  
 
 	const [state, dispatch] = useReducer(makeReducer(playerID), initialState);
 	//const wbSocket = useRef<Socket | null>(null);

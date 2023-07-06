@@ -51,6 +51,27 @@ export const pongConstants = {
 	timeDlta : 0.02,
 };
 
+export const startGameState = {
+
+	leftPaddle: { 
+		paddlePosition: 0, 
+		action: PaddleAction.None, 
+		score: 0, 
+		moved: false },
+	rightPaddle: { 
+		paddlePosition: 0, 
+		action: PaddleAction.None, 
+		score: 0, 
+		moved: false },
+	ball: { 
+		velocity: { x: 0.5, y: 0.0 }, 
+		position: { x: 0, y: 0 } },
+	time: 0,
+	gameOver: false,
+	winner: "",
+	singlemode: true,
+};
+
 export enum GameMode {
 	CLASSIC = "classic",
 	SOLO = "solo",

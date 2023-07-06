@@ -1,5 +1,7 @@
 /* Type: CSS */
 
+/* html, body {margin: 0; height: 100%; overflow: hidden} */
+
 :root {
 	--pong-frame-width: 85vw;
 	--pong-frame-height: 85vh;
@@ -16,6 +18,9 @@
 }
 
 .pong-frame {
+	/* margin: 0; 
+	height: 100%;  */
+	overflow: hidden;
 	position: relative;
 	height: 85vh;
 	width: 85vw;

@@ -72,7 +72,7 @@ function MatchMakingQueue(gamemode: {gamemode: string}) {
 				return (
 					<div> 
 						<p className="text">Game is starting...</p>
-					<PongGame webSocketRef={ws}/>
+					<PongGame webSocketRef={ws} gamemode={gamemode}/>
 					</div>
 				)
 		}
