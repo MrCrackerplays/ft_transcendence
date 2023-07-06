@@ -31,7 +31,7 @@ const SocketMagic: (input: SocketMagicInput) => SocketMagicOutput | undefined = 
 	socket.on('pong_state', (newState: GameState) => {
 		//console.log(`backend time: ${JSON.stringify(newState.time)}`);
 		input.overrideState(newState);
-		console.log('player latest movements from backend: left and right', newState.leftPaddle.paddlePosition, newState.rightPaddle.paddlePosition);
+		//console.log('player latest movements from backend: left and right', newState.leftPaddle.paddlePosition, newState.rightPaddle.paddlePosition);
 		if (newState.gameOver) {
 			if (wbSocket.current) {
 				wbSocket.current.disconnect();
@@ -41,7 +41,7 @@ const SocketMagic: (input: SocketMagicInput) => SocketMagicOutput | undefined = 
 
 	const connectWebSocket = () => { //not used as socket from tempgame is sent as input (ref)
 		if (!input.wbSocket.current) {
-			console.log(`${Constants.BACKEND_URL}/matchMakingGateway`);
+			//console.log(`${Constants.BACKEND_URL}/matchMakingGateway`);
 			input.wbSocket.current = io(`${Constants.BACKEND_URL}/matchMakingGateway`, {withCredentials: true});
 			input.wbSocket.current.on('connect', () => {
 				console.log('WebSocket connection established');

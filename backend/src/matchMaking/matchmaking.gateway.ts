@@ -114,7 +114,7 @@ export class MatchMakingGateway {
 			if (isClientInGame) {
 				client.emit('start_game');
 			} else {
-				Logger.log('batman emit new_connection');
+				//Logger.log('batman emit new_connection');
 				client.emit('new_connection');
 				Logger.log(`new queue connection ${client.id}`);
 			}
@@ -135,7 +135,7 @@ export class MatchMakingGateway {
 
 	@SubscribeMessage('new_connection') // "new_connection" event
 	async handleNewConnection(client: Socket) {
-		Logger.log(`batman new_connection`)
+		Logger.log(`new_connection`)
 		const gamemode = GameMode.SOLO;
 		Logger.log(`joining queue ${gamemode}`)
 		client.join(gamemode);
@@ -157,7 +157,7 @@ export class MatchMakingGateway {
 		if (room) {
 			room.handleMessage(client, movement);
 		} else {
-			console.log('no room for user', this.clientsInGameByUserID.get(user.id));
+			Logger.log('no room for user', this.clientsInGameByUserID.get(user.id));
 		}
 	}
 
@@ -168,9 +168,13 @@ export class MatchMakingGateway {
 		const room = this.clientsInGameByUserID.get(user.id);
 		if (room) {
 			room.handleGameOver(client, payload);
-			//cleaning?
+			
 			room.winner = payload.winner;
+			user.gamesWon++; //increase gamesWon for winner
 			Logger.log('winner:', room.winner);
+
+			//cleaning?
+			//this.roomsByKey.delete(room.roomName);
 		}
 	}
 
@@ -200,7 +204,7 @@ export class MatchMakingGateway {
 	}
 
 	startRoomUpdates() {
-		Logger.log(`batman startRoomUpdates`);
+		//Logger.log(`batman startRoomUpdates`);
 		setInterval(() => {
 		  this.updateRooms();
 		}, pongConstants.timeDlta * 1000); //in milliseconds
@@ -219,15 +223,15 @@ export class MatchMakingGateway {
 	async addClientToQueue(client: Socket, gamemode: GameMode) {
 		
 		//adding solo mode
-		console.log('addClientToQueue:', gamemode.toString(), 'from', client.id);
+		//console.log('addClientToQueue:', gamemode.toString(), 'from', client.id);
 		if (gamemode === GameMode.SOLO) {
-			console.log('addClientToQueue :inside if gamemode===solo:', gamemode.toString(), 'from', client.id);
+			//console.log('addClientToQueue :inside if gamemode===solo:', gamemode.toString(), 'from', client.id);
 			const user = await this.userFromSocket(client);
 			
 			//trying to fix roomkey issue
 			const roomKey = this.roomKeyForSoloUser(user.id);
 			this.roomIndex++;
-			console.log('addClientToQueue: roomKey:', roomKey);
+			//console.log('addClientToQueue: roomKey:', roomKey);
 			await this.moveClientsToRoom(client, undefined, roomKey);
 			return;
 		}
@@ -272,21 +276,15 @@ export class MatchMakingGateway {
 
 	private async moveClientsToRoom(client1: Socket, client2: Socket | undefined, roomkey: string) {
 
-		Logger.log(`moveClientsToRoom ${roomkey}`, 'client1', client1.id, 'client2',client2?.id);
-
-		console.log('CHECK:Checking roomsByKey map:', this.roomsByKey);
+		console.log(`moveClientsToRoom ${roomkey}`, 'client1', client1.id, 'client2',client2?.id);
 
 		if (!this.roomsByKey.has(roomkey)) {
-			console.log('roomkey new', roomkey);
 			const user1id = (await this.userFromSocket(client1)).id;
 			const user2id = client2 ? (await this.userFromSocket(client2)).id : null;
 			const newGameRoom = new GameRoom(user1id, user2id, client1, client2, roomkey);
-			console.log('gameroom key', newGameRoom.roomName);
 
 			const gameMode = this.getGameModeForClient(client1);
-			console.log('HERE gameMode:', gameMode);
 			if (!client2) { //added this monstrocity as getGameModeForClient logs as gameMode: null
-				console.log('HERE client2:', client2);
 				newGameRoom.singlemode = true;
 			}
 			this.removeClientFromQueue(client1, gameMode);
@@ -295,15 +293,11 @@ export class MatchMakingGateway {
 			}
 
 			this.roomsByKey.set(roomkey, newGameRoom);
-			console.log('moveClientsToRoom: after set roomkey:', roomkey, 'in gameroomsbykey', this.roomsByKey.get(roomkey).roomName);
 			this.roomsByKey.get(roomkey).roomName = roomkey;
 
 			client1.join(roomkey);
 			this.clientsInGameByUserID.set(user1id, newGameRoom);
-			console.log('ckech if the client is in game set');
-			console.log(this.clientsInGameByUserID.get(user1id).roomName);
 			this.setStatus(client1, UserStatus.INGAME)
-			console.log('FIRST EMITS PONG_STATE');
 			client1.emit('pong_state', newGameRoom.gameState);
 
 			if (client2) {
