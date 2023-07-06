@@ -6,53 +6,61 @@ import { Match } from "src/matches/match.entity";
 import { Connection } from "src/auth/connection/connection.entity";
 import { Achievement } from "src/achievements/achievement.entity";
 
+//added by yuliia
+export enum UserStatus {
+	OFFLINE = 'offline',
+	IDLE = 'online',
+	INGAME = 'ingame',
+	INQUEUE = 'inqueue',
+}
+
 @Entity()
 export class User extends BaseEntity {
 	@PrimaryGeneratedColumn("uuid")
 	id: string;
 
-	@Column( { unique: true, nullable: true } )
+	@Column({ unique: true, nullable: true })
 	userName: string;
 
-	@Column( {default: 0} )
+	@Column({ default: 0 })
 	score: number;
 
-	@Column( {default: 'offline'} )
+	@Column({ default: 'offline' })
 	status: string;
 
-	@Column( {default: ''} )
+	@Column({ default: '' })
 	imageURL: string;
 
-	@Column( {default: 0})
+	@Column({ default: 0 })
 	gamesPlayed: number;
 
-	@Column( {default: 0})
+	@Column({ default: 0 })
 	gamesWon: number;
 
 	// Every user can own mutliple channels, every channel only has one owner
 	// ONE user has MANY channels
-	@OneToMany(type => Channel, channel => channel.owner, { onDelete: "SET NULL",nullable: true, cascade: ['remove'] })
+	@OneToMany(type => Channel, channel => channel.owner, { onDelete: "SET NULL", nullable: true, cascade: ['remove'] })
 	channelsOwned: Channel[];
 
 	// Every user can be subscribed to multiple channels, and every channel can have multiple subscribers
 	// MANY users subscribe to MANY channels
-	@ManyToMany(type => Channel, channel => channel.members, {onDelete: "SET NULL", nullable: true })
+	@ManyToMany(type => Channel, channel => channel.members, { onDelete: "SET NULL", nullable: true })
 	@JoinTable()
 	channelSubscribed: Channel[];
 
-	@ManyToMany(type => Channel, channel => channel.admins, { onDelete: "SET NULL",nullable: true })
+	@ManyToMany(type => Channel, channel => channel.admins, { onDelete: "SET NULL", nullable: true })
 	@JoinTable()
 	channelAdmin: Channel[];
 
-	@ManyToMany(type => Channel, channel => channel.muted, {onDelete: "SET NULL", nullable: true })
+	@ManyToMany(type => Channel, channel => channel.muted, { onDelete: "SET NULL", nullable: true })
 	@JoinTable()
 	channelMuted: Channel[];
 
-	@ManyToMany(type => Channel, channel => channel.banned, {onDelete: "SET NULL", nullable: true })
+	@ManyToMany(type => Channel, channel => channel.banned, { onDelete: "SET NULL", nullable: true })
 	@JoinTable()
 	channelBanned: Channel[];
 
-	@ManyToMany(type => Achievement, achievement => achievement.members, { eager: true, nullable: true})
+	@ManyToMany(type => Achievement, achievement => achievement.members, { eager: true, nullable: true })
 	@JoinTable()
 	achievements: Achievement[];
 
@@ -66,18 +74,18 @@ export class User extends BaseEntity {
 	@JoinTable({ joinColumn: { name: 'users_id_1' } })
 	blocked: User[];
 
-	@OneToMany(type => Match, match => match.winner, { onDelete: "SET NULL",nullable: true })
+	@OneToMany(type => Match, match => match.winner, { onDelete: "SET NULL", nullable: true })
 	wonMatches: Match[];
 
-	@OneToMany(type => Match, match => match.loser, { onDelete: "SET NULL",nullable: true })
+	@OneToMany(type => Match, match => match.loser, { onDelete: "SET NULL", nullable: true })
 	lostMatches: Match[];
 
-	@OneToOne( type => Connection, connection => connection.user )
+	@OneToOne(type => Connection, connection => connection.user)
 	connection: Connection;
 
 	// Every user can write multiple messages, every message only has a single author
 	// ONE user has MANY messages
-	@OneToMany(type => Message, message => message.author, {onDelete: "SET NULL", cascade: true, nullable: true})
+	@OneToMany(type => Message, message => message.author, { onDelete: "SET NULL", cascade: true, nullable: true })
 	messages: Message[];
 
 }

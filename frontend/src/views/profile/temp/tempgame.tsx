@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from "react";
+import React, { useEffect, useRef, useState, MutableRefObject } from "react";
 import { useNavigate } from 'react-router-dom';
 import { Socket, io } from "socket.io-client";
 import { Constants } from "../../../../../shared/constants";
@@ -25,7 +25,7 @@ function CancelButton() {
 function MatchMakingQueue(gamemode: {gamemode: string}) {
 	const [isConnectionOpen, setIsConnectionOpen] = useState(false);
 	const [activeGame, setActiveGame] = useState(false);
-	const ws = useRef<Socket>();
+	const ws: MutableRefObject<Socket | undefined> = useRef<Socket>();
 
 	useEffect(() => {
 		if (!ws.current) {
@@ -40,7 +40,7 @@ function MatchMakingQueue(gamemode: {gamemode: string}) {
 
 		ws.current.on('new_connection', () => {
 			console.log('connection established');
-			ws.current?.emit("join_queue", gamemode);
+			ws.current?.emit("join_queue", gamemode.gamemode); //was gamemode as object, needed as string
 			setIsConnectionOpen(true);
 		});
 
@@ -80,7 +80,10 @@ function MatchMakingQueue(gamemode: {gamemode: string}) {
 				)
 			case true:
 				return (
-					<PongGame />
+					<div> 
+						<p className="text">Game is starting...</p>
+					<PongGame webSocketRef={ws}/>
+					</div>
 				)
 		}
 	}

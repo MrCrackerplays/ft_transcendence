@@ -11,14 +11,15 @@ import { Constants } from '../../../shared/constants'
 import { JwtService } from '@nestjs/jwt';
 import { ConnectionService } from 'src/auth/connection/connection.service';
 import { UserService } from 'src/users/user.service';
-import { User } from 'src/users/user.entity';
+import { User, UserStatus } from 'src/users/user.entity';
 import { Logger } from '@nestjs/common';
 import { parse } from 'cookie'
 
 
 // Game part imports
-import { GameState, PaddleAction, GameActionKind } from '../../../shared/pongTypes';
+import { GameState, PaddleAction, GameActionKind, GameMode } from '../../../shared/pongTypes';
 import { makeReducer } from '../../../shared/pongReducer';
+import { GameRoom } from './gameRoom';
 
 @WebSocketGateway({
 	cors: {
@@ -27,13 +28,15 @@ import { makeReducer } from '../../../shared/pongReducer';
 	},
 	namespace: 'matchMakingGateway',
 })
+
+
 export class MatchMakingGateway {
 	@WebSocketServer()
 	server: Server;
-	private queues: Map<string, Socket[]> = new Map();
-	private rooms: Map<string, GameRoom> = new Map();
-	private clientsInGame: Map<string, GameRoom> = new Map();
-	private static roomIndex = 0;
+	private queuesByGameMode: Map<GameMode, Socket[]> = new Map();
+	private roomsByKey: Map<string, GameRoom> = new Map();
+	private clientsInGameByUserID: Map<string, GameRoom> = new Map();
+	private roomIndex = 0;
 
 	constructor(
 		private jwtService: JwtService,
@@ -60,7 +63,7 @@ export class MatchMakingGateway {
 		return undefined;
 	}
 
-	private async setStatus(client: Socket, newStatus: string) {
+	private async setStatus(client: Socket, newStatus: UserStatus) {
 		const auth_cookie = parse(client.handshake.headers.cookie).Authentication;
 		let result = undefined;
 
@@ -82,8 +85,8 @@ export class MatchMakingGateway {
 		const user = await this.userFromSocket(client);
 
 		if (user.status != 'offline') {
-			Logger.log('user is online');
-			user.status = 'online';
+			Logger.log('user is idle');
+			user.status = UserStatus.IDLE;
 			user.save();
 		}
 		else
@@ -96,23 +99,25 @@ export class MatchMakingGateway {
 
 	handleConnection(client: Socket) {
 		if (!client.handshake.headers.cookie) {
-			Logger.log('Lost the Cookie');
 			return;
 		}
-		this.isClientInGame(client).then((result: boolean) => {
-			if (!result) {
+		this.isClientInGame(client).then((isClientInGame: boolean) => {
+
+			if (isClientInGame) {
+				client.emit('start_game');
+			} else {
+				Logger.log('batman emit new_connection');
 				client.emit('new_connection');
 				Logger.log(`new queue connection ${client.id}`);
-			} else {
-				client.emit('start_game');
 			}
 		}).catch(e => console.error(e));
 	}
 
 	handleDisconnect(client: Socket) {
-		const currentQueue = this.getClientQueue(client);
-		if (currentQueue) {
-			this.removeClientFromQueue(client, currentQueue);
+		Logger.log(`disconnected ${client.id}`);
+		const gamemode = this.getGameModeForClient(client);
+		if (gamemode) {
+			this.removeClientFromQueue(client, gamemode);
 		}
 		this.statusOnDisconnect(client);
 		Logger.log(`disconnected from game ${client.id}`);
@@ -120,9 +125,24 @@ export class MatchMakingGateway {
 
 	//-----------gameplay----------------//
 
+	@SubscribeMessage('new_connection') // "new_connection" event
+	async handleNewConnection(client: Socket) {
+		Logger.log(`batman new_connection`)
+		const gamemode = GameMode.SOLO;
+		Logger.log(`joining queue ${gamemode}`)
+		client.join(gamemode);
+		if (!this.queuesByGameMode.has(gamemode))
+			this.queuesByGameMode.set(gamemode, []);
+		this.queuesByGameMode.get(gamemode).push(client)
+
+		await this.setStatus(client, UserStatus.INQUEUE)
+		this.matchClientsForGameMode(gamemode);
+	}
+
+
 	@SubscribeMessage('playerMovement')
 	handlePlayerMovement(client: Socket, action: string) {
-		const room = this.clientsInGame.get(client.id);
+		const room = this.clientsInGameByUserID.get(client.id);
 		if (room) {
 			room.handleMessage(client, action);
 		}
@@ -130,7 +150,7 @@ export class MatchMakingGateway {
 
 	@SubscribeMessage('gameOver')
 	handleGameOver(client: Socket, payload: any) {
-		const room = this.clientsInGame.get(client.id);
+		const room = this.clientsInGameByUserID.get(client.id);
 		if (room) {
 			room.handleGameOver(client, payload);
 			//unfinished
@@ -138,103 +158,126 @@ export class MatchMakingGateway {
 	}
 	//-----------------------------------//
 
-	@SubscribeMessage('join_queue')
-	async addClientToQueue(client: Socket, queue: { gamemode: string }) {
-		Logger.log(`joining queue ${queue.gamemode}`)
-		if (queue.gamemode == 'solo')
-		{
-			const newGame = new GameRoom((await this.userFromSocket(client)).id, null, client, null);
-			this.rooms.set(`${queue}-${MatchMakingGateway.roomIndex}`, newGame);
-			client.join((`${queue}-${MatchMakingGateway.roomIndex}`));
-			this.setStatus(client, 'inGame');
-			client.emit('start_game');
-			return ;
-		}
-		client.join(queue.gamemode);
-		if (!this.queues.has(queue.gamemode))
-			this.queues.set(queue.gamemode, []);
-		this.queues.get(queue.gamemode).push(client)
-
-		await this.setStatus(client, 'in_queue')
-		this.matchClientsInQueue(queue.gamemode);
+	private roomKeyForSoloUser(userID: string): string {
+		return `solo ${userID}`;
 	}
 
-	private removeClientFromQueue(client: Socket, queue: string) {
-		const clients = this.queues.get(queue);
-		if (clients) {
-			const index = clients.indexOf(client);
+	private roomKeyForGameMode(gamemode: string): string {
+		return `${gamemode}-${this.roomIndex}`
+	}
+
+	@SubscribeMessage('join_queue')
+	async addClientToQueue(client: Socket, gamemode: GameMode) {
+		//adding solo mode
+		Logger.log(`GAMEMODE: ${gamemode}`);
+		if (gamemode == GameMode.SOLO) {
+			const user = await this.userFromSocket(client);
+			const roomKey = this.roomKeyForSoloUser(user.id);
+			// const gameRoom = new GameRoom(user.id, null, client, null);
+			// this.roomsByKey.set(roomKey, gameRoom);
+			// client.join(user.id);
+			// this.clientsInGameByUserID.set(user.id, gameRoom);
+			// this.setStatus(client, UserStatus.INGAME);
+			// this.server.to(user.id).emit('start_game');
+			await this.moveClientsToRoom(client, undefined, roomKey);
+			return;
+		}
+
+		if (!this.queuesByGameMode.has(gamemode))
+			this.queuesByGameMode.set(gamemode, []);
+		this.queuesByGameMode.get(gamemode).push(client)
+
+		await this.setStatus(client, UserStatus.INQUEUE)
+		this.matchClientsForGameMode(gamemode);
+	}
+
+	private removeClientFromQueue(client: Socket, gamemode: GameMode) {
+		Logger.log(`remove client ${client.id} from queue ${gamemode}`)
+		const queue = this.queuesByGameMode.get(gamemode);
+		if (queue) {
+			const index = queue.indexOf(client);
 			Logger.log(`client index to remove: ${index}`);
 			if (index != -1)
-				clients.splice(index, 1);
-			Logger.log(`queue length after removal: ${this.queues.get(queue).length}`)
+				queue.splice(index, 1);
+			Logger.log(`queue length after removal: ${queue.length}`)
 		}
-		client.leave(queue);
+		client.leave(gamemode);
 		Logger.log('removed client from queue');
 	}
 
-	private matchClientsInQueue(queue: string) {
-		const clients = this.getClientsInQueue(queue);
+	private matchClientsForGameMode(gamemode: GameMode) {
+		const clients = this.getClientsForGameMode(gamemode);
 
 		Logger.log('Check for matches');
 
 		if (clients && clients.length >= 2) {
 			const client1 = clients[0];
 			const client2 = clients[1];
-			const gameRoom = `${queue}-${MatchMakingGateway.roomIndex}`;
-			if (MatchMakingGateway.roomIndex < Number.MAX_SAFE_INTEGER)
-				MatchMakingGateway.roomIndex++;
+			if (this.roomIndex < Number.MAX_SAFE_INTEGER)
+				this.roomIndex++;
 			else
-				MatchMakingGateway.roomIndex = 0;
-			this.moveClientsToRoom(client1, client2, gameRoom);
+				this.roomIndex = 0;
+			this.moveClientsToRoom(client1, client2, this.roomKeyForGameMode(gamemode));
 		}
 	}
 
-	private async moveClientsToRoom(client1: Socket, client2: Socket, roomkey: string) {
+	private async moveClientsToRoom(client1: Socket, client2: Socket | undefined, roomkey: string) {
 
-		Logger.log(`moving to ${roomkey}`)
-		if (!this.rooms.has(roomkey)) {
+		Logger.log(`batman moving to ${roomkey}`)
+		if (!this.roomsByKey.has(roomkey)) {
 			const user1id = (await this.userFromSocket(client1)).id;
-			const user2id = (await this.userFromSocket(client2)).id;
-			const newGame = new GameRoom(user1id, user2id, client1, client2);
+			const user2id = client2 ? (await this.userFromSocket(client2)).id : null;
+			const newGameRoom = new GameRoom(user1id, user2id, client1, client2);
 
-			const currentQueue = this.getClientQueue(client1);
-			Logger.log(`MATCHMAKING: gamemode - ${currentQueue}`);
-			this.removeClientFromQueue(client1, currentQueue);
-			this.removeClientFromQueue(client2, currentQueue);
+			const gameMode = this.getGameModeForClient(client1);
+			this.removeClientFromQueue(client1, gameMode);
+			if (client2) {
+				this.removeClientFromQueue(client2, gameMode);
+			}
 
-			this.rooms.set(roomkey, newGame);
-			Logger.log(`added room ${roomkey} to map`);
-			this.rooms.get(roomkey).roomName = roomkey;
+			this.roomsByKey.set(roomkey, newGameRoom);
+			this.roomsByKey.get(roomkey).roomName = roomkey;
 
 			client1.join(roomkey);
-			Logger.log(`added ${user1id} to ${roomkey}`);
-			this.clientsInGame.set(user1id, newGame);
-			this.setStatus(client1, 'ingame')
+			this.clientsInGameByUserID.set(user1id, newGameRoom);
+			this.setStatus(client1, UserStatus.INGAME)
+			client1.emit('pong_state', newGameRoom.gameState);
 
-			client2.join(roomkey);
-			Logger.log(`added ${user2id} to ${roomkey}`);
-			this.clientsInGame.set(user1id, newGame);
-			this.setStatus(client2, 'ingame')
+			if (client2) {
+				client2.join(roomkey);
+				this.clientsInGameByUserID.set(user1id, newGameRoom);
+				this.setStatus(client2, UserStatus.INGAME)
+				client2.emit('pong_state', newGameRoom.gameState);
+			}
 
 			this.server.to(roomkey).emit('start_game');
+			// this.server.to(roomkey).emit('pong_state');
 		}
 	}
 
-	private getClientQueue(client: Socket): string {
-		for (const [queue, clients] of this.queues) {
+	@SubscribeMessage('game_started')
+	async sendGameState(client: Socket) {
+		const userId = (await this.userFromSocket(client)).id;
+		const userGame = this.clientsInGameByUserID.get(userId);
+
+		client.emit('pong_state', userGame.gameState);
+	}
+
+	private getGameModeForClient(client: Socket): GameMode | null {
+		for (const [gamemode, clients] of this.queuesByGameMode) {
 			if (clients.includes(client))
-				return queue;
+				return gamemode;
 		}
 		return null;
 	}
 
-	private getClientsInQueue(queue: string): Socket[] {
-		return this.queues.get(queue) || [];
+	private getClientsForGameMode(gamemode: GameMode): Socket[] {
+		return this.queuesByGameMode.get(gamemode) || [];
 	}
 
 	private async isClientInGame(client: Socket): Promise<boolean> {
 		const userId = (await this.userFromSocket(client)).id;
-		const userGame = this.clientsInGame.get(userId);
+		const userGame = this.clientsInGameByUserID.get(userId);
 
 		Logger.log('Check for reconnecting client');
 		if (userGame != undefined) {
@@ -244,7 +287,7 @@ export class MatchMakingGateway {
 				userGame.playerLeftSocket = client;
 			else
 				userGame.playerRightSocket = client;
-			this.setStatus(client, 'ingame');
+			this.setStatus(client, UserStatus.INGAME);
 			return true;
 		}
 		Logger.log('The client is connecting fresh');
@@ -252,88 +295,268 @@ export class MatchMakingGateway {
 	}
 };
 
-export class GameRoom {
-	playerLeft: string;
-	playerRight: string;
-	playerLeftSocket: Socket;
-	playerRightSocket: Socket;
-	roomName: string;
-	GameState: GameState;
-	singlemode: boolean; //true for 1v1, false for 2v2
-
-	constructor(player1Id: string, player2Id: string, player1Socket: Socket, player2Socket: Socket) {
-		this.playerLeft = player1Id;
-		this.playerRight = player2Id;
-		this.playerLeftSocket = player1Socket;
-		this.playerRightSocket = player2Socket;
-		if (player2Id == null) //gamemode == single if userID2 = null
-			this.singlemode = true;
-		else
-			this.singlemode = false;
-		this.GameState = {} as GameState; // Initialize GameState with an empty object or provide the appropriate initial state UNFINISHED
-	}
-
-	initiateGame() {
-		this.GameState = {
-			leftPaddle: {
-				playerID: this.playerLeft,
-				paddlePosition: 0.5,
-				action: PaddleAction.None,
-				score: 0,
-				moved: false,
-			},
-			rightPaddle: {
-				playerID: this.playerRight,
-				paddlePosition: 0.5,
-				action: PaddleAction.None,
-				score: 0,
-				moved: false,
-			},
-			ball: {
-				velocity: { x: 0, y: 0 },
-				position: { x: 0.5, y: 0.5 },
-			},
-			time: 0,
-			gameOver: false,
-			winner: '',
-			singlemode: this.singlemode,
-		}
-	};
-
-	handleMessage(socket: Socket, payload: any) {
-		// Handle the received message
-		const { movement } = payload;
-
-		let currentPlayer: string;
-		if (socket === this.playerLeftSocket) {
-			currentPlayer = this.playerLeft;
-		} else if (socket === this.playerRightSocket) {
-			currentPlayer = this.playerRight;
-		} else {
-			// Handle the case when the socket doesn't belong to either player
-			return;
-		}
-
-		// Apply the reducer function to update the game state
-		const reducer = makeReducer(currentPlayer);
-		const newGameState: GameState = reducer(this.GameState, {
-			kind: GameActionKind.overrideState,
-			value: this.GameState,
-		});
-
-		// Update the game state in the room
-		this.GameState = newGameState;
-
-		// Broadcast the updated game state to both clients in the room
-		this.playerLeftSocket.emit('gameState', this.GameState);
-		this.playerRightSocket.emit('gameState', this.GameState);
-	}
-
-	handleGameOver(socket: Socket, payload: any) {
-		
-		this.GameState.gameOver = true;
-		this.GameState.winner = payload.winner;
-	};
 
 
-};
+
+// import {
+// 	MessageBody,
+// 	SubscribeMessage,
+// 	WebSocketGateway,
+// 	WebSocketServer,
+// 	OnGatewayConnection, OnGatewayDisconnect
+// } from '@nestjs/websockets'
+// import { Server, Socket } from 'socket.io';
+// import { Constants } from '../../../shared/constants'
+
+// import { JwtService } from '@nestjs/jwt';
+// import { ConnectionService } from 'src/auth/connection/connection.service';
+// import { UserService } from 'src/users/user.service';
+// import { User } from 'src/users/user.entity';
+// import { Logger } from '@nestjs/common';
+// import { parse } from 'cookie'
+// import exp from 'constants';
+// import { emit } from 'process';
+
+// // Game part imports
+// import { GameState, PaddleAction, GameActionKind } from '../../../shared/pongTypes';
+// import { makeReducer } from '../../../shared/pongReducer';
+// import { GameRoom } from './gameRoom';
+// import console from 'console';
+
+// @WebSocketGateway({
+// 	cors: {
+// 		origin: Constants.FRONTEND_URL,
+// 		credentials: true
+// 	},
+// 	namespace: 'matchMakingGateway',
+// })
+// export class MatchMakingGateway {
+// 	@WebSocketServer()
+// 	server: Server;
+// 	private queues: Map<string, Socket[]> = new Map();
+// 	private rooms: Map<string, GameRoom> = new Map();
+// 	private clientsInGame: Map<string, GameRoom> = new Map();
+// 	private static roomIndex = 0;
+
+// 	constructor(
+// 		private jwtService: JwtService,
+// 		private connectionService: ConnectionService,
+// 		private userService: UserService
+// 	) { }
+
+// 	private userFromSocket(socket: Socket, result?: any): Promise<User> | undefined {
+// 		try {
+// 			if (!result) {
+// 				if (!socket.handshake.headers.cookie) {
+// 					Logger.log("Cookie's gone");
+// 					return;
+// 				}
+// 				const auth_cookie = parse(socket.handshake.headers.cookie).Authentication;
+// 				result = this.jwtService.verify(auth_cookie, { secret: process.env.JWT_SECRET })
+// 			}
+// 			return this.connectionService.get({ id: result.id }, ['user']).then(connection => {
+// 				return connection.user;
+// 			});
+// 		}
+// 		catch (e) {
+// 		}
+// 		return undefined;
+// 	}
+
+// 	private async setStatus(client: Socket, newStatus: string) {
+// 		const auth_cookie = parse(client.handshake.headers.cookie).Authentication;
+// 		let result = undefined;
+
+// 		try {
+// 			result = this.jwtService.verify(auth_cookie, { secret: process.env.JWT_SECRET });
+// 			if (!result)
+// 				throw new Error('Invalid Token');
+// 		} catch {
+// 			client.disconnect();
+// 			return;
+// 		}
+// 		const user = await this.userFromSocket(client, result)
+// 		user.status = newStatus;
+// 		user.save();
+// 		Logger.log(`${user.userName} status: ${user.status}`);
+// 	}
+
+// 	private async statusOnDisconnect(client: Socket) {
+// 		const user = await this.userFromSocket(client);
+
+// 		if (user.status != 'offline') {
+// 			Logger.log('user is online');
+// 			user.status = 'online';
+// 			user.save();
+// 		}
+// 		else
+// 			Logger.log('user is offline');
+// 	}
+
+// 	afterInit(server: Server) {
+// 		Logger.log('waitlist')
+// 	}
+
+// 	handleConnection(client: Socket) {
+// 		if (!client.handshake.headers.cookie) {
+// 			Logger.log('Lost the Cookie');
+// 			return;
+// 		}
+// 		this.isClientInGame(client).then((result: boolean) => {
+// 			if (!result) {
+// 				client.emit('new_connection');
+// 				Logger.log(`new queue connection ${client.id}`);
+// 			} else {
+// 				client.emit('start_game');
+// 			}
+// 		}).catch(e => console.error(e));
+// 	}
+
+// 	handleDisconnect(client: Socket) {
+// 		const currentQueue = this.getClientQueue(client);
+// 		if (currentQueue) {
+// 			this.removeClientFromQueue(client, currentQueue);
+// 		}
+// 		this.statusOnDisconnect(client);
+// 		Logger.log(`disconnected ${client.id}`);
+// 	}
+
+// 	//-----------gameplay----------------//
+
+
+// 	@SubscribeMessage('playerMovement')
+// 	handlePlayerMovement(client: Socket, action: string) {
+// 		Logger.log("GAME playerMovement");
+// 		const room = this.clientsInGame.get(client.id);
+// 		if (room) {
+// 			room.handleMessage(client, action);
+// 		}
+// 	}
+
+// 	@SubscribeMessage('gameOver')
+// 	handleGameOver(client: Socket, payload: any) {
+// 		const room = this.clientsInGame.get(client.id);
+// 		if (room) {
+// 			Logger.log("GAME gameOver");
+// 			room.handleGameOver(client, payload);
+			
+// 			//unfinished
+// 		}
+// 	}
+// 	//-----------------------------------//
+
+// 	@SubscribeMessage('join_queue')
+// 	async addClientToQueue(client: Socket, queue: { gamemode: string }) {
+// 		Logger.log(`joining queue ${queue.gamemode}`)
+// 		client.join(queue.gamemode);
+
+// 		//adding solo mode
+// 		if (queue.gamemode == 'solo') {
+// 			const user = await this.userFromSocket(client);
+// 			const gameRoom = new GameRoom(user.id, null, client, null);
+// 			this.rooms.set(user.id, gameRoom);
+// 			this.clientsInGame.set(user.id, gameRoom);
+// 			this.setStatus(client, 'ingame');
+// 			this.server.to(user.id).emit('start_game');
+// 			return;
+// 		}
+
+// 		if (!this.queues.has(queue.gamemode))
+// 			this.queues.set(queue.gamemode, []);
+// 		this.queues.get(queue.gamemode).push(client)
+
+// 		await this.setStatus(client, 'in_queue')
+// 		this.matchClientsInQueue(queue.gamemode);
+// 	}
+
+// 	private removeClientFromQueue(client: Socket, queue: string) {
+// 		const clients = this.queues.get(queue);
+// 		if (clients) {
+// 			const index = clients.indexOf(client);
+// 			Logger.log(`client index to remove: ${index}`);
+// 			if (index != -1)
+// 				clients.splice(index, 1);
+// 			Logger.log(`queue length after removal: ${this.queues.get(queue).length}`)
+// 		}
+// 		client.leave(queue);
+// 		Logger.log('removed client from queue');
+// 	}
+
+// 	private matchClientsInQueue(queue: string) {
+// 		const clients = this.getClientsInQueue(queue);
+
+// 		Logger.log('Check for matches');
+
+// 		if (clients && clients.length >= 2) {
+// 			const client1 = clients[0];
+// 			const client2 = clients[1];
+// 			const gameRoom = `${queue}-${MatchMakingGateway.roomIndex}`;
+// 			if (MatchMakingGateway.roomIndex < Number.MAX_SAFE_INTEGER)
+// 				MatchMakingGateway.roomIndex++;
+// 			else
+// 				MatchMakingGateway.roomIndex = 0;
+// 			this.moveClientsToRoom(client1, client2, gameRoom);
+// 		} else if (clients && clients.length == 1) { //added for solo mode
+// 			const client = clients[0];
+// 			this.setStatus(client, 'in_queue solo');
+// 		}
+// 	}
+
+// 	private async moveClientsToRoom(client1: Socket, client2: Socket, roomkey: string) {
+
+// 		Logger.log(`moving to ${roomkey}`)
+// 		if (!this.rooms.has(roomkey)) {
+// 			const user1id = (await this.userFromSocket(client1)).id;
+// 			const user2id = (await this.userFromSocket(client2)).id;
+// 			const newGame = new GameRoom(user1id, user2id, client1, client2);
+
+// 			const currentQueue = this.getClientQueue(client1);
+// 			this.removeClientFromQueue(client1, currentQueue);
+// 			this.removeClientFromQueue(client2, currentQueue);
+
+// 			this.rooms.set(roomkey, newGame);
+// 			this.rooms.get(roomkey).roomName = roomkey;
+
+// 			client1.join(roomkey);
+// 			this.clientsInGame.set(user1id, newGame);
+// 			this.setStatus(client1, 'ingame')
+
+// 			client2.join(roomkey);
+// 			this.clientsInGame.set(user1id, newGame);
+// 			this.setStatus(client2, 'ingame')
+
+// 			this.server.to(roomkey).emit('start_game');
+// 		}
+// 	}
+
+// 	private getClientQueue(client: Socket): string {
+// 		for (const [queue, clients] of this.queues) {
+// 			if (clients.includes(client))
+// 				return queue;
+// 		}
+// 		return null;
+// 	}
+
+// 	private getClientsInQueue(queue: string): Socket[] {
+// 		return this.queues.get(queue) || [];
+// 	}
+
+// 	private async isClientInGame(client: Socket): Promise<boolean> {
+// 		const userId = (await this.userFromSocket(client)).id;
+// 		const userGame = this.clientsInGame.get(userId);
+
+// 		Logger.log('Check for reconnecting client');
+// 		if (userGame != undefined) {
+// 			Logger.log('The client is reconnecting');
+// 			client.join(userGame.roomName);
+// 			if (userId == userGame.playerLeft)
+// 				userGame.playerLeftSocket = client;
+// 			else
+// 				userGame.playerRightSocket = client;
+// 			this.setStatus(client, 'ingame');
+// 			return true;
+// 		}
+// 		Logger.log('The client is connecting fresh');
+// 		return false;
+// 	}
+// };

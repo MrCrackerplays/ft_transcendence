@@ -9,7 +9,7 @@ import  { Constants } from '../../../shared/constants'
 import { JwtService } from '@nestjs/jwt';
 import { ConnectionService } from 'src/auth/connection/connection.service';
 import { UserService } from 'src/users/user.service';
-import { User } from 'src/users/user.entity';
+import { User, UserStatus } from 'src/users/user.entity';
 import { Logger } from '@nestjs/common';
 import { parse } from 'cookie'
 
@@ -50,7 +50,7 @@ export class UserStatusGateway implements OnGatewayConnection, OnGatewayDisconne
 		return undefined;
 	}
 
-	private	setStatus(user: User, newStatus: string)
+	private	setStatus(user: User, newStatus: UserStatus)
 	{
 		user.status = newStatus;
 		user.save();
@@ -80,7 +80,7 @@ export class UserStatusGateway implements OnGatewayConnection, OnGatewayDisconne
 		this.userFromSocket(client, result).then(user => {
 			if (!user)
 				return ;
-			this.setStatus(user, 'online');
+			this.setStatus(user, UserStatus.IDLE);
 			// console.log(`${user.userName}: ${user.status}`);
 		})
 	}
@@ -89,7 +89,7 @@ export class UserStatusGateway implements OnGatewayConnection, OnGatewayDisconne
 		this.userFromSocket(client).then(user => {
 			if (!user)
 				return ;
-			this.setStatus(user, 'offline')
+			this.setStatus(user, UserStatus.OFFLINE)
 			// console.log(`${user.status}`);
 		})
 		Logger.log(`user status disconnected ${client.id}`)
