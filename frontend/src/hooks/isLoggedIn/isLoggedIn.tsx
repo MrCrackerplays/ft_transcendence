@@ -1,6 +1,8 @@
+import { Constants } from "../../../../shared/constants";
+
 async function isLoggedIn()
 {
-	let isLogin = await fetch('http://localhost:3000/self', {
+	let isLogin = await fetch(`${Constants.BACKEND_URL}/self`, {
 		credentials: 'include'
 		});
 	if (!isLogin.ok)
