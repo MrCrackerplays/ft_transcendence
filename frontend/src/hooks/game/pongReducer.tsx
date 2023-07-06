@@ -1,5 +1,5 @@
 
-import { GameState, PaddleAction, GameActionKind, pongConstants, GameAction } from '../../../../shared/pongTypes';
+import { GameState, PaddleAction, GameActionKind, pongConstants, GameAction , startGameState} from '../../../../shared/pongTypes';
 
 function checkPaddleBoarder(paddlePosition) {//up and down boader frame for paddle
 	const paddleMaxUp = 1 - pongConstants.paddleHeight / 2;
@@ -71,11 +71,11 @@ function updateBall(state: GameState, timeDlta: number) {
 			}
 			updateBallPosition(state, timeDlta);
 		} else {
-			state.ball.position = { x: 0, y: 0 };
+			state.ball.position = startGameState.ball.position;
 			state.rightPaddle.score += 1;
 			state.leftPaddle.moved = false;
 			state.rightPaddle.moved = false;
-			state.ball.velocity = { x: 0.5, y: 0.0 };
+			state.ball.velocity = startGameState.ball.velocity;
 		}
 	} else if (isBallAtRightWall) {
 		if (state.singlemode == true) {

@@ -15,11 +15,8 @@ type SocketMagicOutput = {
 };
 
 const SocketMagic: (input: SocketMagicInput) => SocketMagicOutput | undefined = (input) => {
-	
-
 	const wbSocket = input.wbSocket;
 	const socket = input.wbSocket.current;
-
 
 	let reconnectTimer: NodeJS.Timeout | null = null;
 	let reconnectDelay = 5000; // milliseconds
@@ -32,9 +29,9 @@ const SocketMagic: (input: SocketMagicInput) => SocketMagicOutput | undefined = 
 	}
 	console.log('socket is defined');
 	socket.on('pong_state', (newState: GameState) => {
-		console.log(`backend time: ${JSON.stringify(newState.time)}`);
+		//console.log(`backend time: ${JSON.stringify(newState.time)}`);
 		input.overrideState(newState);
-
+		console.log('player latest movements from backend: left and right', newState.leftPaddle.paddlePosition, newState.rightPaddle.paddlePosition);
 		if (newState.gameOver) {
 			if (wbSocket.current) {
 				wbSocket.current.disconnect();
@@ -104,14 +101,7 @@ const SocketMagic: (input: SocketMagicInput) => SocketMagicOutput | undefined = 
 
 	const playerMovement: (movement: PaddleAction) => void = (movement) => {
 		if (input.wbSocket.current) {
-			// const toSend = {
-			// 	event: 'playerMovement',
-			// 	payload: {
-			// 		movement: movement,
-			// 	},
-			// };
-			console.log(`front message sent: ${JSON.stringify(movement)}`);
-			//input.wbSocket.current.emit('message', JSON.stringify(toSend));
+			//console.log(`front message sent: ${JSON.stringify(movement)}`);
 			input.wbSocket.current.emit('playerMovement', {movement});
 		}
 	};
@@ -137,16 +127,6 @@ const PongGame = (props: { webSocketRef: MutableRefObject<Socket | undefined>;  
 	const playerID = "player1";
 	const opponentID = "player2";
 
-	// const initialState: GameState = {
-	// 	leftPaddle: { playerID: playerID, paddlePosition: 0, action: PaddleAction.None, score: 0, moved: false },
-	// 	rightPaddle: { playerID: opponentID, paddlePosition: 0, action: PaddleAction.None, score: 0, moved: false },
-	// 	ball: { velocity: { x: 0.5, y: 0.0 }, position: { x: 0, y: 0 } }, //if have time, add random velocity start
-	// 	time: 0,
-	// 	gameOver: false,
-	// 	winner: "",
-	// 	singlemode: true,
-	// };
-
 	const mode: boolean = props.gamemode.gamemode === 'solo' ? true : false;
 	const initialState: GameState = {
 		leftPaddle: { 
@@ -170,36 +150,7 @@ const PongGame = (props: { webSocketRef: MutableRefObject<Socket | undefined>;  
 		singlemode: mode,
 	};
 
-	// function getInitialState(gamemode: string): GameState {
-	// 	const mode: boolean = gamemode === 'solo' ? true : false;
-	// 	const initialState: GameState = {
-	// 	  leftPaddle: { 
-	// 		playerID: playerID, 
-	// 		paddlePosition: startGameState.leftPaddle.paddlePosition, 
-	// 		action: startGameState.leftPaddle.action, 
-	// 		score: startGameState.leftPaddle.score, 
-	// 		moved: startGameState.leftPaddle.moved 
-	// 	  },
-	// 	  rightPaddle: { 
-	// 		playerID: opponentID, 
-	// 		paddlePosition: startGameState.rightPaddle.paddlePosition, 
-	// 		action: startGameState.rightPaddle.action, 
-	// 		score: startGameState.rightPaddle.score, 
-	// 		moved: startGameState.rightPaddle.moved 
-	// 	  },
-	// 	  ball: { 
-	// 		velocity: startGameState.ball.velocity, 
-	// 		position: startGameState.ball.position 
-	// 	  },
-	// 	  time: startGameState.time,
-	// 	  gameOver: startGameState.gameOver,
-	// 	  winner: startGameState.winner,
-	// 	  singlemode: mode,
-	// 	};
-	// 	return initialState;
-	//   }
-	  
-
+	//console.log(`initialState PongGame: ${JSON.stringify(initialState)}`);
 	const [state, dispatch] = useReducer(makeReducer(playerID), initialState);
 	//const wbSocket = useRef<Socket | null>(null);
 	const wbSocket = props.webSocketRef;
@@ -240,6 +191,9 @@ const PongGame = (props: { webSocketRef: MutableRefObject<Socket | undefined>;  
 		window.addEventListener("keydown", handleKeyDown);
 		window.addEventListener("keyup", handleKeyUp);
 		return () => {
+			if (wbSocket.current) {
+				wbSocket.current.disconnect();
+			}
 			window.removeEventListener("keydown", handleKeyDown);
 			window.removeEventListener("keyup", handleKeyUp);
 		};

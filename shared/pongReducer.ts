@@ -127,7 +127,7 @@ function updateBall(state: GameState, timeDlta: number) {
 			switch (action.kind) {
 				case GameActionKind.overrideState:
 					newState = action.value;
-					console.log(`reducer time: ${JSON.stringify(newState.time)}`);
+					//console.log(`reducer time: ${JSON.stringify(newState.time)}`);
 					return newState;
 				case GameActionKind.arrowUp:
 					if (newState.leftPaddle.playerID == playerID) {
@@ -152,7 +152,7 @@ function updateBall(state: GameState, timeDlta: number) {
 					break;
 				case GameActionKind.updateTime:
 					newState.time += pongConstants.timeDlta;
-					console.log(`frontend time from reducer: ${JSON.stringify(newState.time)}`);
+					//console.log(`frontend time from reducer: ${JSON.stringify(newState.time)}`);
 					switch (newState.leftPaddle.action) {
 						case PaddleAction.Up:
 							newState.leftPaddle.paddlePosition -= pongConstants.timeDlta * pongConstants.paddleSpeed;
