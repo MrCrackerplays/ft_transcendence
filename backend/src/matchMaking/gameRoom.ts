@@ -72,7 +72,7 @@ export class GameRoom {
 	};
 
 	handleMessage(socket: Socket, payload: any) {
-		const { movement } = payload;
+		const { movement } = payload.payload;
 
 		let currentPlayer: string;
 		if (socket === this.playerLeftSocket) {
