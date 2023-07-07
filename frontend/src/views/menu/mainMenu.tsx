@@ -3,8 +3,8 @@ import { useNavigate } from 'react-router-dom';
 import { Socket, io } from "socket.io-client";
 import { Constants } from '../../../../shared/constants';
 import './home.css'
-import TestMatchMakingConnection from '../profile/temp/tempgame';
-import MatchMakingQueue from '../profile/temp/tempgame';
+import TestMatchMakingConnection from '../profile/matchMaking/gamequeue';
+import MatchMakingQueue from '../profile/matchMaking/gamequeue';
 
 function NavButton({label}) {
 	const navigate = useNavigate();

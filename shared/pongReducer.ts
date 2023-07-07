@@ -108,12 +108,14 @@ function updateBall(state: GameState, timeDlta: number) {
 			// state.ball.velocity = { x: -ball.velocity.x, y: ball.velocity.y };
 			// updateBallPosition(state, timeDlta);
 		}
-		if (state.leftPaddle.score == 10) {
+		if (state.leftPaddle.score == 1/*0*/) {
 			state.gameOver = true;
 			state.winner = state.leftPaddle.playerID;
-		} else if (state.rightPaddle.score == 10) {
+			console.log(`Left paddle wins: ${state.winner}`);
+		} else if (state.rightPaddle.score == 1/*0*/) {
 			state.gameOver = true;
 			state.winner = state.rightPaddle.playerID;
+			console.log(`Right paddle wins: ${state.winner}`);
 		}
 	};
 
@@ -127,7 +129,8 @@ function updateBall(state: GameState, timeDlta: number) {
 			switch (action.kind) {
 				case GameActionKind.overrideState:
 					newState = action.value;
-					break;
+					//console.log(`reducer time: ${JSON.stringify(newState.time)}`);
+					return newState;
 				case GameActionKind.arrowUp:
 					if (newState.leftPaddle.playerID == playerID) {
 						newState.leftPaddle.action = PaddleAction.Up;
@@ -151,6 +154,7 @@ function updateBall(state: GameState, timeDlta: number) {
 					break;
 				case GameActionKind.updateTime:
 					newState.time += pongConstants.timeDlta;
+					//console.log(`frontend time from reducer: ${JSON.stringify(newState.time)}`);
 					switch (newState.leftPaddle.action) {
 						case PaddleAction.Up:
 							newState.leftPaddle.paddlePosition -= pongConstants.timeDlta * pongConstants.paddleSpeed;

@@ -5,9 +5,21 @@ import { Constants } from "../../../../../shared/constants";
 import '../../menu/home.css';
 import PongGame from "../../../hooks/game/pong";
 
-const returnToHome = () => {
+function ReturnToHome() {
+	console.log('game ended return to homepage')
 	const navigate = useNavigate();
-	navigate('/');
+
+	useEffect(() => {
+		handleRedirect();
+	}, []);
+
+	const handleRedirect = () => {
+		navigate('/')
+	};
+
+	return (
+		<p className="text">Game Over</p>
+	)
 }
 
 function CancelButton() {
@@ -25,11 +37,12 @@ function CancelButton() {
 function MatchMakingQueue(gamemode: {gamemode: string}) {
 	const [isConnectionOpen, setIsConnectionOpen] = useState(false);
 	const [activeGame, setActiveGame] = useState(false);
+	const [gameOver, setGameOver] = useState(false);
 	const ws: MutableRefObject<Socket | undefined> = useRef<Socket>();
 
 	useEffect(() => {
 		if (!ws.current) {
-			console.log(`${Constants.BACKEND_URL}/matchMakingGateway`);
+			// console.log(`${Constants.BACKEND_URL}/matchMakingGateway`);
 			ws.current = io(`${Constants.BACKEND_URL}/matchMakingGateway`, {withCredentials: true});
 			console.log('new socket established');
 		}
@@ -39,15 +52,17 @@ function MatchMakingQueue(gamemode: {gamemode: string}) {
 		}
 
 		ws.current.on('new_connection', () => {
-			console.log('connection established');
+			console.log(`connection established ${ws.current?.id}`);
 			ws.current?.emit("join_queue", gamemode.gamemode); //was gamemode as object, needed as string
 			setIsConnectionOpen(true);
 		});
 
 		ws.current.on('disconnect', () => {
-			console.log('Disconnected from pong');
+			console.log(`Disconnected from pong`);
 			setActiveGame(false);
+			// setGameOver(true);
 			setIsConnectionOpen(false);
+			//after disconnect does not allow to play further, cleanup still in need
 		});
 
 		ws.current.on('joined_queue', () => {
@@ -59,8 +74,9 @@ function MatchMakingQueue(gamemode: {gamemode: string}) {
 		});
 		
 		ws.current.on('end_game', () => {
+			console.log('game has ended');
 			setActiveGame(false);
-			returnToHome();
+			setGameOver(true);
 		});
 
 		return () => {
@@ -72,24 +88,30 @@ function MatchMakingQueue(gamemode: {gamemode: string}) {
 	const renderGame = () => {
 		switch (activeGame) {
 			case false:
+				if (!gameOver) {
+					return (
+						<div  className="menu">
+							<p className="text">Waiting for opponent...</p>
+							<CancelButton></CancelButton>
+						</div>
+					)
+					
+				}
 				return (
-					<div>
-						<p className="text">Waiting for opponent...</p>
-						<CancelButton></CancelButton>
-					</div>
+					<ReturnToHome></ReturnToHome>
 				)
 			case true:
 				return (
 					<div> 
-						<p className="text">Game is starting...</p>
-					<PongGame webSocketRef={ws}/>
+						{/* <p className="text">Game is starting...</p> */}
+						<PongGame webSocketRef={ws} gamemode={gamemode}/>
 					</div>
 				)
 		}
 	}
 
 	return (
-		<div className="menu">
+		<div>
 			{renderGame()}
 		</div>
 	)

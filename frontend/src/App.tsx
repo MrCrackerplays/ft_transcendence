@@ -12,8 +12,8 @@ import UserStatus from './hooks/userStatus/userStatus';
 import Sidebar from './views/sidebar/sidebar';
 import './App.css'
 import Settings from './views/settings/settings';
-import TestMatchMakingConnection from './views/profile/temp/tempgame';
-import MatchMakingQueue from './views/profile/temp/tempgame';
+import TestMatchMakingConnection from './views/profile/matchMaking/gamequeue';
+import MatchMakingQueue from './views/profile/matchMaking/gamequeue';
 import PongGame from './hooks/game/pong';
 
 function App(): React.ReactElement

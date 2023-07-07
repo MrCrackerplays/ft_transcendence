@@ -1,26 +1,9 @@
-import {
-	MessageBody,
-	SubscribeMessage,
-	WebSocketGateway,
-	WebSocketServer,
-	OnGatewayConnection, OnGatewayDisconnect
-} from '@nestjs/websockets'
-import { Server, Socket } from 'socket.io';
-import { Constants } from '../../../shared/constants'
-
-import { JwtService } from '@nestjs/jwt';
-import { ConnectionService } from 'src/auth/connection/connection.service';
-import { UserService } from 'src/users/user.service';
-import { User } from 'src/users/user.entity';
+import { Socket } from 'socket.io';
 import { Logger } from '@nestjs/common';
-import { parse } from 'cookie'
-import exp from 'constants';
-import { emit } from 'process';
 
 // Game part imports
-import { GameState, PaddleAction, GameActionKind } from '../../../shared/pongTypes';
+import { GameState, PaddleAction, GameActionKind, startGameState } from '../../../shared/pongTypes';
 import { makeReducer } from '../../../shared/pongReducer';
-
 
 export class GameRoom {
 	playerLeft: string;
@@ -30,8 +13,9 @@ export class GameRoom {
 	roomName: string;
 	gameState: GameState;
 	singlemode: boolean; //true for 1v1, false for 2v2
+	winner: string;
 
-	constructor(player1Id: string, player2Id: string, player1Socket: Socket, player2Socket: Socket) {
+	constructor(player1Id: string, player2Id: string, player1Socket: Socket, player2Socket: Socket, roomName: string) {
 		this.playerLeft = player1Id;
 		this.playerRight = player2Id;
 		this.playerLeftSocket = player1Socket;
@@ -42,37 +26,42 @@ export class GameRoom {
 			this.singlemode = false;
 		this.gameState = {} as GameState;
 		this.initiateGame();
+		this.roomName = roomName;
+		this.winner = "";
 	}
 
 	initiateGame() {
 		this.gameState = {
 			leftPaddle: {
 				playerID: this.playerLeft,
-				paddlePosition: 0.5,
-				action: PaddleAction.None,
-				score: 0,
-				moved: false,
+				paddlePosition: startGameState.leftPaddle.paddlePosition,
+				action: startGameState.leftPaddle.action,
+				score: startGameState.leftPaddle.score,
+				moved: startGameState.leftPaddle.moved,
 			},
 			rightPaddle: {
 				playerID: this.playerRight,
-				paddlePosition: 0.5,
-				action: PaddleAction.None,
-				score: 0,
-				moved: false,
+				paddlePosition: startGameState.rightPaddle.paddlePosition,
+				action: startGameState.rightPaddle.action,
+				score: startGameState.rightPaddle.score,
+				moved: startGameState.rightPaddle.moved,
 			},
 			ball: {
-				velocity: { x: 0, y: 0 },
-				position: { x: 0.5, y: 0.5 },
+				velocity: startGameState.ball.velocity,
+				position: startGameState.ball.position,
 			},
-			time: 0,
-			gameOver: false,
-			winner: '',
-			singlemode: this.singlemode,
+			time: startGameState.time,
+			gameOver: startGameState.gameOver,
+			winner: startGameState.winner,
+			singlemode: startGameState.singlemode,
 		}
+		if (this.singlemode)
+			this.gameState.singlemode = true;
+		else
+			this.gameState.singlemode = false;
 	};
 
-	handleMessage(socket: Socket, payload: any) {
-		const { movement } = payload.payload;
+	handleMessage(socket: Socket, movement: PaddleAction) {
 
 		let currentPlayer: string;
 		if (socket === this.playerLeftSocket) {
@@ -80,23 +69,34 @@ export class GameRoom {
 		} else if (socket === this.playerRightSocket) {
 			currentPlayer = this.playerRight;
 		} else {
+			console.log('socket not found');
 			//socket doesn't belong to players - possible?
 			return;
 		}
-
-		// Apply the reducer function to update the game state
+		Logger.log('movement: ', movement, 'currentPlayer: ', currentPlayer);
 		const reducer = makeReducer(currentPlayer);
-		const newGameState: GameState = reducer(this.gameState, {
-			kind: GameActionKind.overrideState,
-			value: this.gameState,
-		});
+		if ( movement == "up" ) {
+			const newGameState: GameState = reducer(this.gameState, {
+				kind: GameActionKind.arrowUp,
+				value: null,
+			});
+			this.gameState = newGameState;
+		} else if ( movement == "down" ) {
+			const newGameState: GameState = reducer(this.gameState, {
+				kind: GameActionKind.arrowDown,
+				value: null, 
+			});
+			this.gameState = newGameState;
+		} else if ( movement == "none" ) {
+			const newGameState: GameState = reducer(this.gameState, {
+				kind: GameActionKind.StopMovement,
+				value: null,
+			});
+			this.gameState = newGameState;
+		}
 
-		// Update the game state in the room
-		this.gameState = newGameState;
-
-		// Broadcast the updated game state to both clients in the room
 		if (this.singlemode) {
-			this.playerLeftSocket.emit('gameState', this.gameState);
+			this.playerLeftSocket.emit('pong_state', this.gameState); //WAS gameState
 		} else {
 			this.playerLeftSocket.emit('gameState', this.gameState);
 			this.playerRightSocket.emit('gameState', this.gameState);
@@ -104,7 +104,6 @@ export class GameRoom {
 	}
 
 	handleGameOver(socket: Socket, payload: any) {
-
 		this.gameState.gameOver = true;
 		this.gameState.winner = payload.winner;
 	};

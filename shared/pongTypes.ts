@@ -1,8 +1,8 @@
 
 export enum PaddleAction {
-	Up,
-	Down,
-	None,
+	Up = 'up',
+	Down = 'down',
+	None = 'none',
 }
 
 export type GameAction = {
@@ -49,6 +49,27 @@ export const pongConstants = {
 	ballHeight : 0.04,
 	ballWidth : 0.04,
 	timeDlta : 0.02,
+};
+
+export const startGameState = {
+
+	leftPaddle: { 
+		paddlePosition: 0, 
+		action: PaddleAction.None, 
+		score: 0, 
+		moved: false },
+	rightPaddle: { 
+		paddlePosition: 0, 
+		action: PaddleAction.None, 
+		score: 0, 
+		moved: false },
+	ball: { 
+		velocity: { x: 1.5, y: 0.0 }, 
+		position: { x: 0, y: 0 } },
+	time: 0,
+	gameOver: false,
+	winner: "",
+	singlemode: true,
 };
 
 export enum GameMode {

@@ -1,5 +1,5 @@
 
-import { GameState, PaddleAction, GameActionKind, pongConstants, GameAction } from '../../../../shared/pongTypes';
+import { GameState, PaddleAction, GameActionKind, pongConstants, GameAction , startGameState} from '../../../../shared/pongTypes';
 
 function checkPaddleBoarder(paddlePosition) {//up and down boader frame for paddle
 	const paddleMaxUp = 1 - pongConstants.paddleHeight / 2;
@@ -61,7 +61,6 @@ function updateBall(state: GameState, timeDlta: number) {
 					state.ball.velocity.y += 0.05;
 					state.ball.velocity.x -= 0.005;
 				}
-
 				else if (state.ball.velocity.y == 0 && state.leftPaddle.paddlePosition < 0)
 					state.ball.velocity.y -= 0.05;
 				else if (state.ball.velocity.y > 0)
@@ -71,18 +70,18 @@ function updateBall(state: GameState, timeDlta: number) {
 			}
 			updateBallPosition(state, timeDlta);
 		} else {
-			state.ball.position = { x: 0, y: 0 };
+			state.ball.position = startGameState.ball.position;
 			state.rightPaddle.score += 1;
 			state.leftPaddle.moved = false;
 			state.rightPaddle.moved = false;
-			state.ball.velocity = { x: 0.5, y: 0.0 };
+			state.ball.velocity = startGameState.ball.velocity;
 		}
 	} else if (isBallAtRightWall) {
-		if (state.singlemode == true) {
+		if (state.singlemode == true) { //all right wall is paddle, pong with shadow
 			state.ball.velocity = { x: -ball.velocity.x, y: ball.velocity.y };
 			updateBallPosition(state, timeDlta);
 		} else {
-			if (willBounceRightPaddle) { //all right wall is paddle, pong with shadow
+			if (willBounceRightPaddle) { 
 				state.ball.velocity = { x: -ball.velocity.x, y: ball.velocity.y };
 				if (state.rightPaddle.moved == false) {
 					state.ball.velocity.x *= 1.5;
@@ -90,11 +89,11 @@ function updateBall(state: GameState, timeDlta: number) {
 				}
 				updateBallPosition(state, timeDlta);
 			} else {
-				state.ball.position = { x: 0, y: 0 };
+				state.ball.position = startGameState.ball.position;
 				state.leftPaddle.score += 1;
 				state.rightPaddle.moved = false;
 				state.leftPaddle.moved = false;
-				state.ball.velocity = { x: -0.3, y: 0.0 };
+				state.ball.velocity = startGameState.ball.velocity;
 			}
 		}
 	}
