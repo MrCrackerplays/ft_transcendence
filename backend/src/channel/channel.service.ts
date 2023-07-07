@@ -49,7 +49,7 @@ export class ChannelService {
 		channel.messages = [];
 		channel.visibility = dto.visibility;
 		channel.salt = await genSalt();
-		channel.password = await hash(dto.password, channel.salt);
+		channel.password = dto.password ? await hash(dto.password, channel.salt) : dto.password;
 		console.log("creating channel with hash", channel.password, "salted by", channel.salt);
 		channel.owner = owner;
 		channel.members = [ owner ];
