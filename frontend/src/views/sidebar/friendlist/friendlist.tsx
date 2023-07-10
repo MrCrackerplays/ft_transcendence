@@ -26,8 +26,8 @@ function MyLinks({ username, userID, startDM } : { username: string, userID: str
 		<div className='fpfp-popover-content a'>
 			<ProfileLink label="Profile" link={`/profile/${username}`} />
 			<div className="fmylink" onClick={()=>{
-				alert("temporarily disabled while query is wrong")
-				// startDM(userID);
+				// alert("temporarily disabled while query is wrong")
+				startDM(userID);
 			}}>Send Message</div>
 		</div>
 	);
