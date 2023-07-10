@@ -1,4 +1,4 @@
-import { BaseEntity, Column, Entity, JoinColumn, ManyToMany, ManyToOne, OneToMany, PrimaryGeneratedColumn } from "typeorm";
+import { BaseEntity, Column, Entity, JoinColumn, JoinTable, ManyToMany, ManyToOne, OneToMany, PrimaryGeneratedColumn } from "typeorm";
 
 import { Message } from "src/channel/message/message.entity";
 import { User } from "src/users/user.entity";
@@ -25,27 +25,30 @@ export class Channel extends BaseEntity {
 	salt: string;
 
 	// A channel can only have one owner
-	@ManyToOne(type => User, user => user.channelsOwned, { eager: true })
+	@ManyToOne(type => User, user => user.channelsOwned, { onDelete: 'CASCADE', eager: true, nullable: true })
 	@JoinColumn()
 	owner: User;
 
-	@ManyToMany(type => User, user => user.channelAdmin, { eager: true })
+	@ManyToMany(type => User, user => user.channelAdmin, { onDelete: 'CASCADE', eager: true })
+	@JoinTable()
 	admins: User[];
 
 	// A channel can have many members (if it's not a DM)
-	@ManyToMany(type => User, user => user.channelSubscribed)
+	@ManyToMany(type => User, user => user.channelSubscribed, { onDelete: 'CASCADE'})
+	@JoinTable()
 	members: User[];
 
-	@ManyToMany(type => User, user => user.channelBanned, { eager: true })
+	@ManyToMany(type => User, user => user.channelBanned, { onDelete: 'CASCADE', eager: true })
+	@JoinTable()
 	banned: User[];
 
-	@ManyToMany(type => User, user => user.channelMuted, { eager: true })
+	@ManyToMany(type => User, user => user.channelMuted, { onDelete: 'CASCADE', eager: true })
+	@JoinTable()
 	muted: User[];
 
 	// A channel has many messages
-	@OneToMany(type => Message, message => message.channel, {
-		cascade: ['remove']
-	})
+	@OneToMany(type => Message, message => message.channel, { onDelete: 'CASCADE', cascade: true})
+	@JoinColumn()
 	messages: Message[];
 
 	toPublic(): PublicChannel {
