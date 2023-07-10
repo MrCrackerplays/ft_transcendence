@@ -75,6 +75,10 @@ export class ChannelService {
 		});
 
 		for (var c of existingDM) {
+			// reload relation with BOTH participants
+			c = await this.channelRepository.findOne({relations: ['members'], where: {id : c.id }});
+			if (!c)
+				break ;
 			for (var m of c.members) {
 				if (m.id == userB.id) {
 					return c; // channel exists
