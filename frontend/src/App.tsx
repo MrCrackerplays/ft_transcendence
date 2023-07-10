@@ -12,6 +12,7 @@ import UserStatus from './hooks/userStatus/userStatus';
 import Sidebar from './views/sidebar/sidebar';
 import './App.css'
 import Settings from './views/settings/settings';
+import LoggedInMissing, { NotLoggedInMissing } from './views/missing/allmissing';
 
 function App(): React.ReactElement
 {
@@ -43,6 +44,7 @@ function App(): React.ReactElement
 				<Route path="/login" element={<MyLoginPage />}/>
 				<Route path="/loginOTP" element={<LoginOTP />}/>	
 				<Route path="/setup" element={<SetUp />} />
+				<Route path="/*" element={<NotLoggedInMissing />}/>
 			</Routes>
 		)
 	return (
@@ -55,6 +57,7 @@ function App(): React.ReactElement
 					<Route path="/" element={<HomePage />}/>
 					<Route path="/profile/*" element={<ProfilePage />} />
 					<Route path="/settings" element={<Settings updatescam={updatescam} setupdatescam={setupdatescam}/>}/>
+					<Route path="/*" element={<LoggedInMissing/>}/>
 				</Routes>
 			</div>
 		</div>

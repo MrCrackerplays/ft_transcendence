@@ -20,6 +20,8 @@ function AchievementCard({achieve} : {achieve : PublicAchievements}) {
 }
 
 function Achievements({achievements}: {achievements:PublicAchievements[]}) {
+	if (achievements.length == 0)
+		return (<div><p className="achievementsCenter">No Achievements Recorded</p></div>)
 	return (
 		<div className="all-achievements">
 			{ 

@@ -18,12 +18,13 @@ import { parse } from 'cookie';
 import { CreateChannelDTO, Visibility } from '../../../shared/dto/channel.dto';
 import { Channel } from 'src/channel/channel.entity';
 import { genSalt, hash } from 'bcrypt';
+import { Constants } from '../../../shared/constants';
 
 const CHANNEL_PASSWORD_REGEX = /^([a-zA-Z0-9_\-]{3,16})$/;
 
 @WebSocketGateway({
 	cors: {
-		origin: 'http://localhost:5173',
+		origin: `${Constants.FRONTEND_URL}`,
 		credentials: true
 	},
 	namespace: 'chat',
@@ -160,7 +161,7 @@ export class ChatGateway {
 			return false;
 		channel.visibility = visibility;
 		channel.salt = await genSalt();
-		channel.password = await hash(password, channel.salt);;
+		channel.password = password ? await hash(password, channel.salt) : password;
 		channel.save();
 		this.messageService.createMessage(channel, null, "Channel visibility updated").then((m) => {
 			this.server.to("channel:" + channel_id).emit("message", { channel: channel_id, sender: m.author?.userName, sender_id: m.author?.id, content: m.content, date: m.date });
