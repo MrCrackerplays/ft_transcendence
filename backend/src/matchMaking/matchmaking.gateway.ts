@@ -27,6 +27,7 @@ import { EventEmitter } from 'events';
 import { Match } from 'src/matches/match.entity';
 import { MatchService } from 'src/matches/match.service';
 import { PublicMatch } from '../../../shared/public-match'
+import { number } from '@hapi/joi';
 
 
 @WebSocketGateway({
@@ -46,12 +47,12 @@ export class MatchMakingGateway {
 	private clientsInGameByUserID: Map<string, GameRoom> = new Map();
 	private roomIndex = 0;
 	private readonly eventEmitter: EventEmitter = new EventEmitter();
-	private gameplayInterval;
 
 	constructor(
 		private jwtService: JwtService,
 		private connectionService: ConnectionService,
-		private userService: UserService
+		private userService: UserService,
+		private matchService: MatchService
 	) { }
 
 	private userFromSocket(socket: Socket, result?: any): Promise<User> | undefined {
@@ -165,29 +166,43 @@ export class MatchMakingGateway {
 		}
 	}
 
-	@SubscribeMessage('gameOver')
-	async handleGameOver(client: Socket, payload: any) {
+	async handleGameOver(room: GameRoom, gameplayInterval: any) {
 		Logger.log('GAME HAS ENDED');
-		const user = await this.userFromSocket(client);
-		const room = this.clientsInGameByUserID.get(user.id);
+		const user1 = await this.userFromSocket(room.playerLeftSocket);
+		const user2 = await this.userFromSocket(room.playerRightSocket);
 		// const matchResult = MatchService.createMatch(payload.winner, payload.loser, payload.winnerScore, payload.loserScore);
-		clearInterval(this.gameplayInterval);
+		clearInterval(gameplayInterval);
 
-		Logger.log(`${user.userName}`);
+		Logger.log(`${user1.userName}`);
+		Logger.log(`${user2.userName}`);
 		if (room) {
-			user.gamesPlayed++;
+			user1.gamesPlayed++;
+			user2.gamesPlayed++;
 			Logger.log(`${room.roomName}`)
 			// room.handleGameOver(client, payload);
 			room.winner = room.gameState.winner;
 			Logger.log(`winner: ${room.gameState.winner}`);
-			if (user.id == room.winner) {
-				user.gamesWon++; //increase gamesWon for winner
-				Logger.log(`winner: ${user.userName}`);
+			if (user1.id == room.winner) {
+				user1.gamesWon++;
+				this.matchService.createMatch(user1, user2, room.gameState.leftPaddle.score, room.gameState.rightPaddle.score);
+				Logger.log(`winner: ${user1.userName}`);
 			}
+			else if(user2.id == room.winner) {
+				user2.gamesWon++;
+				this.matchService.createMatch(user2, user1, room.gameState.rightPaddle.score, room.gameState.leftPaddle.score);
+				Logger.log(`winner: ${user2.userName}`); 
+			}
+			else
+				Logger.log(`NO WINNER FOUND`);
+			user1.save();
+			user2.save();
 			
-			user.save();
-			//cleaning? 
-			//this.roomsByKey.delete(room.roomName);
+			this.roomsByKey.delete(room.roomName);
+			this.clientsInGameByUserID.delete(user1.id);
+			this.clientsInGameByUserID.delete(user2.id);
+			this.server.to(room.roomName).emit('end_game');
+			room.playerLeftSocket.disconnect();
+			room.playerRightSocket.disconnect();
 		}
 		else
 			Logger.log(`NO ROOM FOUND`);
@@ -204,7 +219,7 @@ export class MatchMakingGateway {
 	}
 
 
-	updateRooms() {
+	updateRooms(gameplayInterval: any) {
 		this.roomsByKey.forEach((room) => {
 		  //Logger.log(`batman updateRooms`);
 		const reducer = makeReducer(null);
@@ -212,16 +227,19 @@ export class MatchMakingGateway {
 			kind: GameActionKind.updateTime,
 			value: null,
 		});
-
 		room.gameState = newGameState;
-		  this.emitGameStateToPlayers(room);
+		if (room.gameState.gameOver){
+			this.handleGameOver(room, gameplayInterval);
+		}
+		else
+			this.emitGameStateToPlayers(room);
 		});
 	}
 
 	startRoomUpdates() {
 		//Logger.log(`batman startRoomUpdates`);
-		this.gameplayInterval = setInterval(() => {
-		  this.updateRooms();
+		let gameplayInterval = setInterval(() => {
+		  this.updateRooms(gameplayInterval);
 		}, pongConstants.timeDlta * 1000); //in milliseconds
 	}
 	//--------------------------------------------------------------------------//

@@ -161,7 +161,7 @@ export class ChatGateway {
 			return false;
 		channel.visibility = visibility;
 		channel.salt = await genSalt();
-		channel.password = await hash(password, channel.salt);;
+		channel.password = password ? await hash(password, channel.salt) : password;
 		channel.save();
 		this.messageService.createMessage(channel, null, "Channel visibility updated").then((m) => {
 			this.server.to("channel:" + channel_id).emit("message", { channel: channel_id, sender: m.author?.userName, sender_id: m.author?.id, content: m.content, date: m.date });
