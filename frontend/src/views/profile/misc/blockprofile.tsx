@@ -21,10 +21,10 @@ function BlockProfile({UUID} : {UUID : String})
 		async function getBlocked()
 		{
 			setBlockArray(await FetchBlocked());
-			if (jsonData.id == UUID)
-			{
-				setBlockState("Self");
-			}
+			// if (jsonData.id == UUID)
+			// {
+			// 	setBlockState("Self");
+			// }
 		}
 		getBlocked()
 	}, [jsonData])
@@ -64,8 +64,10 @@ function BlockProfile({UUID} : {UUID : String})
 				id: UUID
 			})
 		})
-		if (RESPONSE.status >= 200 && RESPONSE.status <= 299)
+		if (RESPONSE.status >= 200 && RESPONSE.status <= 299) {
 			setBlockState("Blocked");
+			// location.reload();
+		}
 	}
 	async function handleBlocked(){
 		window.event?.preventDefault();
@@ -79,8 +81,10 @@ function BlockProfile({UUID} : {UUID : String})
 				id: UUID
 			})
 		})
-		if (RESPONSE.status >= 200 && RESPONSE.status <= 299)
+		if (RESPONSE.status >= 200 && RESPONSE.status <= 299) {
 			setBlockState("Unblocked")
+			// location.reload();
+		}
 	}
 	if (blockState == "Loading"){
 		return (

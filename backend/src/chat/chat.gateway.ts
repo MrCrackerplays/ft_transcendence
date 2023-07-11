@@ -100,7 +100,7 @@ export class ChatGateway {
 			client.disconnect();
 			return;
 		}
-		this.userFromSocket(client, result).then(user => {
+		this.userFromSocket(client, result).then(async user => {
 			if (!user || !user.id) {
 				client.disconnect();
 				return;
@@ -113,6 +113,10 @@ export class ChatGateway {
 					client.emit("join", channel.id);
 				});
 			});
+			let blockableuser = await this.userService.get(user.id, ["blocked"]);
+			if (blockableuser.blocked === undefined)
+			blockableuser.blocked = [];
+			client.emit("total_blocked", blockableuser.blocked.map(bu => bu.id));
 		});
 	}
 
@@ -202,8 +206,11 @@ export class ChatGateway {
 		const user = await this.userFromSocket(client);
 		if (!user)
 			return "";
-		const other_user = await this.userService.findOne(user_id);
+		const blockableuser = await this.userService.get(user.id, ["blocked"]);
+		const other_user = await this.userService.get(user_id, ["blocked"]);
 		if (!other_user)
+			return "";
+		if (blockableuser.blocked?.find(b => b.id == other_user.id) || other_user.blocked?.find(b => b.id == blockableuser.id))
 			return "";
 		const channel = await this.channelService.createDM(user, other_user);
 		if (!channel)
@@ -327,18 +334,37 @@ export class ChatGateway {
 	}
 
 	@UseGuards(WsGuard)
+	@SubscribeMessage('get_blocked')
+	getBlockedUsers(
+		@ConnectedSocket() client: Socket
+	): void {
+		this.userFromSocket(client).then(async basicuser => {
+			if (!basicuser)
+				return;
+			let user = await this.userService.get(basicuser.id, ['blocked']);
+			console.log("get_blocked event", user);
+			if (user.blocked === undefined)
+				user.blocked = [];
+			client.emit("total_blocked", user.blocked.map(bu => bu.id));
+		});
+	}
+
+	@UseGuards(WsGuard)
 	@SubscribeMessage('block')
 	blockUser(
 		@ConnectedSocket() client: Socket,
 		@MessageBody("user") target_user_id: string
 	): void {
-		this.userFromSocket(client).then(user => {
-			if (!user)
+		this.userFromSocket(client).then(async basicuser => {
+			if (!basicuser)
 				return;
+			let user = await this.userService.get(basicuser.id, ['blocked']);
 			console.log("block event");
 			this.userService.get(target_user_id).then(target_user => {
 				if (!target_user)
 					return;
+				if (user.blocked === undefined)
+					user.blocked = [];
 				user.blocked.push(target_user);
 				user.save();
 				this.server.to("user:" + user.id).emit("block", target_user_id);
@@ -353,10 +379,13 @@ export class ChatGateway {
 		@ConnectedSocket() client: Socket,
 		@MessageBody("user") target_user_id: string
 	): void {
-		this.userFromSocket(client).then(user => {
-			if (!user)
+		this.userFromSocket(client).then(async basicuser => {
+			if (!basicuser)
 				return;
+			let user = await this.userService.get(basicuser.id, ['blocked']);
 			console.log("unblock event");
+			if (user.blocked === undefined)
+				user.blocked = [];
 			user.blocked = user.blocked.filter(blocked => blocked.id != target_user_id);
 			user.save();
 			this.server.to("user:" + user.id).emit("unblock", target_user_id);
