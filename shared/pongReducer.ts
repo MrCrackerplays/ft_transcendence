@@ -7,7 +7,6 @@ import {
 	PaddleAction,
 	ballModifier,
 	startGameState,
-	PaddleState,
 	BallState,
 } from './pongTypes';
 

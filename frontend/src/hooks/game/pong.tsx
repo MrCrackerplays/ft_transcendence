@@ -226,9 +226,10 @@ const PongGame = (props: { webSocketRef: MutableRefObject<Socket | undefined>;  
 		return (
 			<div className="pong-frame">
 				<div className="centre-line"></div>
+				{/* <div className='h-centre-line'></div> */}
 				<div className="paddle-left" style={{
 					//paddle left
-					top: (leftPaddleTop * 100) + '%',
+					top: ((leftPaddleTop * 100) + '%'),
 					height: (pongConstants.paddleHeight * 50) + '%',
 					width: (pongConstants.paddleWidth * 100) + '%',
 					left: (pongConstants.framePaddleGap * 100) + '%'
@@ -263,6 +264,7 @@ const PongGame = (props: { webSocketRef: MutableRefObject<Socket | undefined>;  
 	return (
 		<div className="pong-frame">
 			<div className="centre-line"></div>
+			{/* <div className='h-center-line'></div> */}
 			<div className="paddle-right" style={{
 				//paddle right
 				top: (rightPaddleTop * 100) + '%',
