@@ -9,9 +9,18 @@ services:
     volumes:
       - /var/folders/postgres:/data/postgres
     env_file:
-      - .env
+      - ./backend/.env
     networks:
       - postgres
+  
+  busters:
+    container_name: busters
+    build: ./
+    depends_on:
+      - postgres
+    networks:
+      - postgres
+
 
 networks:
   postgres:
