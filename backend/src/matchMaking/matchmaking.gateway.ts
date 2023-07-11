@@ -329,15 +329,13 @@ export class MatchMakingGateway {
 			client1.join(roomkey);
 			this.clientsInGameByUserID.set(user1id, newGameRoom);
 			this.setStatus(client1, UserStatus.INGAME)
-			client1.emit('pong_state', newGameRoom.gameState);
 
 			if (client2) {
 				client2.join(roomkey);
 				this.clientsInGameByUserID.set(user2id, newGameRoom);
 				this.setStatus(client2, UserStatus.INGAME)
-				client2.emit('pong_state', newGameRoom.gameState);
 			}
-
+			this.server.to(roomkey).emit('pong_state', newGameRoom.gameState);
 			this.server.to(roomkey).emit('start_game');
 			// this.server.to(roomkey).emit('pong_state');
 		}
