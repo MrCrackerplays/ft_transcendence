@@ -15,7 +15,9 @@ export class AuthService {
 		private userService : UserService,
 		private connectionService : ConnectionService,
 		private jwtService: JwtService
-		) {}
+		) { this.otpMap.clear(); }
+	
+	private otpMap: Map<number, string>;
 
 	async signIn(payload: any): Promise<Connection> {
 		console.log(`attempting signin for 42-user: ${payload.id}`);
@@ -93,18 +95,35 @@ export class AuthService {
 	async enableTwoFactor(req: AuthRequest): Promise<string> {
 		const connection = await this.getCurrentConnection(req);
 		const data = await this.generateTwoFactorSecret(connection);
+		
+		// Add to the map to wait for validation
+		this.otpMap.set(connection.id, data.otpURL);
 
-		// store secret
-		// !: 2FA IS NOW ENABLED!
-		connection.otpSecret = data.secret;
-		await connection.save();
-
+		// return QR
 		return toDataURL(data.otpURL);
 	}
 
 	async validateTwoFactor(_id: number, code: string): Promise<Connection> {
 		const connection = await this.connectionService.get({id: _id});
 
+		if (connection.otpSecret == null) {
+			// Two factor wasn't enabled yet so we have to enable it now
+			const entry = this.otpMap.get(connection.id);
+			if (entry == undefined) {
+				// you're not in the map! begone!
+				return null;
+			}
+			if (this.validateOTP(entry, code)) {
+				// congrats youve now enabled Two Factor
+				connection.otpSecret = entry;
+				this.otpMap.delete(connection.id);
+				return connection.save();
+			}
+			// not validated
+			return null;
+		}
+
+		// This happens when you've already enabled 2FA
 		const secret = connection.otpSecret;
 		const validated : boolean = this.validateOTP(secret, code);
 		if (!validated)
