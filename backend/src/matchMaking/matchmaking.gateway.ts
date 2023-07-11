@@ -14,16 +14,20 @@ import { UserService } from 'src/users/user.service';
 import { User, UserStatus } from 'src/users/user.entity';
 import { Logger } from '@nestjs/common';
 import { parse } from 'cookie'
-import exp from 'constants';
-import { emit } from 'process';
+
 
 // Game part imports
 import { GameState, PaddleAction, GameActionKind, GameMode } from '../../../shared/pongTypes';
 import { makeReducer } from '../../../shared/pongReducer';
 import { pongConstants } from '../../../shared/pongTypes';
 import { GameRoom } from './gameRoom';
-import { Cron } from '@nestjs/schedule';
+// import { Cron } from '@nestjs/schedule';
 import { EventEmitter } from 'events';
+
+import { Match } from 'src/matches/match.entity';
+import { MatchService } from 'src/matches/match.service';
+import { PublicMatch } from '../../../shared/public-match'
+import { number } from '@hapi/joi';
 
 
 @WebSocketGateway({
@@ -47,7 +51,8 @@ export class MatchMakingGateway {
 	constructor(
 		private jwtService: JwtService,
 		private connectionService: ConnectionService,
-		private userService: UserService
+		private userService: UserService,
+		private matchService: MatchService
 	) { }
 
 	private userFromSocket(socket: Socket, result?: any): Promise<User> | undefined {
@@ -68,7 +73,7 @@ export class MatchMakingGateway {
 		}
 		return undefined;
 	}
-
+ 
 	private async setStatus(client: Socket, newStatus: UserStatus) {
 		const auth_cookie = parse(client.handshake.headers.cookie).Authentication;
 		let result = undefined;
@@ -91,7 +96,7 @@ export class MatchMakingGateway {
 		const user = await this.userFromSocket(client);
 
 		if (user.status != 'offline') {
-			Logger.log('user is idle');
+			Logger.log(`${user?.userName} is idle`);
 			user.status = UserStatus.IDLE;
 			user.save();
 		}
@@ -121,31 +126,32 @@ export class MatchMakingGateway {
 		}).catch(e => console.error(e));
 	}
 
-	handleDisconnect(client: Socket) {
-		Logger.log(`disconnected ${client.id}`);
+	async handleDisconnect(client: Socket) {
 		const gamemode = this.getGameModeForClient(client);
-		if (gamemode) {
+		const gameroom = this.clientsInGameByUserID.get((await this.userFromSocket(client)).id)
+
+		if (gamemode)
 			this.removeClientFromQueue(client, gamemode);
-		}
+		if (gameroom && gameroom.singlemode)
+			this.clearUpSoloRoom(gameroom);
 		this.statusOnDisconnect(client);
-		Logger.log(`disconnected ${client.id}`);
 	}
 
 	//---------------------------------------gameplay----------------------------//
 
-	@SubscribeMessage('new_connection') // "new_connection" event
-	async handleNewConnection(client: Socket) {
-		Logger.log(`new_connection`)
-		const gamemode = GameMode.SOLO;
-		Logger.log(`joining queue ${gamemode}`)
-		client.join(gamemode);
-		if (!this.queuesByGameMode.has(gamemode))
-			this.queuesByGameMode.set(gamemode, []);
-		this.queuesByGameMode.get(gamemode).push(client)
+	// @SubscribeMessage('new_connection') // "new_connection" event
+	// async handleNewConnection(client: Socket) {
+	// 	Logger.log(`new_connection`)
+	// 	const gamemode = GameMode.SOLO;
+	// 	Logger.log(`joining queue ${gamemode}`)
+	// 	client.join(gamemode);
+	// 	if (!this.queuesByGameMode.has(gamemode))
+	// 		this.queuesByGameMode.set(gamemode, []);
+	// 	this.queuesByGameMode.get(gamemode).push(client)
 
-		await this.setStatus(client, UserStatus.INQUEUE)
-		this.matchClientsForGameMode(gamemode);
-	}
+	// 	await this.setStatus(client, UserStatus.INQUEUE)
+	// 	this.matchClientsForGameMode(gamemode);
+	// }
 
 	@SubscribeMessage('playerMovement')
 	async handlePlayerMovement(client: Socket, data: { movement: PaddleAction }) : Promise<void> {
@@ -161,31 +167,76 @@ export class MatchMakingGateway {
 		}
 	}
 
-	@SubscribeMessage('gameOver')
-	async handleGameOver(client: Socket, payload: any) {
-		Logger.log('gameOver');
-		const user = await this.userFromSocket(client);
-		const room = this.clientsInGameByUserID.get(user.id);
-		if (room) {
-			room.handleGameOver(client, payload);
-			
-			room.winner = payload.winner;
-			user.gamesWon++; //increase gamesWon for winner
-			Logger.log('winner:', room.winner);
+	private async clearUpClassicRoom(room: GameRoom) {
+		const user1 = await this.userFromSocket(room.playerLeftSocket);
+		const user2 = await this.userFromSocket(room.playerRightSocket);
 
-			//cleaning?
-			//this.roomsByKey.delete(room.roomName);
+		user1.gamesPlayed++;
+		if (user1.gamesPlayed == 1)
+			this.userService.unlockAchievement(user1, "Played Pong!");
+		user2.gamesPlayed++;
+		if (user2.gamesPlayed == 1)
+			this.userService.unlockAchievement(user2, "Played Pong!");
+		// Logger.log(`${room.roomName}`)
+		if (room.winner == user1.id) {
+			user1.gamesWon++;
+			this.matchService.createMatch(user1, user2, room.gameState.leftPaddle.score, room.gameState.rightPaddle.score);
+			room.playerLeftSocket.emit('victory');
+			room.playerRightSocket.emit('defeat');
+			Logger.log(`winner: ${user1.userName}`);
 		}
+		else if(room.winner == user2.id) {
+			user2.gamesWon++;
+			this.matchService.createMatch(user2, user1, room.gameState.rightPaddle.score, room.gameState.leftPaddle.score);
+			room.playerLeftSocket.emit('defeat');
+			room.playerRightSocket.emit('victory');
+			Logger.log(`winner: ${user2.userName}`); 
+		}
+		else
+			Logger.log(`NO WINNER FOUND`);
+		user1.save();
+		user2.save();
+		
+		this.roomsByKey.delete(room.roomName);
+		this.clientsInGameByUserID.delete(user1.id);
+		Logger.log(`${user1.userName} is no longer in a game room`);
+		this.clientsInGameByUserID.delete(user2.id);
+		Logger.log(`${user2.userName} is no longer in a game room`);
+		this.server.to(room.roomName).emit('end_game');
+		room.playerLeftSocket.disconnect();
+		room.playerRightSocket.disconnect();
+	}
+
+	private async clearUpSoloRoom(room: GameRoom) {
+		const user = await this.userFromSocket(room.playerLeftSocket);
+	
+		this.roomsByKey.delete(room.roomName);
+		this.clientsInGameByUserID.delete(user.id);
+		this.server.to(room.roomName).emit('end_game');
+		room.playerLeftSocket.disconnect();
+	}
+
+	private handleGameOver(room: GameRoom) {
+		if (room) {
+			room.winner = room.gameState.winner;
+			if (room.singlemode)
+				this.clearUpSoloRoom(room);
+			else
+				this.clearUpClassicRoom(room);
+		}
+		else
+			Logger.log(`NO ROOM FOUND`);
 	}
 
 	private emitGameStateToPlayers(room: GameRoom) {
-		const { playerLeftSocket, playerRightSocket, gameState } = room;
-		if (room.singlemode) {
-			playerLeftSocket.emit('pong_state', gameState);
-		} else {
-			playerLeftSocket.emit('pong_state', gameState);
-			playerRightSocket.emit('pong_state', gameState);
-		}
+		// const { playerLeftSocket, playerRightSocket, gameState } = room;
+		this.server.to(room.roomName).emit('pong_state', room.gameState);
+		// if (room.singlemode) {
+		// 	playerLeftSocket.emit('pong_state', gameState);
+		// } else {
+		// 	playerLeftSocket.emit('pong_state', gameState);
+		// 	playerRightSocket.emit('pong_state', gameState);
+		// }
 	}
 
 
@@ -197,15 +248,19 @@ export class MatchMakingGateway {
 			kind: GameActionKind.updateTime,
 			value: null,
 		});
-
+		// Logger.log(`CHECK PLAYER 2 IN SOLO: ${room.playerRightSocket}`);
+		// Logger.log(`Check gamestate in room updates: ${newGameState.gameOver}`);
 		room.gameState = newGameState;
-		  this.emitGameStateToPlayers(room);
+		if (room.gameState.gameOver)
+			this.handleGameOver(room);
+		else
+			this.emitGameStateToPlayers(room);
 		});
 	}
 
 	startRoomUpdates() {
-		//Logger.log(`batman startRoomUpdates`);
-		setInterval(() => {
+		Logger.log(`batman startRoomUpdates`);
+		let gameplayInterval = setInterval(() => {
 		  this.updateRooms();
 		}, pongConstants.timeDlta * 1000); //in milliseconds
 	}
@@ -213,19 +268,17 @@ export class MatchMakingGateway {
 
 	private roomKeyForSoloUser(userID: string): string {
 		return `solo-${userID}`;
-	}
+	} 
 
 	private roomKeyForGameMode(gamemode: string): string {
 		return `${gamemode}-${this.roomIndex}`
 	}
-
+ 
 	@SubscribeMessage('join_queue')
 	async addClientToQueue(client: Socket, gamemode: GameMode) {
 		
 		//adding solo mode
-		//console.log('addClientToQueue:', gamemode.toString(), 'from', client.id);
-		if (gamemode === GameMode.SOLO) {
-			//console.log('addClientToQueue :inside if gamemode===solo:', gamemode.toString(), 'from', client.id);
+		if (gamemode == GameMode.SOLO) {
 			const user = await this.userFromSocket(client);
 			
 			//trying to fix roomkey issue
@@ -253,7 +306,7 @@ export class MatchMakingGateway {
 			if (index != -1)
 				queue.splice(index, 1);
 			Logger.log(`queue length after removal: ${queue.length}`)
-		}
+		} 
 		client.leave(gamemode);
 		Logger.log('removed client from queue');
 	}
@@ -276,11 +329,11 @@ export class MatchMakingGateway {
 
 	private async moveClientsToRoom(client1: Socket, client2: Socket | undefined, roomkey: string) {
 
-		console.log(`moveClientsToRoom ${roomkey}`, 'client1', client1.id, 'client2',client2?.id);
-
+		
 		if (!this.roomsByKey.has(roomkey)) {
 			const user1id = (await this.userFromSocket(client1)).id;
 			const user2id = client2 ? (await this.userFromSocket(client2)).id : null;
+			console.log(`moveClientsToRoom ${roomkey}`, 'client1', user1id, 'client2', user2id);
 			const newGameRoom = new GameRoom(user1id, user2id, client1, client2, roomkey);
 
 			const gameMode = this.getGameModeForClient(client1);
@@ -298,17 +351,24 @@ export class MatchMakingGateway {
 			client1.join(roomkey);
 			this.clientsInGameByUserID.set(user1id, newGameRoom);
 			this.setStatus(client1, UserStatus.INGAME)
-			client1.emit('pong_state', newGameRoom.gameState);
 
 			if (client2) {
 				client2.join(roomkey);
 				this.clientsInGameByUserID.set(user2id, newGameRoom);
 				this.setStatus(client2, UserStatus.INGAME)
-				client2.emit('pong_state', newGameRoom.gameState);
 			}
-
+			this.server.to(roomkey).emit('pong_state', newGameRoom.gameState);
 			this.server.to(roomkey).emit('start_game');
+			// this.server.to(roomkey).emit('pong_state');
 		}
+	}
+
+	@SubscribeMessage('game_started')
+	async sendGameState(client: Socket) {
+		const userId = (await this.userFromSocket(client)).id;
+		const userGame = this.clientsInGameByUserID.get(userId);
+
+		client.emit('pong_state', userGame.gameState);
 	}
 
 	private getGameModeForClient(client: Socket): GameMode | null {

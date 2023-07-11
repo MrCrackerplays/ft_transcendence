@@ -61,7 +61,6 @@ export class GameRoom {
 			this.gameState.singlemode = false;
 	};
 
-
 	handleMessage(socket: Socket, movement: PaddleAction) {
 
 		let currentPlayer: string;
@@ -85,7 +84,7 @@ export class GameRoom {
 		} else if ( movement == "down" ) {
 			const newGameState: GameState = reducer(this.gameState, {
 				kind: GameActionKind.arrowDown,
-				value: null,
+				value: null, 
 			});
 			this.gameState = newGameState;
 		} else if ( movement == "none" ) {
@@ -105,7 +104,6 @@ export class GameRoom {
 	}
 
 	handleGameOver(socket: Socket, payload: any) {
-
 		this.gameState.gameOver = true;
 		this.gameState.winner = payload.winner;
 	};

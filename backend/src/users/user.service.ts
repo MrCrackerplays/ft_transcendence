@@ -16,6 +16,7 @@ import { CreateChannelDTO } from "../../../shared/dto/channel.dto";
 import { CreateMessageDTO } from "../../../shared/dto/create-message.dto";
 import { SubscribeToChannelDTO } from "../../../shared/dto/subscribe-channel.dto";
 import { PublicChannel } from "src/channel/public-channel.interface";
+import { compare } from "bcrypt";
 
 @Injectable()
 export class UserService {
@@ -26,7 +27,7 @@ export class UserService {
 
 		private readonly connectionService: ConnectionService,
 		private readonly channelService: ChannelService
-		) { }
+	) { }
 
 	async createOne(createUserDTO: CreateUserDTO) {
 		console.log(`UserService: creating new user (${createUserDTO.userName})`);
@@ -38,7 +39,7 @@ export class UserService {
 	}
 
 	async get(userID: string, relations = [] as string[]): Promise<User> {
-		const user = await this.usersRepository.findOne({where : {id: userID}, relations});
+		const user = await this.usersRepository.findOne({ where: { id: userID }, relations });
 
 		if (!userID || !user)
 			throw new HttpException('User not found', HttpStatus.NOT_FOUND);
@@ -47,12 +48,12 @@ export class UserService {
 
 	async getCurrentUser(req: AuthRequest): Promise<User> {
 		// Get the connection from the Request payload and attatch the 'user' relation, then return that user
-		const connection : Connection = await this.connectionService.get({ id: req.user.id }, ['user']);
+		const connection: Connection = await this.connectionService.get({ id: req.user.id }, ['user']);
 		return (connection.user);
 	}
 
 	async setTwoFactor(_user: User, enable: boolean): Promise<User> {
-		const connection : Connection = await this.connectionService.get({ user: { id: _user.id } }, ['user']);
+		const connection: Connection = await this.connectionService.get({ user: { id: _user.id } }, ['user']);
 		connection.twoFactorEnabled = enable;
 		connection.save();
 		return connection.user;
@@ -66,12 +67,24 @@ export class UserService {
 		return _user.save();
 	}
 
-	profileComplete(user: User) : boolean {
+	profileComplete(user: User): boolean {
 		return (user.userName.length > 0);
 	}
 
 	async create() {
 		const user = this.usersRepository.create();
+
+		user.achievements = [];
+		user.blocked = [];
+		user.channelAdmin = [];
+		user.channelBanned = [];
+		user.channelMuted = [];
+		user.channelSubscribed = [];
+		user.channelsOwned = [];
+		user.friends = [];
+		user.lostMatches = [];
+		user.wonMatches = [];
+
 		try { await this.usersRepository.save(user); }
 		catch (error) { throw new HttpException(error.message, HttpStatus.BAD_REQUEST); }
 		console.log(`UserService: created new user (${user.id})`);
@@ -83,7 +96,7 @@ export class UserService {
 	}
 
 	async getOne(where: any, relations = [] as string[]): Promise<User> {
-		const user = await this.usersRepository.findOne({where, relations});
+		const user = await this.usersRepository.findOne({ where, relations });
 
 		if (!user)
 			throw new HttpException('User not found', HttpStatus.NOT_FOUND);
@@ -92,7 +105,7 @@ export class UserService {
 
 	getFromUsername(name: string): Promise<User | null> {
 		const query = {
-			where : {
+			where: {
 				userName: name
 			}
 		};
@@ -112,7 +125,7 @@ export class UserService {
 
 		if (friend_id == user.id)
 			throw new HttpException('Can not friend yourself', HttpStatus.FORBIDDEN);
-		
+
 		const friend = await this.get(friend_id, ['blocked']);
 		if (!friend)
 			throw new HttpException('Friend does not exist', HttpStatus.FORBIDDEN);
@@ -131,21 +144,21 @@ export class UserService {
 	getFriends(user: User): Promise<User[]> {
 		return this.usersRepository.createQueryBuilder()
 			.relation(User, "friends")
-		  	.of(user)
+			.of(user)
 			.loadMany();
 	}
 
 	async getBlocked(user: User): Promise<User[]> {
 		return this.usersRepository.createQueryBuilder()
 			.relation(User, "blocked")
-		  	.of(user)
+			.of(user)
 			.loadMany();
 	}
 
 	async block(user: User, block_id: string): Promise<void> {
-		if (block_id == user.id)
-			throw new HttpException('Can not block yourself', HttpStatus.FORBIDDEN);
-		
+		// if (block_id == user.id)
+		// 	throw new HttpException('Can not block yourself', HttpStatus.FORBIDDEN);
+
 		const blockee = await this.get(block_id);
 		if (!blockee) {
 			throw new HttpException('Person does not exist', HttpStatus.FORBIDDEN);
@@ -156,11 +169,11 @@ export class UserService {
 			.of(user.id)
 			.add(block_id);
 	}
-	
+
 	async unblock(user: User, block_id: string): Promise<void> {
-		if (block_id == user.id)
-			throw new HttpException('Can not unblock yourself', HttpStatus.FORBIDDEN);
-		
+		// if (block_id == user.id)
+		// 	throw new HttpException('Can not unblock yourself', HttpStatus.FORBIDDEN);
+
 		return this.usersRepository.createQueryBuilder()
 			.relation(User, "blocked")
 			.of(user.id)
@@ -170,7 +183,7 @@ export class UserService {
 	async removeFriend(user: User, friend_id: string): Promise<void> {
 		if (friend_id == user.id)
 			throw new HttpException('Can not unfriend yourself', HttpStatus.FORBIDDEN);
-		
+
 		return this.usersRepository.createQueryBuilder()
 			.relation(User, "friends")
 			.of(user.id)
@@ -180,7 +193,7 @@ export class UserService {
 	async setName(user: User, name: string): Promise<User> {
 		if (!name)
 			return null;
-		
+
 		// Validate username (a-z A-Z 0-9 _) (between 8 & 16 characters)
 		const MIN_CHAR = 2;
 		const MAX_CHAR = 16;
@@ -208,7 +221,7 @@ export class UserService {
 	}
 
 	async addAchievement(user: User, achievementID: number): Promise<User> {
-		const ach = await this.achievementRepository.findOne({ where: { id : achievementID } });
+		const ach = await this.achievementRepository.findOne({ where: { id: achievementID } });
 		user.achievements.push(ach);
 		return user.save();
 	}
@@ -225,15 +238,17 @@ export class UserService {
 	}
 
 	async subscribeToChannel(user: User, dto: SubscribeToChannelDTO): Promise<Channel> {
-		const channel = await this.channelService.get({ id: dto.channelID }, ['members']);
+		let channel = null;
+		try {
+			channel = await this.channelService.findOneRelations(dto.channelID , ['members']);
+		} catch (e) { }
 
 		if (channel == null) {
 			// channel non-existant
 			return null;
 		}
 
-		// TODO: hash stuff?
-		if (channel.password != null && channel.password != dto.password) {
+		if (channel.password != null && !(await compare(dto.password, channel.password))) {
 			// wrong password
 			return null;
 		}
@@ -271,14 +286,14 @@ export class UserService {
 	async getRecentMatches(user: User): Promise<Match[]> {
 
 		const matches = await this.matchRepository
-		.find({
-			relations: ['winner', 'loser'],
-			where : [
-				{ winner : { id: user.id } },
-				{ loser : { id: user.id } }
-			],
-			take: 10
-		});
+			.find({
+				relations: ['winner', 'loser'],
+				where: [
+					{ winner: { id: user.id } },
+					{ loser: { id: user.id } }
+				],
+				take: 10
+			});
 
 		// const matchIDs: string[] = [];
 		// matches.forEach((value) => {
@@ -302,8 +317,8 @@ export class UserService {
 		});
 
 		if (!ach)
-			return ;
-		
+			return;
+
 		user.achievements.push(ach);
 		user.save();
 	}

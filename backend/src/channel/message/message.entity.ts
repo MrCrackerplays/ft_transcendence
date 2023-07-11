@@ -19,8 +19,7 @@ export class Message extends BaseEntity {
 	@JoinColumn()
 	author: User;
 
-	@ManyToOne(type => Channel, channel => channel.messages)
-	@JoinColumn()
+	@ManyToOne(type => Channel, channel => channel.messages, { onDelete: 'SET NULL' })
 	channel: Channel;
 
 	@Column()

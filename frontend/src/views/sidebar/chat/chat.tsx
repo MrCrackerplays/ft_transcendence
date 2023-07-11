@@ -6,8 +6,16 @@ import ChannelList from "./channellist";
 import ChatChannel from "./chatchannel";
 import { Channel } from "./channeltypes";
 import { useStateRef } from "./usestateref";
+import { Constants } from "../../../../../shared/constants";
 
-function Chat( {sender, sender_id} : {sender: string, sender_id: string}) {
+function Chat( {
+		sender, sender_id, setStartDM
+	} : {
+		sender: string,
+		sender_id: string,
+		setStartDM: (value: React.SetStateAction<(id: string) => void>) => void
+	}
+	) {
 	const [isConnectionOpen, setIsConnectionOpen] = useState(false);
 	const [history, setHistory] = useState<Map<string, UserMessage[] | Message[]>>(new Map());
 	const [messageBody, setMessageBody] = useState("");
@@ -18,7 +26,7 @@ function Chat( {sender, sender_id} : {sender: string, sender_id: string}) {
 	const [admin, setAdmin] = useState<string[]>([]);
 	const [blocked, setBlocked] = useState<string[]>([]);
 	const [hasloaded, setHasLoaded] = useState(false);
-	
+
 	const [joinedChannels, setJoinedChannels, joinedChannelsRef] = useStateRef<string[]>([]);
 	const [currentChannel, setCurrentChannel, currentChannelRef] = useStateRef<string>("");
 
@@ -28,24 +36,29 @@ function Chat( {sender, sender_id} : {sender: string, sender_id: string}) {
 		return joinedChannels.includes(channel_id);
 	}
 
-	const block_filter = (message: UserMessage | Message) : UserMessage | Message => {
-		if (isUserMessage(message)) {
-			const should_block = blocked.includes(message.sender_id);
-			if (should_block)
-				message.content = "<blocked message>";
-		}
-		return message;
-	}
+	// const block_filter = (message: UserMessage | Message): UserMessage | Message => {
+	// 	if (isUserMessage(message)) {
+	// 		const should_block = blocked.includes(message.sender_id);
+	// 		console.log("should block: " + should_block + " " + message.sender_id + " " + message.sender, blocked)
+	// 		if (should_block)
+	// 			message.content = "<blocked message>";
+	// 	}
+	// 	return message;
+	// }
 
-	const getMessageHistory = (channel_id : string) => {
-		return fetch("http://localhost:3000/self/channels/" + channel_id + "/messages", {
+	const getMessageHistory = (channel_id: string) => {
+		return fetch(`${Constants.BACKEND_URL}/self/channels/` + channel_id + "/messages", {
 			credentials: 'include'
 		});
 	};
 
+	const refreshBlocked = () => {
+		ws.current?.emit("get_blocked");
+	};
+
 	const createChannel = (name: string, visibility: number, password: string) => {
 		return new Promise<boolean>((resolve, reject) => {
-			ws.current?.emit("create", {name: name, visibility: visibility, password: password}, (response: boolean) => {
+			ws.current?.emit("create", { name: name, visibility: visibility, password: password }, (response: boolean) => {
 				resolve(response);
 			});
 		});
@@ -53,7 +66,7 @@ function Chat( {sender, sender_id} : {sender: string, sender_id: string}) {
 
 	const updateVisibility = (channel_id: string, visibility: number, password: string) => {
 		return new Promise<boolean>((resolve, reject) => {
-			ws.current?.emit("updateChannel", {channel: channel_id, visibility: visibility, password: password}, (response: boolean) => {
+			ws.current?.emit("updateChannel", { channel: channel_id, visibility: visibility, password: password }, (response: boolean) => {
 				resolve(response);
 			});
 		});
@@ -61,7 +74,7 @@ function Chat( {sender, sender_id} : {sender: string, sender_id: string}) {
 
 	const deleteChannel = (channel_id: string) => {
 		return new Promise<boolean>((resolve, reject) => {
-			ws.current?.emit("delete", {channel: channel_id}, (response: boolean) => {
+			ws.current?.emit("delete", { channel: channel_id }, (response: boolean) => {
 				resolve(response);
 			});
 		});
@@ -69,13 +82,13 @@ function Chat( {sender, sender_id} : {sender: string, sender_id: string}) {
 
 	const leaveChannel = (channel_id: string) => {
 		return new Promise<boolean>((resolve, reject) => {
-			ws.current?.emit("leave", {channel: channel_id}, (response: boolean) => {
+			ws.current?.emit("leave", { channel: channel_id }, (response: boolean) => {
 				resolve(response);
 			});
 		});
 	};
 
-	const joinResponse = ({channel_id, success, reason} : {channel_id: string, success: boolean, reason: string}) => {
+	const joinResponse = ({ channel_id, success, reason }: { channel_id: string, success: boolean, reason: string }) => {
 		if (!success) {
 			console.log("join failed", reason);
 			if (reason === "not subscribed" && joinedChannels.includes(channel_id)) {
@@ -96,14 +109,15 @@ function Chat( {sender, sender_id} : {sender: string, sender_id: string}) {
 					sender_id: message.author ? message.author.id : "null",
 					date: message.date
 				};
-				return (block_filter(formatted_message));
+				return (formatted_message);
+				// return (block_filter(formatted_message));
 			});
 			setHistory(hist => new Map(hist.set(channel_id, data)));
 		});
 		setJoinedChannels(joined => [...joined, channel_id]);
 	};
 
-	const joinChannel = (channel_id : string, password: string | null = null) => {
+	const joinChannel = (channel_id: string, password: string | null = null) => {
 		if (banned.includes(channel_id)) {
 			console.log("you are banned from this channel");
 			return;
@@ -112,39 +126,45 @@ function Chat( {sender, sender_id} : {sender: string, sender_id: string}) {
 			setCurrentChannel(channel_id);
 			return;
 		}
-		ws.current?.emit("subscribe", {channel: channel_id, password: password}, (response: boolean) => {
+		ws.current?.emit("subscribe", { channel: channel_id, password: password }, (response: boolean) => {
 			console.log("emitting join");
-			ws.current?.emit("join", {channel: channel_id}, joinResponse);
+			ws.current?.emit("join", { channel: channel_id }, joinResponse);
 		});
 	};
 
 	const sendMessage = () => {
 
 		//start debug
-		const magic_channel = "3e809453-5734-482c-aa2a-8fc311f0cd4e";
-		if (messageBody == "/ban") {
-			ws.current?.emit("ban", {channel: magic_channel, user: "bbfe03af-f997-4151-b2aa-ba4d818db83c"});
-			return;
-		}
-		if (messageBody == "/unban") {
-			ws.current?.emit("unban", {channel: magic_channel, user: "bbfe03af-f997-4151-b2aa-ba4d818db83c"});
-			return;
-		}
-		if (messageBody == "/mute") {
-			ws.current?.emit("mute", {channel: currentChannel, user: "bbfe03af-f997-4151-b2aa-ba4d818db83c"});
-			return;
-		}
-		if (messageBody == "/unmute") {
-			ws.current?.emit("unmute", {channel: currentChannel, user: "bbfe03af-f997-4151-b2aa-ba4d818db83c"});
-			return;
-		}
-		if (messageBody == "/leave") {
-			ws.current?.emit("leave", {channel: currentChannel});
-			return;
-		}
-		if (messageBody == "/kick") {
-			ws.current?.emit("kick", {channel: currentChannel, user: "bbfe03af-f997-4151-b2aa-ba4d818db83c"});
-			return;
+		if (messageBody.startsWith("/")) {
+			let message: string[] = messageBody.split(" ");
+			if (message.length == 1) {
+				if (message[0] == "/leave") {
+					ws.current?.emit("leave", {channel: currentChannel});
+					return;
+				}
+			}
+			if (message.length == 2) {
+				if (message[0] == "/ban") {
+					ws.current?.emit("ban", {channel: currentChannel, user: message[1]});
+					return;
+				}
+				if (message[0] == "/unban") {
+					ws.current?.emit("unban", {channel: currentChannel, user: message[1]});
+					return;
+				}
+				if (message[0] == "/mute") {
+					ws.current?.emit("mute", {channel: currentChannel, user: message[1]});
+					return;
+				}
+				if (message[0] == "/unmute") {
+					ws.current?.emit("unmute", {channel: currentChannel, user: message[1]});
+					return;
+				}
+				if (message[0] == "/kick") {
+					ws.current?.emit("kick", {channel: currentChannel, user: message[1]});
+					return;
+				}
+			}
 		}
 		//end debug
 
@@ -156,7 +176,7 @@ function Chat( {sender, sender_id} : {sender: string, sender_id: string}) {
 		console.log("sendmessage")
 		// ws.current?.emit("create", {channel: "another-channel"});
 		if (messageBody?.trim()) {
-			ws.current?.emit("message", {channel: currentChannel, message: messageBody.trim()});
+			ws.current?.emit("message", { channel: currentChannel, message: messageBody.trim() });
 			setMessageBody("");
 		}
 	};
@@ -167,16 +187,27 @@ function Chat( {sender, sender_id} : {sender: string, sender_id: string}) {
 		setHistory(
 			hist => new Map(hist.set(
 				channel,
-				(hist.has(channel) ? [block_filter(message), ...hist.get(channel)!] : [block_filter(message)])
+				(hist.has(channel) ? [message, ...hist.get(channel)!] : [message])
+				// (hist.has(channel) ? [block_filter(message), ...hist.get(channel)!] : [block_filter(message)])
 			))
 		);
 	};
 
+	function openDMChannel(id:string) {
+		ws.current?.emit("start_dm", {user: id}, (response: string) => {
+			console.log("start dm response", response);
+			if (response !== "") {
+				setCurrentChannel(response);
+				setJoinedChannels(joined => [...joined, response]);
+			}
+		});
+	}
+
 	useEffect(() => {
-		// setCurrentChannel("");
+		setStartDM(()=>openDMChannel);
 		console.log("subscribed to events?")
 		if (!ws.current)
-			ws.current = io("http://localhost:3000/chat", {withCredentials: true});
+			ws.current = io(`${Constants.BACKEND_URL}/chat`, { withCredentials: true });
 		else if (ws.current.disconnected)
 			ws.current.connect();
 		// ws.current.emit("create", {channel: "coolerchannel"});
@@ -218,18 +249,12 @@ function Chat( {sender, sender_id} : {sender: string, sender_id: string}) {
 							sender_id: message.author ? message.author.id : "null",
 							date: message.date
 						};
-						return (block_filter(formatted_message));
+						return (formatted_message);
+						// return (block_filter(formatted_message));
 					});
 					setHistory(hist => new Map(hist.set(channel, data)));
 				});
 				setJoinedChannels(joined => [...joined, channel]);
-			});
-		}
-
-		if (!ws.current.hasListeners("joinmessage")) {
-			ws.current.on("joinmessage", (message) => {
-				console.log("Received joinmessage:", message);
-				updateHistory(message.channel, message);
 			});
 		}
 
@@ -322,6 +347,14 @@ function Chat( {sender, sender_id} : {sender: string, sender_id: string}) {
 			});
 		}
 
+		if (!ws.current.hasListeners("total_blocked")) {
+			ws.current.on("total_blocked", (blocked_users) => {
+				console.log("Received total_blocked", blocked_users);
+				setBlocked(blocked_users);
+				console.log("finished blocking user");
+			});
+		}
+
 		if (!ws.current.hasListeners("block")) {
 			ws.current.on("block", (user_id) => {
 				console.log("Received block for:", user_id);
@@ -349,64 +382,84 @@ function Chat( {sender, sender_id} : {sender: string, sender_id: string}) {
 		switch (role) {
 			case "owner":
 				items = items.concat([
-					{ label: 'Demote', action: ({channel, user}: {
-						channel: string,
-						user: string
-					}) => {
-						ws.current?.emit("demote", {channel: channel, user: user});
-					} },
-					{ label: 'Promote', action: ({channel, user}: {
-						channel: string,
-						user: string
-					}) => {
-						ws.current?.emit("promote", {channel: channel, user: user});
-					} },
+					{
+						label: 'Demote', action: ({ channel, user }: {
+							channel: string,
+							user: string
+						}) => {
+							ws.current?.emit("demote", { channel: channel, user: user });
+						}
+					},
+					{
+						label: 'Promote', action: ({ channel, user }: {
+							channel: string,
+							user: string
+						}) => {
+							ws.current?.emit("promote", { channel: channel, user: user });
+						}
+					},
 				]);
 			case "admin":
 				items = items.concat([
-					{ label: 'Unban', action: ({channel, user}: {
-						channel: string,
-						user: string
-					}) => {
-						ws.current?.emit("unban", {channel: channel, user: user});
-					} },
-					{ label: 'Ban', action: ({channel, user}: {
-						channel: string,
-						user: string
-					}) => {
-						ws.current?.emit("ban", {channel: channel, user: user});
-					} },
-					{ label: 'Unmute', action: ({channel, user}: {
-						channel: string,
-						user: string
-					}) => {
-						ws.current?.emit("unmute", {channel: channel, user: user});
-					} },
-					{ label: 'Mute', action: ({channel, user}: {
-						channel: string,
-						user: string
-					}) => {
-						ws.current?.emit("mute", {channel: channel, user: user});
-					} },
-					{ label: 'Kick', action: ({channel, user}: {
-						channel: string,
-						user: string
-					}) => {
-						ws.current?.emit("kick", {channel: channel, user: user});
-					} },
+					{
+						label: 'Unban', action: ({ channel, user }: {
+							channel: string,
+							user: string
+						}) => {
+							ws.current?.emit("unban", { channel: channel, user: user });
+						}
+					},
+					{
+						label: 'Ban', action: ({ channel, user }: {
+							channel: string,
+							user: string
+						}) => {
+							ws.current?.emit("ban", { channel: channel, user: user });
+						}
+					},
+					{
+						label: 'Unmute', action: ({ channel, user }: {
+							channel: string,
+							user: string
+						}) => {
+							ws.current?.emit("unmute", { channel: channel, user: user });
+						}
+					},
+					{
+						label: 'Mute', action: ({ channel, user }: {
+							channel: string,
+							user: string
+						}) => {
+							ws.current?.emit("mute", { channel: channel, user: user });
+						}
+					},
+					{
+						label: 'Kick', action: ({ channel, user }: {
+							channel: string,
+							user: string
+						}) => {
+							ws.current?.emit("kick", { channel: channel, user: user });
+						}
+					},
 				]);
 			case "user":
 				items = items.concat([
-					{ label: 'Unblock', action: (user: string) => {
-						ws.current?.emit("unblock", {user: user});
-					} },
-					{ label: 'Block', action: (user: string) => {
-						ws.current?.emit("block", {user: user});
-					} },
-					{ label: 'Invite to game', action: (user: string) => {
-						alert("beep boop you totally invited that person yup totally");
-						//TODO: invite to game idk how to yet, depends on game implementation
-					} },
+					{
+						label: 'Unblock', action: (user: string) => {
+							ws.current?.emit("unblock", { user: user });
+						}
+					},
+					{
+						label: 'Block', action: (user: string) => {
+							ws.current?.emit("block", { user: user });
+						}
+					},
+					{
+						label: 'Invite to game', action: (user: string) => {
+							alert("beep boop you totally invited that person yup totally");
+							//TODO: invite to game idk how to yet, depends on game implementation
+						}
+					},
 				]);
 		}
 		items.reverse();
@@ -431,6 +484,7 @@ function Chat( {sender, sender_id} : {sender: string, sender_id: string}) {
 					role={owner.includes(currentChannel) ? "owner" : (admin.includes(currentChannel) ? "admin" : "user")}
 					updateVisibility={updateVisibility}
 					getItems={getItems}
+					blocked={blocked}
 				/>
 			</div>
 		)
@@ -452,6 +506,7 @@ function Chat( {sender, sender_id} : {sender: string, sender_id: string}) {
 					hasloaded={hasloaded}
 					setHasLoaded={setHasLoaded}
 					hasJoined={hasJoined}
+					refreshBlocked={refreshBlocked}
 				/>
 			</div>
 		)

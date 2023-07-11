@@ -28,85 +28,89 @@ const SocketMagic: (input: SocketMagicInput) => SocketMagicOutput | undefined = 
 		return undefined;
 	}
 	console.log('socket is defined');
+
 	socket.on('pong_state', (newState: GameState) => {
 		//console.log(`backend time: ${JSON.stringify(newState.time)}`);
 		input.overrideState(newState);
 		//console.log('player latest movements from backend: left and right', newState.leftPaddle.paddlePosition, newState.rightPaddle.paddlePosition);
-		if (newState.gameOver) {
-			if (wbSocket.current) {
-				wbSocket.current.disconnect();
-			}
-		}
 	});
 
-	const connectWebSocket = () => { //not used as socket from tempgame is sent as input (ref)
-		if (!input.wbSocket.current) {
-			//console.log(`${Constants.BACKEND_URL}/matchMakingGateway`);
-			input.wbSocket.current = io(`${Constants.BACKEND_URL}/matchMakingGateway`, {withCredentials: true});
-			input.wbSocket.current.on('connect', () => {
-				console.log('WebSocket connection established');
-				reconnectAttempts = 0;
-			});
+	// socket.on('end_game', () => {
+	// 	if (wbSocket.current) {
+	// 		wbSocket.current.disconnect();
+	// 	}
+	// })
 
-			// input.wbSocket.current.on('message', (data) => {
-			// 	const newState = JSON.parse(data) as GameState;
-			// 	console.log('upd gameState');
-			// 	input.overrideState(newState);
+	// const connectWebSocket = () => { //not used as socket from tempgame is sent as input (ref)
+	// 	console.log('connectWebSocket');
+	// 	if (!input.wbSocket.current) {
+	// 		console.log(`connectWebSocket: ${Constants.BACKEND_URL}/matchMakingGateway`);
+	// 		input.wbSocket.current = io(`${Constants.BACKEND_URL}/matchMakingGateway`, {withCredentials: true});
+	// 		input.wbSocket.current.on('connect', () => {
+	// 			console.log('WebSocket connection established');
+	// 			reconnectAttempts = 0;
+	// 		});
 
-			// 	if (newState.gameOver) {
-			// 		if (input.wbSocket.current) {
-			// 			input.wbSocket.current.disconnect();
-			// 		}
-			// 	}
-			// });
+	// 		// input.wbSocket.current.on('message', (data) => {
+	// 		// 	const newState = JSON.parse(data) as GameState;
+	// 		// 	console.log('upd gameState');
+	// 		// 	input.overrideState(newState);
 
-			input.wbSocket.current.on('disconnect', (reason) => {
-				console.log('WebSocket connection closed:', reason);
-				if (reconnectAttempts < maxReconnectAttempts) {
-					reconnectAttempts++;
-					reconnectTimer = setTimeout(() => {
-						connectWebSocket();
-					}, reconnectDelay);
-					console.log(
-						`Reconnecting in ${reconnectDelay / 1000} seconds (Attempt ${reconnectAttempts}/${maxReconnectAttempts})`
-					);
-					reconnectDelay *= 2;
-				} else {
-					console.log('Max reconnect attempts reached. Connection could not be established.');
-					sendGameOverSignal();
-					cleanup();
-				}
-			});
+	// 		// 	if (newState.gameOver) {
+	// 		// 		if (input.wbSocket.current) {
+	// 		// 			input.wbSocket.current.disconnect();
+	// 		// 		}
+	// 		// 	}
+	// 		// });
 
-			input.wbSocket.current.on('error', (error) => {
-				console.error('WebSocket connection error:', error);
-				sendGameOverSignal();
-				cleanup();
-			});
-		}
-	};
+	// 		input.wbSocket.current.on('disconnect', (reason) => {
+	// 			console.log('WebSocket connection closed:', reason);
+	// 			if (reconnectAttempts < maxReconnectAttempts) {
+	// 				reconnectAttempts++;
+	// 				reconnectTimer = setTimeout(() => {
+	// 					connectWebSocket();
+	// 				}, reconnectDelay);
+	// 				console.log(
+	// 					`Reconnecting in ${reconnectDelay / 1000} seconds (Attempt ${reconnectAttempts}/${maxReconnectAttempts})`
+	// 				);
+	// 				reconnectDelay *= 2;
+	// 			} else {
+	// 				console.log('Max reconnect attempts reached. Connection could not be established.');
+	// 				sendGameOverSignal();
+	// 				cleanup();
+	// 			}
+	// 		});
+
+	// 		input.wbSocket.current.on('error', (error) => {
+	// 			console.error('WebSocket connection error:', error);
+	// 			sendGameOverSignal();
+	// 			cleanup();
+	// 		});
+	// 	}
+	// };
 
 	const sendGameOverSignal = () => {
+		console.log('sendGameOverSignal: engaged');
 		if (input.wbSocket.current) {
 			const toSend = {
-				event: 'gameOver',
+				// event: 'gameOver',
 				payload: {
-					
 					// data about the game over event?
 				},
 			};
-			input.wbSocket.current.emit('message', JSON.stringify(toSend));
+			input.wbSocket.current.emit('gameOver', JSON.stringify(toSend));
 		}
 	};
 
 	const playerMovement: (movement: PaddleAction) => void = (movement) => {
 		if (input.wbSocket.current) {
-			//console.log(`front message sent: ${JSON.stringify(movement)}`);
+			console.log(`front message sent: ${JSON.stringify(movement)}`);
 			input.wbSocket.current.emit('playerMovement', {movement});
 		}
 	};
 
 	const cleanup = () => {
+		console.log('cleanup: engaged');
 		if (input.wbSocket.current) {
 			input.wbSocket.current.disconnect();
 		}
@@ -116,7 +120,7 @@ const SocketMagic: (input: SocketMagicInput) => SocketMagicOutput | undefined = 
 	};
 
 	// Start WebSocket connection
-	//connectWebSocket();
+	// connectWebSocket();
 
 	return {
 		playerMovement: playerMovement,
@@ -165,6 +169,9 @@ const PongGame = (props: { webSocketRef: MutableRefObject<Socket | undefined>;  
 			overrideState: overrideState,
 		};
 		const output = SocketMagic(input);
+
+		// wbSocket.current?.emit('game_started');
+		// console.log('Onward with the game.');
 
 		//KEYBOARD INPUT 
 		const handleKeyDown = (event) => {

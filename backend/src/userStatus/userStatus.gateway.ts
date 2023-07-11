@@ -61,7 +61,7 @@ export class UserStatusGateway implements OnGatewayConnection, OnGatewayDisconne
 	}	
 
 	handleConnection(client: Socket) {
-		Logger.log(`new connection ${client.id}`);
+		Logger.log(`new user status connection ${client.id}`);
 		if (!client.handshake.headers.cookie)
 		{
 			Logger.log("Cookie's gone");
@@ -92,6 +92,6 @@ export class UserStatusGateway implements OnGatewayConnection, OnGatewayDisconne
 			this.setStatus(user, UserStatus.OFFLINE)
 			// console.log(`${user.status}`);
 		})
-		Logger.log(`disconnected ${client.id}`)
+		Logger.log(`user status disconnected ${client.id}`)
 	}
 };

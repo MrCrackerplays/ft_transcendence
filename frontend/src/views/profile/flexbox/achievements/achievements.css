@@ -37,4 +37,13 @@
 	grid-area: ACHIEVE-DESCRIPTION;
 	width: 100%;
 }
+
+.achievementsCenter
+{
+	/* width:100%; */
+	padding-left:10%;
+	color:white;
+	font-size:2rem;
+	text-align: center;
+}
   

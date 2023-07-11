@@ -11,8 +11,8 @@
 }
 
 .pong-frame {
-	/* margin: 0; 
-	height: 100%;  */
+	/* margin: 0;  */
+	/* height: 100%;  */
 	overflow: hidden;
 	position: relative;
 	height: var(--pong-frame-height);

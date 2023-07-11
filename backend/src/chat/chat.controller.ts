@@ -6,13 +6,12 @@ import { Connection } from "src/auth/connection/connection.entity";
 import { AuthService } from "src/auth/auth.service";
 import { UserService } from "src/users/user.service";
 
-
 @Controller()
 export class ChatController {
 	constructor(
 		private authService: AuthService,
 		private userService: UserService,
-		) {}
+	) { }
 
 	@Get("chat-invite/:id")
 	async getChatInvite(@Req() req: AuthRequest, @Res() res: Response, @Param('id') _id: string): Promise<void> {

@@ -12,8 +12,9 @@ import UserStatus from './hooks/userStatus/userStatus';
 import Sidebar from './views/sidebar/sidebar';
 import './App.css'
 import Settings from './views/settings/settings';
-import TestMatchMakingConnection from './views/profile/temp/tempgame';
-import MatchMakingQueue from './views/profile/temp/tempgame';
+import LoggedInMissing, { NotLoggedInMissing } from './views/missing/allmissing';
+import TestMatchMakingConnection from './views/profile/matchMaking/gamequeue';
+import MatchMakingQueue from './views/profile/matchMaking/gamequeue';
 import PongGame from './hooks/game/pong';
 
 function App(): React.ReactElement
@@ -46,6 +47,7 @@ function App(): React.ReactElement
 				<Route path="/login" element={<MyLoginPage />}/>
 				<Route path="/loginOTP" element={<LoginOTP />}/>	
 				<Route path="/setup" element={<SetUp />} />
+				<Route path="/*" element={<NotLoggedInMissing />}/>
 			</Routes>
 		)
 	return (
@@ -61,6 +63,7 @@ function App(): React.ReactElement
 					<Route path="/classic" element={<MatchMakingQueue gamemode='classic'/>} />
 					<Route path="/solo" element={<MatchMakingQueue gamemode='solo'/>} />
 					{/* <Route path="/solo" element={<PongGame gamemode='solo'/>} /> */}
+					<Route path="/*" element={<LoggedInMissing/>}/>
 				</Routes>
 			</div>
 		</div>

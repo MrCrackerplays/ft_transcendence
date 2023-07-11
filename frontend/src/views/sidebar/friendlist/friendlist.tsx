@@ -19,17 +19,21 @@ function ProfileLink({label, link}: {label:string, link: string})
 		</div>
 	)
 }
-  
-function MyLinks({username} : {username: string})
+
+function MyLinks({ username, userID, startDM } : { username: string, userID: string, startDM: (id: string) => void })
 {
 	return (
-	  <div className='fpfp-popover-content a'>
-		<ProfileLink label="Profile" link={`/profile/${username}`} />
-	  </div>
+		<div className='fpfp-popover-content a'>
+			<ProfileLink label="Profile" link={`/profile/${username}`} />
+			<div className="fmylink" onClick={()=>{
+				// alert("temporarily disabled while query is wrong")
+				startDM(userID);
+			}}>Send Message</div>
+		</div>
 	);
 }
 
-function FriendCard({ friend}: {friend: PublicUser})
+function FriendCard({ friend, startDM }: { friend: PublicUser, startDM: (id: string) => void })
 {
 	const fetchPFP = Constants.FETCH_USERS;	
 	return (
@@ -41,13 +45,13 @@ function FriendCard({ friend}: {friend: PublicUser})
 				<p>{friend.userName}</p>
 			</div>
 			<Popover.Panel className="fpfp-popover-content">
-				<MyLinks username={friend.userName}/>
+				<MyLinks username={friend.userName} userID={friend.id} startDM={startDM} />
 			</Popover.Panel>
 		</Popover>
 	  )
 }
 
-function MyFriendsList() {
+function MyFriendsList({ startDM }: { startDM: (id: string) => void }) {
 	const [friendArray, setFriendArray] = useState<PublicUser[]>([]);
 	const [isLoading, setisLoading] = useState(true);
 	
@@ -71,7 +75,7 @@ function MyFriendsList() {
 		<div className="all-friends scrollable">
 			{
 				friendArray.map((friend) => (
-					<FriendCard key={friend.id} friend={friend}/>
+					<FriendCard key={friend.id} friend={friend} startDM={startDM} />
 				))
 			}
 		</div>
