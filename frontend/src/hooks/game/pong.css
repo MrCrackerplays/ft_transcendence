@@ -1,5 +1,7 @@
 /* Type: CSS */
 
+/* html, body {margin: 0; height: 100%; overflow: hidden} */
+
 :root {
 	--pong-frame-width: 85vw;
 	--pong-frame-height: 85vh;
@@ -16,10 +18,13 @@
 }
 
 .pong-frame {
+	/* margin: 0;  */
+	/* height: 100%;  */
+	overflow: hidden;
 	position: relative;
 	height: 85vh;
-	width: 85vw;
-	background-color: rgb(89, 163, 127);
+	width: 80vw;
+	background-color: rgb(0, 0, 0);
 }
 
 .centre-line {
@@ -27,14 +32,14 @@
 	position: absolute;
 	width: 1px;
 	height: 85vh;
-	background-color: rgb(255, 255, 255);
+	background-color: rgba(255, 255, 255, 0.332);
 	left: calc(var(--pong-frame-width) / 2 - 1px);
 	z-index: 2;
 }
 
 
 /* REMOVE later */
-.h-centre-line {
+/* .h-centre-line {
 
 	position: absolute;
 	height: 1px;
@@ -43,7 +48,7 @@
 	left: 0;
 	top: 50%;
 	z-index: 2;
-}
+} */
 
 .paddle-left {
 
@@ -71,10 +76,9 @@
 	position: absolute;
 	width: 2%;
 	height: 2%;
-	background-color: rgb(202, 103, 67);
+	background-color: rgb(255, 255, 255);
 	left: calc(var(--pong-frame-width) / 2 - width / 2);
 	top: calc(var(--pong-frame-height) / 2 - height / 2);
 	z-index: 1;
 	border-radius: 50%;
-
 }

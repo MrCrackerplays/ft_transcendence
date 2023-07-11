@@ -1,8 +1,6 @@
 import {
 	WebSocketGateway,
 	WebSocketServer,
-	WsResponse,
-	ConnectedSocket,
 	OnGatewayConnection, OnGatewayDisconnect
 }	from '@nestjs/websockets'
 import { Server, Socket } from 'socket.io';
@@ -11,10 +9,9 @@ import  { Constants } from '../../../shared/constants'
 import { JwtService } from '@nestjs/jwt';
 import { ConnectionService } from 'src/auth/connection/connection.service';
 import { UserService } from 'src/users/user.service';
-import { User } from 'src/users/user.entity';
-import { Logger, UseGuards } from '@nestjs/common';
+import { User, UserStatus } from 'src/users/user.entity';
+import { Logger } from '@nestjs/common';
 import { parse } from 'cookie'
-import { EventListenerObject } from 'rxjs/internal/observable/fromEvent';
 
 @WebSocketGateway ({
 	cors: {
@@ -23,14 +20,14 @@ import { EventListenerObject } from 'rxjs/internal/observable/fromEvent';
 	},
 	namespace: 'userStatusGateway',
 })
-export class UserStatusGateway implements OnGatewayConnection, OnGatewayDisconnect{
+export class UserStatusGateway implements OnGatewayConnection, OnGatewayDisconnect {
 	@WebSocketServer()
-	Server: Server;
+	server: Server;
 
 	constructor(
 		private jwtService: JwtService,
 		private connectionService: ConnectionService,
-		private userService: UserService,
+		private userService: UserService
 	) {}
 
 	private userFromSocket(socket: Socket, result?: any): Promise<User> | undefined {
@@ -53,7 +50,7 @@ export class UserStatusGateway implements OnGatewayConnection, OnGatewayDisconne
 		return undefined;
 	}
 
-	private	setStatus(user: User, newStatus: string)
+	private	setStatus(user: User, newStatus: UserStatus)
 	{
 		user.status = newStatus;
 		user.save();
@@ -64,7 +61,7 @@ export class UserStatusGateway implements OnGatewayConnection, OnGatewayDisconne
 	}	
 
 	handleConnection(client: Socket) {
-		Logger.log(`new connection ${client.id}`);
+		Logger.log(`new user status connection ${client.id}`);
 		if (!client.handshake.headers.cookie)
 		{
 			Logger.log("Cookie's gone");
@@ -83,7 +80,7 @@ export class UserStatusGateway implements OnGatewayConnection, OnGatewayDisconne
 		this.userFromSocket(client, result).then(user => {
 			if (!user)
 				return ;
-			this.setStatus(user, 'online');
+			this.setStatus(user, UserStatus.IDLE);
 			// console.log(`${user.userName}: ${user.status}`);
 		})
 	}
@@ -92,9 +89,9 @@ export class UserStatusGateway implements OnGatewayConnection, OnGatewayDisconne
 		this.userFromSocket(client).then(user => {
 			if (!user)
 				return ;
-			this.setStatus(user, 'offline')
+			this.setStatus(user, UserStatus.OFFLINE)
 			// console.log(`${user.status}`);
 		})
-		Logger.log(`disconnected ${client.id}`)
+		Logger.log(`user status disconnected ${client.id}`)
 	}
 };
