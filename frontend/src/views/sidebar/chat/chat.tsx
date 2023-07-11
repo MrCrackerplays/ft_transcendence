@@ -36,19 +36,24 @@ function Chat( {
 		return joinedChannels.includes(channel_id);
 	}
 
-	const block_filter = (message: UserMessage | Message): UserMessage | Message => {
-		if (isUserMessage(message)) {
-			const should_block = blocked.includes(message.sender_id);
-			if (should_block)
-				message.content = "<blocked message>";
-		}
-		return message;
-	}
+	// const block_filter = (message: UserMessage | Message): UserMessage | Message => {
+	// 	if (isUserMessage(message)) {
+	// 		const should_block = blocked.includes(message.sender_id);
+	// 		console.log("should block: " + should_block + " " + message.sender_id + " " + message.sender, blocked)
+	// 		if (should_block)
+	// 			message.content = "<blocked message>";
+	// 	}
+	// 	return message;
+	// }
 
 	const getMessageHistory = (channel_id: string) => {
 		return fetch(`${Constants.BACKEND_URL}/self/channels/` + channel_id + "/messages", {
 			credentials: 'include'
 		});
+	};
+
+	const refreshBlocked = () => {
+		ws.current?.emit("get_blocked");
 	};
 
 	const createChannel = (name: string, visibility: number, password: string) => {
@@ -104,7 +109,8 @@ function Chat( {
 					sender_id: message.author ? message.author.id : "null",
 					date: message.date
 				};
-				return (block_filter(formatted_message));
+				return (formatted_message);
+				// return (block_filter(formatted_message));
 			});
 			setHistory(hist => new Map(hist.set(channel_id, data)));
 		});
@@ -181,7 +187,8 @@ function Chat( {
 		setHistory(
 			hist => new Map(hist.set(
 				channel,
-				(hist.has(channel) ? [block_filter(message), ...hist.get(channel)!] : [block_filter(message)])
+				(hist.has(channel) ? [message, ...hist.get(channel)!] : [message])
+				// (hist.has(channel) ? [block_filter(message), ...hist.get(channel)!] : [block_filter(message)])
 			))
 		);
 	};
@@ -242,7 +249,8 @@ function Chat( {
 							sender_id: message.author ? message.author.id : "null",
 							date: message.date
 						};
-						return (block_filter(formatted_message));
+						return (formatted_message);
+						// return (block_filter(formatted_message));
 					});
 					setHistory(hist => new Map(hist.set(channel, data)));
 				});
@@ -336,6 +344,14 @@ function Chat( {
 				console.log("Received demote from:", channel);
 				setAdmin(admins => admins.filter((id) => id !== channel));
 				console.log("finished getting demoted");
+			});
+		}
+
+		if (!ws.current.hasListeners("total_blocked")) {
+			ws.current.on("total_blocked", (blocked_users) => {
+				console.log("Received total_blocked", blocked_users);
+				setBlocked(blocked_users);
+				console.log("finished blocking user");
 			});
 		}
 
@@ -468,6 +484,7 @@ function Chat( {
 					role={owner.includes(currentChannel) ? "owner" : (admin.includes(currentChannel) ? "admin" : "user")}
 					updateVisibility={updateVisibility}
 					getItems={getItems}
+					blocked={blocked}
 				/>
 			</div>
 		)
@@ -489,6 +506,7 @@ function Chat( {
 					hasloaded={hasloaded}
 					setHasLoaded={setHasLoaded}
 					hasJoined={hasJoined}
+					refreshBlocked={refreshBlocked}
 				/>
 			</div>
 		)
