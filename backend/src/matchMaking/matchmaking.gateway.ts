@@ -126,11 +126,14 @@ export class MatchMakingGateway {
 		}).catch(e => console.error(e));
 	}
 
-	handleDisconnect(client: Socket) {
+	async handleDisconnect(client: Socket) {
 		const gamemode = this.getGameModeForClient(client);
-		if (gamemode) {
+		const gameroom = this.clientsInGameByUserID.get((await this.userFromSocket(client)).id)
+
+		if (gamemode)
 			this.removeClientFromQueue(client, gamemode);
-		}
+		if (gameroom.singlemode)
+			this.clearUpSoloRoom(gameroom);
 		this.statusOnDisconnect(client);
 	}
 
@@ -164,57 +167,76 @@ export class MatchMakingGateway {
 		}
 	}
 
-	async handleGameOver(room: GameRoom) {
-		Logger.log('GAME HAS ENDED');
+	private async clearUpClassicRoom(room: GameRoom) {
 		const user1 = await this.userFromSocket(room.playerLeftSocket);
 		const user2 = await this.userFromSocket(room.playerRightSocket);
-		// const matchResult = MatchService.createMatch(payload.winner, payload.loser, payload.winnerScore, payload.loserScore);
 
-		Logger.log(`${user1.userName}`);
-		Logger.log(`${user2.userName}`);
+		user1.gamesPlayed++;
+		if (user1.gamesPlayed == 1)
+			this.userService.unlockAchievement(user1, "Played Pong!");
+		user2.gamesPlayed++;
+		if (user2.gamesPlayed == 1)
+			this.userService.unlockAchievement(user2, "Played Pong!");
+		// Logger.log(`${room.roomName}`)
+		if (room.winner == user1.id) {
+			user1.gamesWon++;
+			this.matchService.createMatch(user1, user2, room.gameState.leftPaddle.score, room.gameState.rightPaddle.score);
+			room.playerLeftSocket.emit('victory');
+			room.playerRightSocket.emit('defeat');
+			Logger.log(`winner: ${user1.userName}`);
+		}
+		else if(room.winner == user2.id) {
+			user2.gamesWon++;
+			this.matchService.createMatch(user2, user1, room.gameState.rightPaddle.score, room.gameState.leftPaddle.score);
+			room.playerLeftSocket.emit('victory');
+			room.playerRightSocket.emit('defeat');
+			Logger.log(`winner: ${user2.userName}`); 
+		}
+		else
+			Logger.log(`NO WINNER FOUND`);
+		user1.save();
+		user2.save();
+		
+		this.roomsByKey.delete(room.roomName);
+		this.clientsInGameByUserID.delete(user1.id);
+		Logger.log(`${user1.userName} is no longer in a game room`);
+		this.clientsInGameByUserID.delete(user2.id);
+		Logger.log(`${user2.userName} is no longer in a game room`);
+		this.server.to(room.roomName).emit('end_game');
+		room.playerLeftSocket.disconnect();
+		room.playerRightSocket.disconnect();
+	}
+
+	private async clearUpSoloRoom(room: GameRoom) {
+		const user = await this.userFromSocket(room.playerLeftSocket);
+	
+		this.roomsByKey.delete(room.roomName);
+		this.clientsInGameByUserID.delete(user.id);
+		this.server.to(room.roomName).emit('end_game');
+		room.playerLeftSocket.disconnect();
+	}
+
+	private handleGameOver(room: GameRoom) {
 		if (room) {
-			user1.gamesPlayed++;
-			user2.gamesPlayed++;
-			Logger.log(`${room.roomName}`)
-			// room.handleGameOver(client, payload);
 			room.winner = room.gameState.winner;
-			Logger.log(`winner: ${room.gameState.winner}`);
-			if (user1.id == room.winner) {
-				user1.gamesWon++;
-				this.matchService.createMatch(user1, user2, room.gameState.leftPaddle.score, room.gameState.rightPaddle.score);
-				Logger.log(`winner: ${user1.userName}`);
-			}
-			else if(user2.id == room.winner) {
-				user2.gamesWon++;
-				this.matchService.createMatch(user2, user1, room.gameState.rightPaddle.score, room.gameState.leftPaddle.score);
-				Logger.log(`winner: ${user2.userName}`); 
-			}
+			if (room.singlemode)
+				this.clearUpSoloRoom(room);
 			else
-				Logger.log(`NO WINNER FOUND`);
-			user1.save();
-			user2.save();
-			
-			this.roomsByKey.delete(room.roomName);
-			this.clientsInGameByUserID.delete(user1.id);
-			Logger.log(`${user1.userName} is no longer in a game room`);
-			this.clientsInGameByUserID.delete(user2.id);
-			Logger.log(`${user2.userName} is no longer in a game room`);
-			this.server.to(room.roomName).emit('end_game');
-			room.playerLeftSocket.disconnect();
-			room.playerRightSocket.disconnect();
+				this.clearUpClassicRoom(room);
 		}
 		else
 			Logger.log(`NO ROOM FOUND`);
 	}
 
 	private emitGameStateToPlayers(room: GameRoom) {
-		const { playerLeftSocket, playerRightSocket, gameState } = room;
-		if (room.singlemode) {
-			playerLeftSocket.emit('pong_state', gameState);
-		} else {
-			playerLeftSocket.emit('pong_state', gameState);
-			playerRightSocket.emit('pong_state', gameState);
-		}
+		// const { playerLeftSocket, playerRightSocket, gameState } = room;
+		this.server.to(room.roomName).emit('pong_state', room.gameState);
+		// if (room.singlemode) {
+		// 	playerLeftSocket.emit('pong_state', gameState);
+		// } else {
+		// 	playerLeftSocket.emit('pong_state', gameState);
+		// 	playerRightSocket.emit('pong_state', gameState);
+		// }
 	}
 
 
@@ -226,7 +248,8 @@ export class MatchMakingGateway {
 			kind: GameActionKind.updateTime,
 			value: null,
 		});
-		Logger.log(`Check gamestate in room updates: ${newGameState.gameOver}`);
+		// Logger.log(`CHECK PLAYER 2 IN SOLO: ${room.playerRightSocket}`);
+		// Logger.log(`Check gamestate in room updates: ${newGameState.gameOver}`);
 		room.gameState = newGameState;
 		if (room.gameState.gameOver)
 			this.handleGameOver(room);

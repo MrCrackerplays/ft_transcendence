@@ -1,0 +1,17 @@
+.victory{
+	position: relative;
+	margin-left: auto;
+	font-family: fantasy;
+	font-size: 32px;
+	color: green;
+	text-decoration-line: underline;
+}
+
+.defeat{
+	position: relative;
+	margin-left: auto;
+	font-family: fantasy;
+	font-size: 32px;
+	color: red;
+	text-decoration-line: underline;
+}

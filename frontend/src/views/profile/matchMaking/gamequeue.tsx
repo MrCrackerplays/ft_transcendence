@@ -3,26 +3,10 @@ import { useNavigate } from 'react-router-dom';
 import { Socket, io } from "socket.io-client";
 import { Constants } from "../../../../../shared/constants";
 import '../../menu/home.css';
+import './gamequeue.css'
 import PongGame from "../../../hooks/game/pong";
 
-function ReturnToHome() {
-	console.log('game ended return to homepage')
-	const navigate = useNavigate();
-
-	useEffect(() => {
-		handleRedirect();
-	}, []);
-
-	const handleRedirect = () => {
-		navigate('/')
-	};
-
-	return (
-		<p className="text">Game Over</p>
-	)
-}
-
-function CancelButton() {
+function HomeButton({label}) {
 	const navigate = useNavigate();
 
 	function handleClick() {
@@ -30,7 +14,7 @@ function CancelButton() {
 	}
 
 	return (
-		<button className="button" onClick={() => handleClick()}>Cancel</button>
+		<button className="button" onClick={() => handleClick()}>{label}</button>
 	)
 }
 
@@ -38,6 +22,7 @@ function MatchMakingQueue(gamemode: {gamemode: string}) {
 	const [isConnectionOpen, setIsConnectionOpen] = useState(false);
 	const [activeGame, setActiveGame] = useState(false);
 	const [gameOver, setGameOver] = useState(false);
+	const [victory, setVictory] = useState('');
 	const ws: MutableRefObject<Socket | undefined> = useRef<Socket>();
 
 	useEffect(() => {
@@ -72,15 +57,25 @@ function MatchMakingQueue(gamemode: {gamemode: string}) {
 		ws.current.on('start_game', () => {
 			setActiveGame(true);
 		});
+
+		ws.current.on('victory', () => {
+			console.log("VICTORY");
+			setVictory('victory');
+		});
+
+		ws.current.on('defeat', () => {
+			console.log("DEFEAT");
+			setVictory('defeat');
+		});
 		
-		ws.current.on('end_game', () => {
+		ws.current.on('end_game', (victory: Boolean) => {
 			console.log('game has ended');
 			setActiveGame(false);
 			setGameOver(true);
 		});
 
 		return () => {
-			// ws.current?.close();
+			ws.current?.close();
 			console.log("cleaning queue");
 		}
 	}, []);
@@ -92,14 +87,35 @@ function MatchMakingQueue(gamemode: {gamemode: string}) {
 					return (
 						<div  className="menu">
 							<p className="text">Waiting for opponent...</p>
-							<CancelButton></CancelButton>
+							<HomeButton label={'cancel'}></HomeButton>
 						</div>
 					)
-					
 				}
-				return (
-					<ReturnToHome></ReturnToHome>
-				)
+				else {
+					switch (victory) {
+						case 'victory':
+							return (
+								<div  className="menu">
+									<p className="victory">VICTORY!</p>
+									<HomeButton label={'return'}></HomeButton>
+								</div>
+							)
+						case 'defeat':
+							return (
+								<div  className="menu">
+									<p className="defeat">DEFEAT!</p>
+									<HomeButton label={'return'}></HomeButton>
+								</div>
+							)
+						default :
+							return (
+								<div  className="menu">
+									<p className="text">End of Game.</p>
+									<HomeButton label={'return'}></HomeButton>
+								</div>
+							)
+					}
+				}
 			case true:
 				return (
 					<div> 
