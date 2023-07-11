@@ -15,9 +15,9 @@ export class AuthService {
 		private userService : UserService,
 		private connectionService : ConnectionService,
 		private jwtService: JwtService
-		) { this.otpMap.clear(); }
+		) { }
 	
-	private otpMap: Map<number, string>;
+	static otpMap: Map<number, string> = new Map<number, string>;
 
 	async signIn(payload: any): Promise<Connection> {
 		console.log(`attempting signin for 42-user: ${payload.id}`);
@@ -91,13 +91,19 @@ export class AuthService {
 		return (has2FA);
 	}
 
-	// Enable 2FA and return QRCODE
+	// 'Enable' 2FA and return QRCODE
 	async enableTwoFactor(req: AuthRequest): Promise<string> {
 		const connection = await this.getCurrentConnection(req);
+
+		if(connection.otpSecret != null) {
+			// already has 2FA enabled!
+			return null;
+		}
+
 		const data = await this.generateTwoFactorSecret(connection);
 		
 		// Add to the map to wait for validation
-		this.otpMap.set(connection.id, data.otpURL);
+		AuthService.otpMap.set(connection.id, data.secret);
 
 		// return QR
 		return toDataURL(data.otpURL);
@@ -108,22 +114,26 @@ export class AuthService {
 
 		if (connection.otpSecret == null) {
 			// Two factor wasn't enabled yet so we have to enable it now
-			const entry = this.otpMap.get(connection.id);
+			const entry = AuthService.otpMap.get(connection.id);
 			if (entry == undefined) {
 				// you're not in the map! begone!
+				console.log('validator is not in OTP map')
 				return null;
 			}
 			if (this.validateOTP(entry, code)) {
 				// congrats youve now enabled Two Factor
+				console.log('validator validated QR, enabling otp')
 				connection.otpSecret = entry;
-				this.otpMap.delete(connection.id);
+				AuthService.otpMap.delete(connection.id);
 				return connection.save();
 			}
 			// not validated
+			console.log(`validator tried to validate incorrect code (${code})`)
 			return null;
 		}
 
 		// This happens when you've already enabled 2FA
+		console.log('validator already has 2FA enabled, attempting validation')
 		const secret = connection.otpSecret;
 		const validated : boolean = this.validateOTP(secret, code);
 		if (!validated)
@@ -136,8 +146,6 @@ export class AuthService {
 
 		// TODO: change accountName
 		const otpURL = authenticator.keyuri(`${connection.id}`, 'Ball Busters', secret);
-
-		this.connectionService.setTwoFactorSecret(connection, secret);
 
 		return { secret, otpURL };
 	}

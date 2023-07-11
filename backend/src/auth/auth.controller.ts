@@ -109,19 +109,24 @@ export class AuthController {
 	async enableTwoFactor(@Req() req: AuthRequest, @Res() res: Response): Promise<string> {
 		const qrcode = await this.authService.enableTwoFactor(req);
 
+		if (qrcode == null) {
+			res.status(HttpStatus.CONFLICT).send('2FA already enabled');
+		}
+
 		const conn: Connection = await this.authService.getCurrentConnection(req);
 		
-		// Should cookie be updated with otp = false?
-		const cookie: string = this.authService.signAndGetCookie(conn, false, true);
+		// // Should cookie be updated with otp = false?
+		// const cookie: string = this.authService.signAndGetCookie(conn, false, true);
 
-		res.setHeader('Set-Cookie', cookie)
-			.json({ qr: qrcode });
+		res.json({ qr: qrcode });
 		return qrcode;
 	}
 
 	@Post('2fa/validate')
 	async validateTwoFactor(@Req() req: AuthRequest, @Body('code') code: string, @Res() res: Response): Promise<void> {
 		var conn: Connection = await this.authService.getCurrentConnection(req);
+		if (!conn)
+			res.status(HttpStatus.FORBIDDEN).send();
 
 		conn = await this.authService.validateTwoFactor(conn.id, code);
 		if (conn != null) {
@@ -132,7 +137,7 @@ export class AuthController {
 				.send();
 			return ;
 		}
-		res.status(413).send();
+		res.status(HttpStatus.FORBIDDEN).send();
 	}
 
 	@Get('2fa/enabled')

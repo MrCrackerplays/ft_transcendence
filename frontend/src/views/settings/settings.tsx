@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import './settings.css'
 import { Constants } from '../../../../shared/constants';
 import FetchQREnabled from '../../hooks/fetch/FetchQREnabled';
+import { useNavigate } from 'react-router-dom';
 
 
 // async function deleteAccount() {
@@ -153,8 +154,22 @@ function Settings({ updatescam, setupdatescam }) {
 		}
 	}
 	const submitQR = async () => {
-		//POST TO SUBMT QR GOES HERE LATER IDK
-		//PROBABLY SET ERROR HERE IF 2FA CODE WRONG
+		const RESPONSE = await fetch(`${Constants.BACKEND_URL}/2fa/validate`, {
+			method: 'POST',
+			credentials: 'include',
+			headers: {
+				'content-type': "application/json"
+			},
+			body: JSON.stringify({
+				code: code2fa
+			})
+		});
+		if (!RESPONSE.ok)
+		{
+			console.log(RESPONSE)
+		} else {
+			useNavigate()("/profile");
+		}
 		return;
 	}
 	return (
