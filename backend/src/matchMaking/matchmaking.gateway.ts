@@ -132,7 +132,7 @@ export class MatchMakingGateway {
 
 		if (gamemode)
 			this.removeClientFromQueue(client, gamemode);
-		if (gameroom.singlemode)
+		if (gameroom && gameroom.singlemode)
 			this.clearUpSoloRoom(gameroom);
 		this.statusOnDisconnect(client);
 	}

@@ -73,6 +73,18 @@ export class UserService {
 
 	async create() {
 		const user = this.usersRepository.create();
+
+		user.achievements = [];
+		user.blocked = [];
+		user.channelAdmin = [];
+		user.channelBanned = [];
+		user.channelMuted = [];
+		user.channelSubscribed = [];
+		user.channelsOwned = [];
+		user.friends = [];
+		user.lostMatches = [];
+		user.wonMatches = [];
+
 		try { await this.usersRepository.save(user); }
 		catch (error) { throw new HttpException(error.message, HttpStatus.BAD_REQUEST); }
 		console.log(`UserService: created new user (${user.id})`);
