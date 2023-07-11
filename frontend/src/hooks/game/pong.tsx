@@ -220,6 +220,45 @@ const PongGame = (props: { webSocketRef: MutableRefObject<Socket | undefined>;  
 
 	const ballPositionLeft = kBallCorrection * state.ball.position.x + lBallCorrection;
 	const ballPositionTop = kBallCorrection * state.ball.position.y + lBallCorrection;
+
+	if (props.gamemode.gamemode == 'solo') {
+		//RENDER SOLO - no right paddle
+		return (
+			<div className="pong-frame">
+				<div className="centre-line"></div>
+				<div className="paddle-left" style={{
+					//paddle left
+					top: (leftPaddleTop * 100) + '%',
+					height: (pongConstants.paddleHeight * 50) + '%',
+					width: (pongConstants.paddleWidth * 100) + '%',
+					left: (pongConstants.framePaddleGap * 100) + '%'
+				}}></div>
+				<div className="pong-ball" style={{
+					left: (ballPositionLeft * 100) + '%',
+					top: (ballPositionTop * 100) + '%',
+					width: (pongConstants.ballWidth * 50) + '%',
+					height: (pongConstants.ballHeight * 50) + '%',
+				}}></div>
+				<div className="score" style={{
+	
+					top: 1 + '%',
+					left: 25 + '%',
+					width: 20 + '%',
+					height: 20 + '%',
+	
+				}}>{state.leftPaddle.score}</div>
+				<div className="score" style={{
+	
+					top: 1 + '%',
+					left: 75 + '%',
+					width: 20 + '%',
+					height: 20 + '%',
+	
+				}}>{state.rightPaddle.score}</div>
+			</div>
+		);
+	}
+
 	//RENDER 
 	return (
 		<div className="pong-frame">

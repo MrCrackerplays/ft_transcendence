@@ -31,6 +31,17 @@ export type BallState = {
 	position: { x: number, y: number },
 };
 
+export const ballModifier = {
+	accelareteAfterFirstMove: 1.5,
+	angleChangeAfterHit: 0.5,
+	minorAngleChangeAfterHit: 0.2,
+
+
+
+};
+
+
+
 export type GameState = {
 	leftPaddle: PaddleState,
 	rightPaddle: PaddleState,
@@ -64,7 +75,7 @@ export const startGameState = {
 		score: 0, 
 		moved: false },
 	ball: { 
-		velocity: { x: 1.5, y: 0.0 }, 
+		velocity: { x: 0.5, y: 0.0 }, 
 		position: { x: 0, y: 0 } },
 	time: 0,
 	gameOver: false,
