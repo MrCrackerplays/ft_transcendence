@@ -188,8 +188,8 @@ export class MatchMakingGateway {
 		else if(room.winner == user2.id) {
 			user2.gamesWon++;
 			this.matchService.createMatch(user2, user1, room.gameState.rightPaddle.score, room.gameState.leftPaddle.score);
-			room.playerLeftSocket.emit('victory');
-			room.playerRightSocket.emit('defeat');
+			room.playerLeftSocket.emit('defeat');
+			room.playerRightSocket.emit('victory');
 			Logger.log(`winner: ${user2.userName}`); 
 		}
 		else
