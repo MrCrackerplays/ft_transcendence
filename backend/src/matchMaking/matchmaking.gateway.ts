@@ -127,13 +127,11 @@ export class MatchMakingGateway {
 	}
 
 	handleDisconnect(client: Socket) {
-		Logger.log(`disconnected ${client.id}`);
 		const gamemode = this.getGameModeForClient(client);
 		if (gamemode) {
 			this.removeClientFromQueue(client, gamemode);
 		}
 		this.statusOnDisconnect(client);
-		Logger.log(`disconnected from game ${client.id}`);
 	}
 
 	//---------------------------------------gameplay----------------------------//
@@ -166,12 +164,11 @@ export class MatchMakingGateway {
 		}
 	}
 
-	async handleGameOver(room: GameRoom, gameplayInterval: any) {
+	async handleGameOver(room: GameRoom) {
 		Logger.log('GAME HAS ENDED');
 		const user1 = await this.userFromSocket(room.playerLeftSocket);
 		const user2 = await this.userFromSocket(room.playerRightSocket);
 		// const matchResult = MatchService.createMatch(payload.winner, payload.loser, payload.winnerScore, payload.loserScore);
-		clearInterval(gameplayInterval);
 
 		Logger.log(`${user1.userName}`);
 		Logger.log(`${user2.userName}`);
@@ -199,7 +196,9 @@ export class MatchMakingGateway {
 			
 			this.roomsByKey.delete(room.roomName);
 			this.clientsInGameByUserID.delete(user1.id);
+			Logger.log(`${user1.userName} is no longer in a game room`);
 			this.clientsInGameByUserID.delete(user2.id);
+			Logger.log(`${user2.userName} is no longer in a game room`);
 			this.server.to(room.roomName).emit('end_game');
 			room.playerLeftSocket.disconnect();
 			room.playerRightSocket.disconnect();
@@ -219,7 +218,7 @@ export class MatchMakingGateway {
 	}
 
 
-	updateRooms(gameplayInterval: any) {
+	updateRooms() {
 		this.roomsByKey.forEach((room) => {
 		  //Logger.log(`batman updateRooms`);
 		const reducer = makeReducer(null);
@@ -227,19 +226,19 @@ export class MatchMakingGateway {
 			kind: GameActionKind.updateTime,
 			value: null,
 		});
+		Logger.log(`Check gamestate in room updates: ${newGameState.gameOver}`);
 		room.gameState = newGameState;
-		if (room.gameState.gameOver){
-			this.handleGameOver(room, gameplayInterval);
-		}
+		if (room.gameState.gameOver)
+			this.handleGameOver(room);
 		else
 			this.emitGameStateToPlayers(room);
 		});
 	}
 
 	startRoomUpdates() {
-		//Logger.log(`batman startRoomUpdates`);
+		Logger.log(`batman startRoomUpdates`);
 		let gameplayInterval = setInterval(() => {
-		  this.updateRooms(gameplayInterval);
+		  this.updateRooms();
 		}, pongConstants.timeDlta * 1000); //in milliseconds
 	}
 	//--------------------------------------------------------------------------//
@@ -307,11 +306,11 @@ export class MatchMakingGateway {
 
 	private async moveClientsToRoom(client1: Socket, client2: Socket | undefined, roomkey: string) {
 
-		console.log(`moveClientsToRoom ${roomkey}`, 'client1', client1.id, 'client2',client2?.id);
-
+		
 		if (!this.roomsByKey.has(roomkey)) {
 			const user1id = (await this.userFromSocket(client1)).id;
 			const user2id = client2 ? (await this.userFromSocket(client2)).id : null;
+			console.log(`moveClientsToRoom ${roomkey}`, 'client1', user1id, 'client2', user2id);
 			const newGameRoom = new GameRoom(user1id, user2id, client1, client2, roomkey);
 
 			const gameMode = this.getGameModeForClient(client1);

@@ -80,7 +80,7 @@ function MatchMakingQueue(gamemode: {gamemode: string}) {
 		});
 
 		return () => {
-			ws.current?.close();
+			// ws.current?.close();
 			console.log("cleaning queue");
 		}
 	}, []);

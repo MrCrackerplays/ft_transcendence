@@ -33,19 +33,13 @@ const SocketMagic: (input: SocketMagicInput) => SocketMagicOutput | undefined = 
 		//console.log(`backend time: ${JSON.stringify(newState.time)}`);
 		input.overrideState(newState);
 		//console.log('player latest movements from backend: left and right', newState.leftPaddle.paddlePosition, newState.rightPaddle.paddlePosition);
-		// if (newState.gameOver) {
-		// 	socket?.emit('gameOver');
-		// 	if (wbSocket.current) {
-		// 		wbSocket.current.disconnect();
-		// 	}
-		// }
 	});
 
-	socket.on('end_game', () => {
-		if (wbSocket.current) {
-			wbSocket.current.disconnect();
-		}
-	})
+	// socket.on('end_game', () => {
+	// 	if (wbSocket.current) {
+	// 		wbSocket.current.disconnect();
+	// 	}
+	// })
 
 	// const connectWebSocket = () => { //not used as socket from tempgame is sent as input (ref)
 	// 	console.log('connectWebSocket');
