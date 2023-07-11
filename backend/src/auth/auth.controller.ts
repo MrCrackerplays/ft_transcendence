@@ -110,7 +110,8 @@ export class AuthController {
 		const qrcode = await this.authService.enableTwoFactor(req);
 
 		const conn: Connection = await this.authService.getCurrentConnection(req);
-		// Cookie needs to be updated (otp = false; because with a new OTP it'll never be validated at this point)
+		
+		// Should cookie be updated with otp = false?
 		const cookie: string = this.authService.signAndGetCookie(conn, false, true);
 
 		res.setHeader('Set-Cookie', cookie)
@@ -118,10 +119,21 @@ export class AuthController {
 		return qrcode;
 	}
 
-	// @Post('2fa/validate')
-	// async validateTwoFactor(@Req() req: AuthRequest, @Body('code') code: string): Promise<string> {
-	// 	return this.authService.validateTwoFactor(req, code);
-	// }
+	@Post('2fa/validate')
+	async validateTwoFactor(@Req() req: AuthRequest, @Body('code') code: string, @Res() res: Response): Promise<void> {
+		var conn: Connection = await this.authService.getCurrentConnection(req);
+
+		conn = await this.authService.validateTwoFactor(conn.id, code);
+		if (conn != null) {
+			// now build a cookie with 2FA actually enabled
+			const cookie: string = this.authService.signAndGetCookie(conn, true, true);
+			res.setHeader('Set-Cookie', cookie)
+				.status(200)
+				.send();
+			return ;
+		}
+		res.status(413).send();
+	}
 
 	@Get('2fa/enabled')
 	async getTwoFactor(@Req() req: AuthRequest): Promise<boolean> {
@@ -138,7 +150,7 @@ export class AuthController {
 		await this.authService.disableTwoFactor(conn);
 
 		// Cookie needs to be updated, true because OTP is disabled
-		const cookie: string = this.authService.signAndGetCookie(conn, true, true);
+		const cookie: string = this.authService.signAndGetCookie(conn, false, true);
 
 		res.setHeader('Set-Cookie', cookie)
 			.status(200)
