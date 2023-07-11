@@ -14,6 +14,14 @@ import { useNavigate } from 'react-router-dom';
 // 	});
 // }
 
+async function disable2FA() {
+	console.log('disabling 2FA');
+	const RESPONSE = await fetch(`${Constants.BACKEND_URL}/2fa/disable`, {
+		method: 'POST',
+		credentials: 'include'
+	});
+}
+
 function ModalDelete({ onClose }) {
 	return (
 		<div className="modaldelete">
@@ -41,14 +49,14 @@ function DeleteAccountButton({ setTrue, setFalse, showDelete }) {
 	)
 }
 
-function Modal2fa({ onClose }) {
+function Modal2fa({ onDisable, onClose }) {
 	return (
 		<div className="modaldelete">
 			<div className="modaldelete-content">
 				<h2>Disable Two-factor authentication</h2>
 				<p>Are you sure you wish you disable your Two-factor authentication?</p>
 				<div className="modaldelete-buttons">
-					<button className="deletebutton">Disable</button>
+					<button onClick={onDisable} className="deletebutton">Disable</button>
 					<button onClick={onClose} className="cancelbutton">Cancel</button>
 				</div>
 			</div>
@@ -89,7 +97,7 @@ function QRButton({ buttontype, setenabled2fa }) {
 		return (
 			<div>
 				<button className="disable2fa" onClick={() => setshowdisable(true)}>Disable 2fa</button>
-				{showdisable && <Modal2fa onClose={() => setshowdisable(false)} />}
+				{showdisable && <Modal2fa onDisable={() => { disable2FA(); setshowdisable(false)}} onClose={() => setshowdisable(false)} />}
 			</div>
 		)
 	}
@@ -166,9 +174,10 @@ function Settings({ updatescam, setupdatescam }) {
 		});
 		if (!RESPONSE.ok)
 		{
+			// Probably wrong code
 			console.log(RESPONSE)
 		} else {
-			useNavigate()("/profile");
+			window.location.reload();
 		}
 		return;
 	}

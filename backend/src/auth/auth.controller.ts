@@ -145,6 +145,20 @@ export class AuthController {
 		return this.authService.getTwoFactorEnabled(req);
 	}
 
+	@Post('2fa/disable')
+	async disable2FA(@Req() req: AuthRequest, @Res() res: Response): Promise<void> {
+		const conn: Connection = await this.authService.getCurrentConnection(req);
+
+		this.authService.disableTwoFactor(conn);
+
+		// Cookie needs to be updated, true because OTP is disabled
+		const cookie: string = this.authService.signAndGetCookie(conn, true, true);
+
+		res.setHeader('Set-Cookie', cookie)
+			.status(200)
+			.send('2fa disabled');
+	}
+
 	// !: FOR DEBUG
 	@Public()
 	@Get('2fa/disable/:id')
