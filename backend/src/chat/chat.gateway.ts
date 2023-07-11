@@ -177,10 +177,10 @@ export class ChatGateway {
 		const channel = await this.getChannel(channel_id);
 		if (!channel || (channel.owner && channel.owner.id != user.id))
 			return false;
-		console.log("no deletion allowed yet, will crash")
-		// this.server.to("channel:" + channel.id).emit("kick", { channel_id: channel.id });
-		// this.server.to("channel:" + channel.id).socketsLeave("channel:" + channel.id);
-		// this.channelService.removeOne(channel.id);
+		// console.log("no deletion allowed yet, will crash")
+		this.server.to("channel:" + channel.id).emit("kick", channel.id);
+		this.server.to("channel:" + channel.id).socketsLeave("channel:" + channel.id);
+		this.channelService.removeOne(channel.id);
 		return true;
 	}
 
