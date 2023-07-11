@@ -48,9 +48,8 @@ export class ChannelService {
 		channel.name = dto.name;
 		channel.messages = [];
 		channel.visibility = dto.visibility;
-		channel.salt = await genSalt();
-		channel.password = dto.password ? await hash(dto.password, channel.salt) : dto.password;
-		console.log("creating channel with hash", channel.password, "salted by", channel.salt);
+		channel.password = dto.password ? await hash(dto.password, await genSalt()) : dto.password;
+		console.log("creating channel with hash", channel.password);
 		channel.owner = owner;
 		channel.members = [ owner ];
 		channel.admins = [];
@@ -64,27 +63,34 @@ export class ChannelService {
 	async createDM(userA: User, userB: User): Promise<Channel> {
 
 		// EXISTING DMs
-		const channelAlreadyExist = await this.channelRepository.findOne({
-			relations : ['owner', 'members'],
+		const existingDM: Channel[] = await this.channelRepository.find({
+			relations : ['members'],
 			where: {
 				visibility: Visibility.DM,
-				owner: {
-					id: In([userA.id, userB.id])
-				},
 				members: {
-					id: In([userA.id, userB.id])
+					id: userA.id
 				}
 			}
 		});
-		if (channelAlreadyExist != null)
-			return (channelAlreadyExist);
+
+		for (var c of existingDM) {
+			// reload relation with BOTH participants
+			c = await this.channelRepository.findOne({relations: ['members'], where: {id : c.id }});
+			if (!c)
+				break ;
+			for (var m of c.members) {
+				if (m.id == userB.id) {
+					return c; // channel exists
+				}
+			}
+		}
 
 		// NEW DMs
 		const channel = new Channel();
 		channel.name = `${userA.userName} : ${userB.userName}`;
 		channel.messages = [];
 		channel.visibility = Visibility.DM;
-		channel.owner = userA;
+		channel.owner = null;
 		channel.password = null;
 		channel.members = [ userA, userB ];
 

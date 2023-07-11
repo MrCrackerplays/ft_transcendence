@@ -21,9 +21,6 @@ export class Channel extends BaseEntity {
 	@Column({ nullable: true })
 	password: string;
 
-	@Column({ nullable: true })
-	salt: string;
-
 	// A channel can only have one owner
 	@ManyToOne(type => User, user => user.channelsOwned, { eager: true })
 	@JoinColumn()
