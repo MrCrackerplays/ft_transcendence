@@ -1,10 +1,8 @@
 #!/bin/bash
 
-DIR=/var/www/
-
-cd $DIR'backend' && npm install;
-cd $DIR'frontend' && npm install;
+cd '/usr/src/app/backend' && npm install;
+cd '/usr/src/app/frontend' && npm install;
 
 
-cd $DIR'backend' && nohup nest start;
-cd $DIR'frontend' && npm run dev;
+cd '/usr/src/app/frontend' && npm run start:d;
+cd '/usr/src/app/backend' && npm run start:dev;

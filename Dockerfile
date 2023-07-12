@@ -1,14 +1,26 @@
-FROM debian:buster
+FROM node:18
 
-RUN apt-get update
-RUN apt-get -y install nodejs npm
+# Create app directory
+WORKDIR /usr/src/app
 
+
+COPY ./backend ./backend
+COPY ./frontend ./frontend
+COPY ./shared ./shared
+
+RUN cd backend && npm install
+# If you are building your code for production
+# RUN npm ci --omit=dev
+
+
+RUN cd frontend && npm install
+
+# Bundle app source
+
+COPY ./tools ./
+
+RUN chmod +x ./entrypoint.sh
+
+EXPOSE 3000
 EXPOSE 5173
-
-COPY ./tools /var/www 
-COPY ./backend /var/www/backend
-COPY ./frontend /var/www/frontend
-
-RUN chmod +x /var/www/entrypoint.sh
-
-ENTRYPOINT ["/var/www/entrypoint.sh"]
+ENTRYPOINT ["./entrypoint.sh"]
