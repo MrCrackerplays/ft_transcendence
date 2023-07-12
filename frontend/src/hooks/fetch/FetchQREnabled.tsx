@@ -7,7 +7,7 @@ async function FetchQREnabled() {
 	});
 	if (!res.ok || res.status == 401) 
 		return false;
-	return (res.bodyUsed);
+	return (await res.text() == "true");
 	// return true;
 		// return jsonData;
 }
