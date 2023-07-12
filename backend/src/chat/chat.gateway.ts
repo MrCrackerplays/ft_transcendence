@@ -142,6 +142,7 @@ export class ChatGateway {
 		//TODO: add a method for creating dm's or allow them using this method
 		let dto: CreateChannelDTO = { name: name, visibility: visibility, password: password };
 		this.channelService.create(user, dto);
+		this.userService.unlockAchievement(user, "Get a room");
 		return true;
 	}
 
