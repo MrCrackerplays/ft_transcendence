@@ -2,46 +2,46 @@
 	{
 		"name": "Send Message",
 		"description": "You sent your very first message!",
-		"imageurl": "../frontend/src/achievement_icons/send-message.png"
+		"imageurl": "https://cdn.discordapp.com/attachments/1128680078843330710/1128680148779159622/send-message.png"
 	},
 	{
 		"name": "Added a Friend",
 		"description": "You added your very first friend!",
-		"imageurl": "../frontend/src/achievement_icons/friendslist.png"
+		"imageurl": "https://cdn.discordapp.com/attachments/1128680078843330710/1128680222850547832/friendslist.png"
 	},
 	{
 		"name": "Get a room",
 		"description": "Created a text room to hang out in.",
-		"imageurl": "../frontend/src/achievement_icons/room_creation.png"
+		"imageurl": "https://cdn.discordapp.com/attachments/1128680078843330710/1128680332628086855/room-creation.png"
 	},
 	{
 		"name": "2fa Secure",
 		"description": "Enabled 2-factor authentication to be extra safe.",
-		"imageurl": "../frontend/src/achievement_icons/2fa.png"
+		"imageurl": "https://cdn.discordapp.com/attachments/1128680078843330710/1128680379084193955/2fa.png"
 	},
 	{
 		"name": "Played Pong!",
 		"description": "You played your first match of Pong!",
-		"imageurl": "../frontend/src/achievement_icons/PlayPong.png"
+		"imageurl": "https://cdn.discordapp.com/attachments/1128680078843330710/1128680425179582554/PlayPong.png"
 	},
 	{
 		"name": "Created an Account",
 		"description": "You created an account to Ball Busters!",
-		"imageurl": "../frontend/src/achievement_icons/GuyAccount_001.png"
+		"imageurl": "https://cdn.discordapp.com/attachments/1128680078843330710/1128680469207191643/GuyAccount_001.png"
 	},
 	{
 		"name": "Block yourself",
 		"description": "But why, why would you?",
-		"imageurl": "../frontend/src/achievement_icons/butwhy.png"
+		"imageurl": "https://cdn.discordapp.com/attachments/1128680078843330710/1128680491604779210/Illustration23_001.png"
 	},
 	{
 		"name": "100%",
 		"description": "Ah you figured out these were public calls. Nice",
-		"imageurl": "../frontend/src/achievement_icons/100.png"
+		"imageurl": "https://cdn.discordapp.com/attachments/1128680078843330710/1128680570017284106/100.png"
 	},
 	{
 		"name": "pointless",
 		"description": "You just had to click it didn't you?",
-		"imageurl": ""
+		"imageurl": "https://cdn.discordapp.com/attachments/1128680078843330710/1128827559543570532/ehButton_001.png"
 	}
 ]
