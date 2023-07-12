@@ -1,68 +1,163 @@
+import { useReducer, useEffect, useRef, MutableRefObject } from 'react';
 
-import React from "react";
-import { useReducer, useEffect } from 'react';
 import "./pong.css";
-import { makeReducer, GameState, PaddleAction, GameActionKind, pongConstants } from "./pongReducer";
+import { GameState, PaddleAction, GameActionKind, pongConstants , startGameState } from '../../../../shared/pongTypes';
+import { makeReducer } from '../../../../shared/pongReducer';
+import { Socket, io } from "socket.io-client";
+import { Constants  } from "../../../../shared/constants";
 
 type SocketMagicInput = {
+	wbSocket: MutableRefObject<Socket | undefined>
 	overrideState: (newState: GameState) => void
 };
-
 type SocketMagicOutput = {
 	playerMovement: (movement: PaddleAction) => void
 };
-//https://en.wikipedia.org/wiki/WebSocket
-const SocketMagic: (input: SocketMagicInput) => SocketMagicOutput = (input) => {
 
-	const socket = new WebSocket("ws://localhost:8080/ws");
-	const playerMovement: (movement: PaddleAction) => void = (movement) => {
-		socket.send(JSON.stringify({ movement: movement }));
-	};
-	
-	//open connection when game start
-	socket.onopen = () => {
+const SocketMagic: (input: SocketMagicInput) => SocketMagicOutput | undefined = (input) => {
+	const wbSocket = input.wbSocket;
+	const socket = input.wbSocket.current;
 
-	};
+	let reconnectTimer: NodeJS.Timeout | null = null;
+	let reconnectDelay = 5000; // milliseconds
+	let maxReconnectAttempts = 5;
+	let reconnectAttempts = 0;
 
-	//read state from server -> I get true state from server -> override state client
-	socket.onmessage = (event) => {
-		const data = event.data;
-		console.log(data);
-		const newState = JSON.parse(data) as GameState;
+	if (!socket) {
+		console.log('socket is undefined');
+		return undefined;
+	}
+	console.log('socket is defined');
+
+	socket.on('pong_state', (newState: GameState) => {
+		//console.log(`backend time: ${JSON.stringify(newState.time)}`);
 		input.overrideState(newState);
-		// this.setState({state: newState});
+		//console.log('player latest movements from backend: left and right', newState.leftPaddle.paddlePosition, newState.rightPaddle.paddlePosition);
+	});
+
+	// socket.on('end_game', () => {
+	// 	if (wbSocket.current) {
+	// 		wbSocket.current.disconnect();
+	// 	}
+	// })
+
+	// const connectWebSocket = () => { //not used as socket from tempgame is sent as input (ref)
+	// 	console.log('connectWebSocket');
+	// 	if (!input.wbSocket.current) {
+	// 		console.log(`connectWebSocket: ${Constants.BACKEND_URL}/matchMakingGateway`);
+	// 		input.wbSocket.current = io(`${Constants.BACKEND_URL}/matchMakingGateway`, {withCredentials: true});
+	// 		input.wbSocket.current.on('connect', () => {
+	// 			console.log('WebSocket connection established');
+	// 			reconnectAttempts = 0;
+	// 		});
+
+	// 		// input.wbSocket.current.on('message', (data) => {
+	// 		// 	const newState = JSON.parse(data) as GameState;
+	// 		// 	console.log('upd gameState');
+	// 		// 	input.overrideState(newState);
+
+	// 		// 	if (newState.gameOver) {
+	// 		// 		if (input.wbSocket.current) {
+	// 		// 			input.wbSocket.current.disconnect();
+	// 		// 		}
+	// 		// 	}
+	// 		// });
+
+	// 		input.wbSocket.current.on('disconnect', (reason) => {
+	// 			console.log('WebSocket connection closed:', reason);
+	// 			if (reconnectAttempts < maxReconnectAttempts) {
+	// 				reconnectAttempts++;
+	// 				reconnectTimer = setTimeout(() => {
+	// 					connectWebSocket();
+	// 				}, reconnectDelay);
+	// 				console.log(
+	// 					`Reconnecting in ${reconnectDelay / 1000} seconds (Attempt ${reconnectAttempts}/${maxReconnectAttempts})`
+	// 				);
+	// 				reconnectDelay *= 2;
+	// 			} else {
+	// 				console.log('Max reconnect attempts reached. Connection could not be established.');
+	// 				sendGameOverSignal();
+	// 				cleanup();
+	// 			}
+	// 		});
+
+	// 		input.wbSocket.current.on('error', (error) => {
+	// 			console.error('WebSocket connection error:', error);
+	// 			sendGameOverSignal();
+	// 			cleanup();
+	// 		});
+	// 	}
+	// };
+
+	const sendGameOverSignal = () => {
+		console.log('sendGameOverSignal: engaged');
+		if (input.wbSocket.current) {
+			const toSend = {
+				// event: 'gameOver',
+				payload: {
+					// data about the game over event?
+				},
+			};
+			input.wbSocket.current.emit('gameOver', JSON.stringify(toSend));
+		}
 	};
 
-	//write action to server -> player action sent to server
-
-	// Fired when a connection with a WebSocket is closed
-	socket.onclose = function (event) {
-
+	const playerMovement: (movement: PaddleAction) => void = (movement) => {
+		if (input.wbSocket.current) {
+			console.log(`front message sent: ${JSON.stringify(movement)}`);
+			input.wbSocket.current.emit('playerMovement', {movement});
+		}
 	};
 
-	// Fired when a connection with a WebSocket has been closed because of an error
-	socket.onerror = function (event) {
-
+	const cleanup = () => {
+		console.log('cleanup: engaged');
+		if (input.wbSocket.current) {
+			input.wbSocket.current.disconnect();
+		}
+		if (reconnectTimer) {
+			clearTimeout(reconnectTimer);
+		}
 	};
+
+	// Start WebSocket connection
+	// connectWebSocket();
 
 	return {
-		playerMovement: playerMovement
+		playerMovement: playerMovement,
 	};
-}
+};
 
-const PongGame = () => {
+const PongGame = (props: { webSocketRef: MutableRefObject<Socket | undefined>;  gamemode: { gamemode: string } }) => {
 	const playerID = "player1";
 	const opponentID = "player2";
 
+	const mode: boolean = props.gamemode.gamemode === 'solo' ? true : false;
 	const initialState: GameState = {
-		leftPaddle: { playerID: playerID, paddlePosition: 0, action: PaddleAction.None, score: 0, moved: false },
-		rightPaddle: { playerID: opponentID, paddlePosition: 0, action: PaddleAction.None, score: 0, moved: false },
-		ball: { velocity: { x: 0.5, y: 0.0 }, position: { x: 0, y: 0 } }, //if have time, add random velocity start
-		time: 0,
-		gameOver: false,
-		winner: "",
+		leftPaddle: { 
+			playerID: playerID, 
+			paddlePosition: startGameState.leftPaddle.paddlePosition, 
+			action: startGameState.leftPaddle.action, 
+			score: startGameState.leftPaddle.score, 
+			moved: startGameState.leftPaddle.moved },
+		rightPaddle: { 
+			playerID: opponentID, 
+			paddlePosition: startGameState.rightPaddle.paddlePosition, 
+			action: startGameState.rightPaddle.action, 
+			score: startGameState.rightPaddle.score, 
+			moved: startGameState.rightPaddle.moved },
+		ball: { 
+			velocity: startGameState.ball.velocity, 
+			position: startGameState.ball.position },
+		time: startGameState.time,
+		gameOver: startGameState.gameOver,
+		winner: startGameState.winner,
+		singlemode: mode,
 	};
+
+	//console.log(`initialState PongGame: ${JSON.stringify(initialState)}`);
 	const [state, dispatch] = useReducer(makeReducer(playerID), initialState);
+	//const wbSocket = useRef<Socket | null>(null);
+	const wbSocket = props.webSocketRef;
 
 	useEffect(() => {
 		// socket magic
@@ -70,29 +165,42 @@ const PongGame = () => {
 			dispatch({ kind: GameActionKind.overrideState, value: newState });
 		};
 		const input: SocketMagicInput = {
+			wbSocket: wbSocket,
 			overrideState: overrideState,
 		};
 		const output = SocketMagic(input);
+
+		// wbSocket.current?.emit('game_started');
+		// console.log('Onward with the game.');
 
 		//KEYBOARD INPUT 
 		const handleKeyDown = (event) => {
 			if (event.key === "ArrowUp") {
 				dispatch({ kind: GameActionKind.arrowUp, value: null });
-				output.playerMovement(PaddleAction.Up);
+				if (output){
+					output.playerMovement(PaddleAction.Up);
+				}
 			} else if (event.key === "ArrowDown") {
 				dispatch({ kind: GameActionKind.arrowDown, value: null });
-				output.playerMovement(PaddleAction.Down);
+				if (output){
+					output.playerMovement(PaddleAction.Down);
+				}
 			}
 		};
 		const handleKeyUp = (event) => {
 			if (event.key === "ArrowUp" || event.key === "ArrowDown") {
 				dispatch({ kind: GameActionKind.StopMovement, value: null });
-				output.playerMovement(PaddleAction.None);
+				if (output){
+					output.playerMovement(PaddleAction.None);
+				}
 			}
 		};
 		window.addEventListener("keydown", handleKeyDown);
 		window.addEventListener("keyup", handleKeyUp);
 		return () => {
+			if (wbSocket.current) {
+				wbSocket.current.disconnect();
+			}
 			window.removeEventListener("keydown", handleKeyDown);
 			window.removeEventListener("keyup", handleKeyUp);
 		};
@@ -100,13 +208,13 @@ const PongGame = () => {
 
 	//BALL MOVEMENT
 	useEffect(() => {
+		
 		const interval = setInterval(() => {
+			// console.log(`frontend time: ${JSON.stringify(state.time)}`);
 			dispatch({ kind: GameActionKind.updateTime, value: null });
 		}, pongConstants.timeDlta * 1000);
 		return () => clearInterval(interval);
 	}, []);
-
-
 
 	const lPaddle = 0.5 - pongConstants.paddleHeight / 4;
 	const kPaddle = lPaddle / (1 - pongConstants.paddleHeight / 2);
@@ -123,7 +231,6 @@ const PongGame = () => {
 	return (
 		<div className="pong-frame">
 			<div className="centre-line"></div>
-			<div className="h-centre-line"></div>{/* REMOVE later */}
 			<div className="paddle-right" style={{
 				//paddle right
 				top: (rightPaddleTop * 100) + '%',
@@ -137,7 +244,7 @@ const PongGame = () => {
 				height: (pongConstants.paddleHeight * 50) + '%',
 				width: (pongConstants.paddleWidth * 100) + '%',
 				left: (pongConstants.framePaddleGap * 100) + '%'
-			}}>{state.leftPaddle.paddlePosition}</div>
+			}}></div>
 			<div className="pong-ball" style={{
 				left: (ballPositionLeft * 100) + '%',
 				top: (ballPositionTop * 100) + '%',

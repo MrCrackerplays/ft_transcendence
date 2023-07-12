@@ -6,27 +6,35 @@ import { Match } from "src/matches/match.entity";
 import { Connection } from "src/auth/connection/connection.entity";
 import { Achievement } from "src/achievements/achievement.entity";
 
+//added by yuliia
+export enum UserStatus {
+	OFFLINE = 'offline',
+	IDLE = 'online',
+	INGAME = 'ingame',
+	INQUEUE = 'inqueue',
+}
+
 @Entity()
 export class User extends BaseEntity {
 	@PrimaryGeneratedColumn("uuid")
 	id: string;
 
-	@Column( { unique: true, nullable: true } )
+	@Column({ unique: true, nullable: true })
 	userName: string;
 
-	@Column( {default: 0} )
+	@Column({ default: 0 })
 	score: number;
 
-	@Column( {default: 'offline'} )
+	@Column({ default: 'offline' })
 	status: string;
 
-	@Column( {default: ''} )
+	@Column({ default: '' })
 	imageURL: string;
 
-	@Column( {default: 0})
+	@Column({ default: 0 })
 	gamesPlayed: number;
 
-	@Column( {default: 0})
+	@Column({ default: 0 })
 	gamesWon: number;
 
 	// Every user can own mutliple channels, every channel only has one owner
@@ -48,7 +56,7 @@ export class User extends BaseEntity {
 	@ManyToMany(type => Channel, channel => channel.banned, { nullable: true })
 	channelBanned: Channel[];
 
-	@ManyToMany(type => Achievement, achievement => achievement.members, { eager: true, nullable: true})
+	@ManyToMany(type => Achievement, achievement => achievement.members, { eager: true, nullable: true })
 	@JoinTable()
 	achievements: Achievement[];
 
@@ -68,12 +76,12 @@ export class User extends BaseEntity {
 	@OneToMany(type => Match, match => match.loser, { nullable: true })
 	lostMatches: Match[];
 
-	@OneToOne( type => Connection, connection => connection.user )
+	@OneToOne(type => Connection, connection => connection.user)
 	connection: Connection;
 
 	// Every user can write multiple messages, every message only has a single author
 	// ONE user has MANY messages
-	@OneToMany(type => Message, message => message.author, { nullable: true})
+	@OneToMany(type => Message, message => message.author, { onDelete: "SET NULL", cascade: true, nullable: true })
 	messages: Message[];
 
 }

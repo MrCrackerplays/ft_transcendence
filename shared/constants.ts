@@ -12,7 +12,7 @@ export class Constants {
 	public static FRONTEND_URL = `${Constants.FRONTEND_HOST_PREFIX}${Constants.FRONTEND_HOST}:${Constants.FRONTEND_PORT}`;
 
 	public static BACKEND_LOGIN_REDIRECT = `${Constants.BACKEND_URL}/login`;
-	public static FRONTEND_LOGIN_REDIRECT = `${Constants.FRONTEND_URL}/profile`;
+	public static FRONTEND_LOGIN_REDIRECT = `${Constants.FRONTEND_URL}/`;
 	public static BACKEND_OTP_REDIRECT = `${Constants.BACKEND_URL}/loginOTP`;
 	public static FRONTEND_OTP_REDIRECT = `${Constants.FRONTEND_URL}/loginOTP`;
 

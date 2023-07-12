@@ -43,7 +43,7 @@ function SetUp()
 					name: "Created an Account"
 				})
 			});
-			navigate("/profile")
+			navigate("/")
 		}
 		setShowError(false);
 	}

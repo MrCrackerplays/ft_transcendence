@@ -7,11 +7,11 @@ function UserStatus() {
 	const ws = useRef<Socket>();
 
 	useEffect(() => {
-		console.log('updating user status');
+		// console.log('updating user status');
 		if (!ws.current) {
-			console.log(`${Constants.BACKEND_URL}/userStatusGateway`);
+			// console.log(`${Constants.BACKEND_URL}/userStatusGateway`);
 			ws.current = io(`${Constants.BACKEND_URL}/userStatusGateway`, {withCredentials: true});
-			console.log(`${ws.current}`);
+			// console.log(`${ws.current}`);
 		}
 		else if (ws.current.disconnected) {
 			ws.current.connect();

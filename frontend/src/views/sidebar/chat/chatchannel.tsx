@@ -68,7 +68,7 @@ function UserMenuComponent({ channel, menusettings, setMenu, items }: { channel:
 }
 
 
-function UserMessageComponent({ message, sender, setMenu }: { message: UserMessage; sender: string, setMenu: (menusettings: menuSettings) => void }): JSX.Element {
+function UserMessageComponent({ message, sender, setMenu, blocked }: { message: UserMessage; sender: string, setMenu: (menusettings: menuSettings) => void, blocked: string[] }): JSX.Element {
 	const navigate = useNavigate();
 	let alignment = "leftalign";
 	let sender_element = <div className="message-sender"
@@ -118,7 +118,7 @@ function UserMessageComponent({ message, sender, setMenu }: { message: UserMessa
 		<div className="message">
 			{message_top}
 			<div className={`message-content ${alignment}`}>
-				{message.content}
+				{blocked.includes(message.sender_id) ? <i>{"<blocked message>"}</i> : message.content}
 			</div>
 		</div>
 	);
@@ -185,7 +185,7 @@ function channelOptions(role: role, isConnectionOpen: boolean, currentChannel: s
 
 function ChatChannel(
 	{
-		currentChannel, setCurrentChannel, isConnectionOpen, messages, messageBody, sendMessage, setMessageBody, sender, muted, deleteChannel, leaveChannel, role, updateVisibility, getItems
+		currentChannel, setCurrentChannel, isConnectionOpen, messages, messageBody, sendMessage, setMessageBody, sender, muted, deleteChannel, leaveChannel, role, updateVisibility, getItems, blocked
 	}: {
 		currentChannel: string,
 		setCurrentChannel: (channel: string) => void,
@@ -200,7 +200,8 @@ function ChatChannel(
 		leaveChannel: (channel: string) => Promise<boolean>,
 		role: role,
 		updateVisibility: (channel_id: string, visibility: number, password: string) => Promise<boolean>,
-		getItems: (role: string) => MenuItem[]
+		getItems: (role: string) => MenuItem[],
+		blocked: string[]
 	}) {
 	const modal = useRef<HTMLDialogElement>(null);
 
@@ -218,7 +219,7 @@ function ChatChannel(
 				<div id="history-anchor"></div>
 				{messages.map((message: UserMessage | Message, index: number) => (
 					isUserMessage(message) ?
-						<UserMessageComponent key={index} message={message} sender={sender} setMenu={setMenu} />
+						<UserMessageComponent key={index} message={message} sender={sender} setMenu={setMenu} blocked={blocked} />
 						:
 						<MessageComponent key={index} message={message} />
 				))}

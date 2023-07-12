@@ -156,8 +156,8 @@ export class UserService {
 	}
 
 	async block(user: User, block_id: string): Promise<void> {
-		if (block_id == user.id)
-			throw new HttpException('Can not block yourself', HttpStatus.FORBIDDEN);
+		// if (block_id == user.id)
+		// 	throw new HttpException('Can not block yourself', HttpStatus.FORBIDDEN);
 
 		const blockee = await this.get(block_id);
 		if (!blockee) {
@@ -171,8 +171,8 @@ export class UserService {
 	}
 
 	async unblock(user: User, block_id: string): Promise<void> {
-		if (block_id == user.id)
-			throw new HttpException('Can not unblock yourself', HttpStatus.FORBIDDEN);
+		// if (block_id == user.id)
+		// 	throw new HttpException('Can not unblock yourself', HttpStatus.FORBIDDEN);
 
 		return this.usersRepository.createQueryBuilder()
 			.relation(User, "blocked")

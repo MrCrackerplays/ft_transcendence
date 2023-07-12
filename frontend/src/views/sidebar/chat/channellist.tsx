@@ -5,7 +5,7 @@ import { Constants } from "../../../../../shared/constants";
 
 function ChannelList(
 	{
-		sender, sender_id, joinChannel, createChannel, isConnectionOpen, channels, setChannels, banned, setOwner, setAdmin, hasloaded, setHasLoaded, hasJoined
+		sender, sender_id, joinChannel, createChannel, isConnectionOpen, channels, setChannels, banned, setOwner, setAdmin, hasloaded, setHasLoaded, hasJoined, refreshBlocked
 	}: {
 		sender: string,
 		sender_id: string,
@@ -21,7 +21,8 @@ function ChannelList(
 		setAdmin: (value: React.SetStateAction<string[]>) => void,
 		hasloaded: boolean,
 		setHasLoaded: (value: boolean) => void,
-		hasJoined: (channel_id: string) => boolean
+		hasJoined: (channel_id: string) => boolean,
+		refreshBlocked: () => void
 	}): JSX.Element {
 	const [refresh, setRefresh] = useState(false);
 	const modal = useRef<HTMLDialogElement>(null);
@@ -70,6 +71,7 @@ function ChannelList(
 			setChannels(combineddata);
 			setOwner(Array.from(owner));
 			setAdmin(Array.from(admin));
+			refreshBlocked();
 			console.log("channels", combineddata);
 			setHasLoaded(true);
 			setRefresh(false);

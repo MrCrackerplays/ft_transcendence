@@ -14,8 +14,8 @@ function MyStats({user} : {user:PublicUser})
 				setwinpercent(100);
 				return ;
 			}
-			setwinpercent(user.gamesWon / user.gamesPlayed);
-			setlostpercent(100 - winpercent);
+			setwinpercent((user.gamesWon / user.gamesPlayed) * 100);
+			setlostpercent(100 - ((user.gamesWon / user.gamesPlayed) * 100));
 		}
 		valuecheck()
 	}, []);
