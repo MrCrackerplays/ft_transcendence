@@ -1,32 +1,47 @@
 [
 	{
-	"name": "Send Message",
-	"description": "You sent your very first message!",
-	"imageurl": "https://cdn.discordapp.com/attachments/1094975702861877248/1101206224051118221/send-message.png"
+		"name": "Send Message",
+		"description": "You sent your very first message!",
+		"imageurl": "../frontend/src/achievement_icons/send-message.png"
 	},
 	{
-	"name": "Added a Friend",
-	"description": "You added your very first friend!",
-	"imageurl": "https://cdn.discordapp.com/attachments/1094975702861877248/1101206222880907284/friendslist.png"
+		"name": "Added a Friend",
+		"description": "You added your very first friend!",
+		"imageurl": "../frontend/src/achievement_icons/friendslist.png"
 	},
 	{
-	"name": "Get a room",
-	"description": "Created a text room to hang out in.",
-	"imageurl": "https://cdn.discordapp.com/attachments/1094975702861877248/1101206223480701029/room-creation.png"
+		"name": "Get a room",
+		"description": "Created a text room to hang out in.",
+		"imageurl": "../frontend/src/achievement_icons/room_creation.png"
 	},
 	{
-	"name": "2fa Secure",
-	"description": "Enabled 2-factor authentication to be extra safe.",
-	"imageurl": "https://cdn.discordapp.com/attachments/1094975702861877248/1101206222595702905/2fa.png"
+		"name": "2fa Secure",
+		"description": "Enabled 2-factor authentication to be extra safe.",
+		"imageurl": "../frontend/src/achievement_icons/2fa.png"
 	},
 	{
-	"name": "Played Pong!",
-	"description": "You played your first match of Pong!",
-	"imageurl": "https://cdn.discordapp.com/attachments/1094975702861877248/1101206223195492504/PlayPong.png"
+		"name": "Played Pong!",
+		"description": "You played your first match of Pong!",
+		"imageurl": "../frontend/src/achievement_icons/PlayPong.png"
 	},
 	{
-	"name": "Created an Account",
-	"description": "You created an account to Ball Busters!",
-	"imageurl": "https://cdn.discordapp.com/attachments/597032058233290779/1123212734578827274/GuyAccount_001.png"
+		"name": "Created an Account",
+		"description": "You created an account to Ball Busters!",
+		"imageurl": "../frontend/src/achievement_icons/GuyAccount_001.png"
+	},
+	{
+		"name": "Block yourself",
+		"description": "But why, why would you?",
+		"imageurl": "../frontend/src/achievement_icons/butwhy.png"
+	},
+	{
+		"name": "100%",
+		"description": "Ah you figured out these were public calls. Nice",
+		"imageurl": "../frontend/src/achievement_icons/100.png"
+	},
+	{
+		"name": "pointless",
+		"description": "You just had to click it didn't you?",
+		"imageurl": ""
 	}
 ]
