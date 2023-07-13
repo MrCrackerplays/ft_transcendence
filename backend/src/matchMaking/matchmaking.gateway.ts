@@ -45,6 +45,7 @@ export class MatchMakingGateway {
 	private queuesByGameMode: Map<GameMode, Socket[]> = new Map();
 	private roomsByKey: Map<string, GameRoom> = new Map();
 	private clientsInGameByUserID: Map<string, GameRoom> = new Map();
+	private clientsInQueueByUserID: Map<string, GameRoom> = new Map();
 	private roomIndex = 0;
 	private readonly eventEmitter: EventEmitter = new EventEmitter();
 
@@ -115,13 +116,15 @@ export class MatchMakingGateway {
 			return;
 		}
 		this.isClientInGame(client).then((isClientInGame: boolean) => {
-
 			if (isClientInGame) {
 				client.emit('start_game');
 			} else {
 				//Logger.log('batman emit new_connection');
-				client.emit('new_connection');
-				Logger.log(`new queue connection ${client.id}`);
+				this.isClientInQueue(client).then((isClientInQueue: Boolean) => {
+					if (!isClientInQueue)
+						client.emit('new_connection');
+					Logger.log(`new queue connection ${client.id}`);
+				}).catch(e => console.error(e))
 			}
 		}).catch(e => console.error(e));
 	}
@@ -397,6 +400,16 @@ export class MatchMakingGateway {
 
 	private getClientsForGameMode(gamemode: GameMode): Socket[] {
 		return this.queuesByGameMode.get(gamemode) || [];
+	}
+
+	private async isClientInQueue(client: Socket): Promise<boolean> {
+		const userId = ((await this.userFromSocket(client)).id)
+		const userQueue = this.clientsInQueueByUserID.get(userId);
+
+		if (userQueue != undefined) {
+			return true;
+		}
+		return false;
 	}
 
 	private async isClientInGame(client: Socket): Promise<boolean> {
