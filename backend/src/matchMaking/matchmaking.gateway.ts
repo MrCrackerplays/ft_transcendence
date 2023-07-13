@@ -174,13 +174,9 @@ export class MatchMakingGateway {
 		const user1 = await this.userFromSocket(room.playerLeftSocket);
 		const user2 = await this.userFromSocket(room.playerRightSocket);
 
-		user1.gamesPlayed++;
-		if (user1.gamesPlayed == 1)
-			this.userService.unlockAchievement(user1, "Played Pong!");
-		user2.gamesPlayed++;
-		if (user2.gamesPlayed == 1)
-			this.userService.unlockAchievement(user2, "Played Pong!");
-		// Logger.log(`${room.roomName}`)
+		// this.userService.unlockAchievement(user1, "Played Pong!");
+		// this.userService.unlockAchievement(user2, "Played Pong!");
+		Logger.log(`${room.roomName}`)
 		if (room.winner == user1.id) {
 			user1.gamesWon++;
 			this.matchService.createMatch(user1, user2, room.gameState.leftPaddle.score, room.gameState.rightPaddle.score);
@@ -205,7 +201,9 @@ export class MatchMakingGateway {
 		Logger.log(`${user1.userName} is no longer in a game room`);
 		this.clientsInGameByUserID.delete(user2.id);
 		Logger.log(`${user2.userName} is no longer in a game room`);
-		this.server.to(room.roomName).emit('end_game');
+		// this.server.to(room.roomName).emit('end_game');
+		room.playerLeftSocket.emit('end_game');
+		room.playerRightSocket.emit('end_game');
 		room.playerLeftSocket.disconnect();
 		room.playerRightSocket.disconnect();
 	}
@@ -235,6 +233,8 @@ export class MatchMakingGateway {
 				this.clearUpSoloRoom(room);
 			else if (room.roomName.startsWith(GameMode.INVITE))
 				this.clearUpPrivateRoom(room);
+			else
+				this.clearUpClassicRoom(room);
 		}
 		else
 			Logger.log(`NO ROOM FOUND`);
@@ -323,7 +323,7 @@ export class MatchMakingGateway {
 		} 
 		client.leave(gamemode);
 		if (gamemode != GameMode.CLASSIC && gamemode != GameMode.INVITE) {
-			if (queue.length == 0)
+			if (queue?.length == 0)
 				this.queuesByGameMode.delete(gamemode);
 		}
 		// Logger.log('removed client from queue');

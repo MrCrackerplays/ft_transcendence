@@ -55,14 +55,17 @@ function GameInvite(gamemode: {gamemode: string}) {
 		});
 
 		ws.current.on('victory', () => {
+			console.log("VICTORY!")
 			setVictory('victory');
 		});
 
 		ws.current.on('defeat', () => {
+			console.log("DEFEAT!")
 			setVictory('defeat');
 		});
 		
-		ws.current.on('end_game', (victory: Boolean) => {
+		ws.current.on('end_game', () => {
+			console.log("GAME ENDED");
 			setActiveGame(false);
 			setGameOver(true);
 		});
