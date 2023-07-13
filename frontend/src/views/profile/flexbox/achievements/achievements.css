@@ -31,11 +31,13 @@
 	grid-area: ACHIEVE-TITLE; 
 	width: 100%;
 	font-style: italic;
+	padding-left: 10px;
 }
   
   .ACHIEVE-DESCRIPTION { 
 	grid-area: ACHIEVE-DESCRIPTION;
 	width: 100%;
+	padding-left: 10px;
 }
 
 .achievementsCenter

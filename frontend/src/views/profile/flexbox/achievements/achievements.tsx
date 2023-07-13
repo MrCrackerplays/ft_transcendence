@@ -12,7 +12,7 @@ function AchievementCard({achieve} : {achieve : PublicAchievements}) {
 			<div className="ACHIEVE-TITLE">
 				<p>{achieve.name}</p>
 			</div>
-			<div className="ACHIEVE-DESCIPTION">
+			<div className="ACHIEVE-DESCRIPTION">
 				<p>{achieve.description}</p>
 			</div>
 		</div>

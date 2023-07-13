@@ -20,6 +20,7 @@ async function disable2FA() {
 		method: 'POST',
 		credentials: 'include'
 	});
+	window.location.reload();
 }
 
 function ModalDelete({ onClose }) {
@@ -162,6 +163,7 @@ function Settings({ updatescam, setupdatescam }) {
 		}
 	}
 	const submitQR = async () => {
+		setshowerror(false)
 		const RESPONSE = await fetch(`${Constants.BACKEND_URL}/2fa/validate`, {
 			method: 'POST',
 			credentials: 'include',
@@ -174,9 +176,20 @@ function Settings({ updatescam, setupdatescam }) {
 		});
 		if (!RESPONSE.ok)
 		{
-			// Probably wrong code
+			setshowerror(true)
+			seterrorText("QR Input Incorrect")
 			console.log(RESPONSE)
 		} else {
+			const RESPONSE2 = await fetch(`${Constants.BACKEND_URL}/self/achievements`, {
+				method: 'POST',
+				credentials: 'include',
+				headers: {
+					'content-type': "application/json"
+				},
+				body: JSON.stringify({
+					name: "2fa Secure"
+				})
+			});
 			window.location.reload();
 		}
 		return;
