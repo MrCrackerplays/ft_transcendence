@@ -321,7 +321,7 @@ export class UserService {
 
 		// user already has achievement
 		if (user.achievements.find((value) => {
-			ach.id == value.id
+			return ach.id == value.id;
 		})) {
 			return;
 		}
