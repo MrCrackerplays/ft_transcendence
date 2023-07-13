@@ -317,8 +317,7 @@ export class UserService {
 		});
 
 		if (!ach)
-			return;
-
+			return ;
 		user.achievements.push(ach);
 		user.save();
 	}
