@@ -20,7 +20,7 @@ import { MatchModule } from "src/matches/match.module";
 		MatchModule
 	],
 	providers: [ UserService, ConnectionService ],
-	controllers: [ UserController, SelfController, IDController],
+	controllers: [ UserController, SelfController],
 	exports: [
 		TypeOrmModule.forFeature([User, Connection]),
 		UserService,

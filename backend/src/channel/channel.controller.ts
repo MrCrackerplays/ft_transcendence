@@ -16,10 +16,10 @@ export class ChannelController {
 	}
 
 	// !: DEBUG
-	@Get('id/:idn')
-	async findOne(@Param('idn') id: string): Promise<Channel> {
-		return this.channelService.findOne(id);
-	}
+	// @Get('id/:idn')
+	// async findOne(@Param('idn') id: string): Promise<Channel> {
+	// 	return this.channelService.findOne(id);
+	// }
 
 	// @Get(':name')
 	// async findFromName(@Param('name') name: string): Promise<PublicChannel> {
@@ -38,8 +38,8 @@ export class ChannelController {
 	// }
 
 	// !: DEBUG
-	@Get(':id/delete')
-	removeOne(@Param('id') id: string): Promise<void> {
-		return this.channelService.removeOne(id);
-	}
+	// @Get(':id/delete')
+	// removeOne(@Param('id') id: string): Promise<void> {
+	// 	return this.channelService.removeOne(id);
+	// }
 }
