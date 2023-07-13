@@ -87,11 +87,11 @@ export class AuthController {
 	}
 
 	// !: DEBUG ONLY
-	@Public()
-	@Get('loginOTP/:code')
-	async signInOTPParam(@Req() req: AuthRequest, @Param('code') code: string, @Res() res: Response): Promise<void> {
-		this.signInOTP(req, code, res);
-	}
+	// @Public()
+	// @Get('loginOTP/:code')
+	// async signInOTPParam(@Req() req: AuthRequest, @Param('code') code: string, @Res() res: Response): Promise<void> {
+	// 	this.signInOTP(req, code, res);
+	// }
 
 	/*
 	@Get('logout')
@@ -160,21 +160,21 @@ export class AuthController {
 	}
 
 	// !: FOR DEBUG
-	@Public()
-	@Get('2fa/disable/:id')
-	@HttpCode(200)
-	async disableTwoFactor(@Param('id') _id: number, @Res() res: Response) {
-		const conn: Connection = await this.connectionService.get({id: _id});
+	// @Public()
+	// @Get('2fa/disable/:id')
+	// @HttpCode(200)
+	// async disableTwoFactor(@Param('id') _id: number, @Res() res: Response) {
+	// 	const conn: Connection = await this.connectionService.get({id: _id});
 
-		await this.authService.disableTwoFactor(conn);
+	// 	await this.authService.disableTwoFactor(conn);
 
-		// Cookie needs to be updated, true because OTP is disabled
-		const cookie: string = this.authService.signAndGetCookie(conn, false, true);
+	// 	// Cookie needs to be updated, true because OTP is disabled
+	// 	const cookie: string = this.authService.signAndGetCookie(conn, false, true);
 
-		res.setHeader('Set-Cookie', cookie)
-			.status(200)
-			.send('2fa disabled (DEBUG ONLY)');
-	}
+	// 	res.setHeader('Set-Cookie', cookie)
+	// 		.status(200)
+	// 		.send('2fa disabled (DEBUG ONLY)');
+	// }
 
 	@Post('remove')
 	async removeAccount(@Req() req: AuthRequest, @Res() res: Response): Promise<void> {
@@ -191,23 +191,23 @@ export class AuthController {
 	}
 
 	//! DEBUG ONLY
-	@Public()
-	@Get('remove/:id')
-	async removeAccountID(@Param('id') _id: string): Promise<void> {
+	// @Public()
+	// @Get('remove/:id')
+	// async removeAccountID(@Param('id') _id: string): Promise<void> {
 
-		const conn: Connection = await this.connectionService.get({
-			user: {
-				id: _id
-			}
-		}, ['user']);
+	// 	const conn: Connection = await this.connectionService.get({
+	// 		user: {
+	// 			id: _id
+	// 		}
+	// 	}, ['user']);
 
-		if (conn) {
-			console.log(`removing account with 42ID: ${conn.user42ID}`);
-			conn.user.remove();
-			conn.remove();
-		}
-		else {
-			console.log(`attempting to remove non-existant connection`);
-		}
-	}
+	// 	if (conn) {
+	// 		console.log(`removing account with 42ID: ${conn.user42ID}`);
+	// 		conn.user.remove();
+	// 		conn.remove();
+	// 	}
+	// 	else {
+	// 		console.log(`attempting to remove non-existant connection`);
+	// 	}
+	// }
 }
