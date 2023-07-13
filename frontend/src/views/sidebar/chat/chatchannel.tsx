@@ -125,6 +125,19 @@ function UserMessageComponent({ message, sender, setMenu, blocked }: { message: 
 }
 
 function MessageComponent({ message }: { message: Message }): JSX.Element {
+	if (message.content.endsWith(":GAMEINVITE")) {
+		const navigate = useNavigate();
+		const inviteid = message.content.slice(0, -11);
+		return (
+			<div className="message invite-message">
+				<button onClick={() => {
+					navigate("/private/" + inviteid);
+				}}>
+					Join Game Invite
+				</button>
+			</div>
+		);
+	}
 	return (
 		<div className="message generic-message">
 			<i>
