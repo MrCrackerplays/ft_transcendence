@@ -45,7 +45,7 @@ export class MatchMakingGateway {
 	private queuesByGameMode: Map<GameMode, Socket[]> = new Map();
 	private roomsByKey: Map<string, GameRoom> = new Map();
 	private clientsInGameByUserID: Map<string, GameRoom> = new Map();
-	private clientsInQueueByUserID: Map<string, GameRoom> = new Map();
+	private clientsInQueueByUserID: Map<string, GameMode> = new Map();
 	private roomIndex = 0;
 	private readonly eventEmitter: EventEmitter = new EventEmitter();
 
@@ -302,16 +302,16 @@ export class MatchMakingGateway {
 		}
 		
 		if (!this.queuesByGameMode.has(gamemode))
-		this.queuesByGameMode.set(gamemode, []);
+			this.queuesByGameMode.set(gamemode, []);
 		if (gamemode.toString().startsWith(GameMode.INVITE) && this.queuesByGameMode.get(gamemode).length >= 2)
 			client.emit('room_full');
-
 		this.queuesByGameMode.get(gamemode).push(client);
+		this.clientsInQueueByUserID.set((await this.userFromSocket(client)).id, gamemode);
 		await this.setStatus(client, UserStatus.INQUEUE);
 		this.matchClientsForGameMode(gamemode);
 	}
 
-	private removeClientFromQueue(client: Socket, gamemode: GameMode) {
+	private async removeClientFromQueue(client: Socket, gamemode: GameMode) {
 		// Logger.log(`remove client ${client.id} from queue ${gamemode}`)
 		const queue = this.queuesByGameMode.get(gamemode);
 		if (queue) {
@@ -322,6 +322,7 @@ export class MatchMakingGateway {
 			// Logger.log(`queue length after removal: ${queue.length}`)
 		} 
 		client.leave(gamemode);
+		this.clientsInQueueByUserID.delete((await this.userFromSocket(client)).id)
 		if (gamemode != GameMode.CLASSIC && gamemode != GameMode.INVITE) {
 			if (queue?.length == 0)
 				this.queuesByGameMode.delete(gamemode);
@@ -403,6 +404,7 @@ export class MatchMakingGateway {
 	}
 
 	private async isClientInQueue(client: Socket): Promise<boolean> {
+		Logger.log("is Client in Queue?")
 		const userId = ((await this.userFromSocket(client)).id)
 		const userQueue = this.clientsInQueueByUserID.get(userId);
 
