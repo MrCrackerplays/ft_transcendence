@@ -148,6 +148,10 @@ function MessageComponent({ message }: { message: Message }): JSX.Element {
 }
 
 function channelOptions(role: role, isConnectionOpen: boolean, currentChannel: string, setCurrentChannel: (channel: string) => void, deleteChannel: (channel: string) => Promise<boolean>, leaveChannel: (channel: string) => Promise<boolean>, makeModalVisible: () => void): JSX.Element {
+	const [showLink, setShowLink] = useState(false);
+	let link = <></>;
+	if (showLink)
+		link =  <div>`${Constants.BACKEND_URL}/chat-invite/${currentChannel}`</div>;
 	let extraoptions = <></>;
 	if (role == "owner") {
 		extraoptions = (
@@ -184,13 +188,13 @@ function channelOptions(role: role, isConnectionOpen: boolean, currentChannel: s
 				className="chat-button"
 				disabled={!isConnectionOpen}
 			>Leave channel</button>
-			{/* copy currentChannel to clipboard */}
+			{/* get currentChannel to clipboard */}
 			<button
-				aria-label="Copy channel link"
-				onClick={() => navigator.clipboard.writeText(`${Constants.BACKEND_URL}/chat-invite/${currentChannel}`)}
+				aria-label="Get channel link"
+				onClick={() => setShowLink(!showLink)}
 				className="chat-button"
 				disabled={!isConnectionOpen}
-			>Copy channel invite</button>
+			>Get channel invite</button>{link}
 			{extraoptions}
 		</div>
 	);
