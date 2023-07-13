@@ -64,7 +64,7 @@ function App(): React.ReactElement
 					<Route path="/settings" element={<Settings updatescam={updatescam} setupdatescam={setupdatescam}/>}/>
 					<Route path="/classic" element={<MatchMakingQueue gamemode={GameMode.CLASSIC}/>} />
 					<Route path="/solo" element={<MatchMakingQueue gamemode={GameMode.SOLO}/>} />
-					<Route path="/solo" element={<GameInvite gamemode={GameMode.INVITE}/>} />
+					<Route path="/private/*" element={<GameInvite gamemode={GameMode.INVITE}/>} />
 					{/* <Route path="/solo" element={<PongGame gamemode='solo'/>} /> */}
 					<Route path="/*" element={<LoggedInMissing/>}/>
 				</Routes>
