@@ -42,6 +42,9 @@ export class UserStatusGateway implements OnGatewayConnection, OnGatewayDisconne
 				result = this.jwtService.verify(auth_cookie, { secret: process.env.JWT_SECRET })
 			}
 			return this.connectionService.get({ id: result.id }, ['user']).then(connection => {
+				if (connection == null) {
+					return undefined;
+				}
 				return connection.user;
 			});
 		}
