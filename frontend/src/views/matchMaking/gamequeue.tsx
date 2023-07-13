@@ -2,7 +2,7 @@ import React, { useEffect, useRef, useState, MutableRefObject } from "react";
 import { useNavigate } from 'react-router-dom';
 import { Socket, io } from "socket.io-client";
 import { Constants } from "../../../../shared/constants";
-import '../../menu/home.css';
+import '../menu/home.css';
 import './gamequeue.css'
 import PongGame from "../../hooks/game/pong";
 
