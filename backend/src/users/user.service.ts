@@ -317,7 +317,15 @@ export class UserService {
 		});
 
 		if (!ach)
-			return ;
+			return;
+
+		// user already has achievement
+		if (user.achievements.find((value) => {
+			return ach.id == value.id;
+		})) {
+			return;
+		}
+
 		user.achievements.push(ach);
 		user.save();
 	}

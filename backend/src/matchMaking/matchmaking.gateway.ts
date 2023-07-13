@@ -45,6 +45,7 @@ export class MatchMakingGateway {
 	private queuesByGameMode: Map<GameMode, Socket[]> = new Map();
 	private roomsByKey: Map<string, GameRoom> = new Map();
 	private clientsInGameByUserID: Map<string, GameRoom> = new Map();
+	private clientsInQueueByUserID: Map<string, GameRoom> = new Map();
 	private roomIndex = 0;
 	private readonly eventEmitter: EventEmitter = new EventEmitter();
 
@@ -115,13 +116,15 @@ export class MatchMakingGateway {
 			return;
 		}
 		this.isClientInGame(client).then((isClientInGame: boolean) => {
-
 			if (isClientInGame) {
 				client.emit('start_game');
 			} else {
 				//Logger.log('batman emit new_connection');
-				client.emit('new_connection');
-				Logger.log(`new queue connection ${client.id}`);
+				this.isClientInQueue(client).then((isClientInQueue: Boolean) => {
+					if (!isClientInQueue)
+						client.emit('new_connection');
+					Logger.log(`new queue connection ${client.id}`);
+				}).catch(e => console.error(e))
 			}
 		}).catch(e => console.error(e));
 	}
@@ -171,13 +174,9 @@ export class MatchMakingGateway {
 		const user1 = await this.userFromSocket(room.playerLeftSocket);
 		const user2 = await this.userFromSocket(room.playerRightSocket);
 
-		user1.gamesPlayed++;
-		if (user1.gamesPlayed == 1)
-			this.userService.unlockAchievement(user1, "Played Pong!");
-		user2.gamesPlayed++;
-		if (user2.gamesPlayed == 1)
-			this.userService.unlockAchievement(user2, "Played Pong!");
-		// Logger.log(`${room.roomName}`)
+		this.userService.unlockAchievement(user1, "Played Pong!");
+		this.userService.unlockAchievement(user2, "Played Pong!");
+		Logger.log(`${room.roomName}`)
 		if (room.winner == user1.id) {
 			user1.gamesWon++;
 			this.matchService.createMatch(user1, user2, room.gameState.leftPaddle.score, room.gameState.rightPaddle.score);
@@ -202,9 +201,20 @@ export class MatchMakingGateway {
 		Logger.log(`${user1.userName} is no longer in a game room`);
 		this.clientsInGameByUserID.delete(user2.id);
 		Logger.log(`${user2.userName} is no longer in a game room`);
-		this.server.to(room.roomName).emit('end_game');
+		// this.server.to(room.roomName).emit('end_game');
+		room.playerLeftSocket.emit('end_game');
+		room.playerRightSocket.emit('end_game');
 		room.playerLeftSocket.disconnect();
 		room.playerRightSocket.disconnect();
+	}
+
+	private async clearUpPrivateRoom(room: GameRoom) {
+		const gameMode = this.getGameModeForClient(room.playerLeftSocket);
+
+		this.removeClientFromQueue(room.playerLeftSocket, gameMode);
+		this.removeClientFromQueue(room.playerRightSocket, gameMode);
+		this.queuesByGameMode.delete(gameMode);
+		this.clearUpClassicRoom(room);
 	}
 
 	private async clearUpSoloRoom(room: GameRoom) {
@@ -221,6 +231,8 @@ export class MatchMakingGateway {
 			room.winner = room.gameState.winner;
 			if (room.singlemode)
 				this.clearUpSoloRoom(room);
+			else if (room.roomName.startsWith(GameMode.INVITE))
+				this.clearUpPrivateRoom(room);
 			else
 				this.clearUpClassicRoom(room);
 		}
@@ -288,27 +300,33 @@ export class MatchMakingGateway {
 			await this.moveClientsToRoom(client, undefined, roomKey);
 			return;
 		}
-
+		
 		if (!this.queuesByGameMode.has(gamemode))
-			this.queuesByGameMode.set(gamemode, []);
-		this.queuesByGameMode.get(gamemode).push(client)
+		this.queuesByGameMode.set(gamemode, []);
+		if (gamemode.toString().startsWith(GameMode.INVITE) && this.queuesByGameMode.get(gamemode).length >= 2)
+			client.emit('room_full');
 
-		await this.setStatus(client, UserStatus.INQUEUE)
+		this.queuesByGameMode.get(gamemode).push(client);
+		await this.setStatus(client, UserStatus.INQUEUE);
 		this.matchClientsForGameMode(gamemode);
 	}
 
 	private removeClientFromQueue(client: Socket, gamemode: GameMode) {
-		Logger.log(`remove client ${client.id} from queue ${gamemode}`)
+		// Logger.log(`remove client ${client.id} from queue ${gamemode}`)
 		const queue = this.queuesByGameMode.get(gamemode);
 		if (queue) {
 			const index = queue.indexOf(client);
-			Logger.log(`client index to remove: ${index}`);
+			// Logger.log(`client index to remove: ${index}`);
 			if (index != -1)
 				queue.splice(index, 1);
-			Logger.log(`queue length after removal: ${queue.length}`)
+			// Logger.log(`queue length after removal: ${queue.length}`)
 		} 
 		client.leave(gamemode);
-		Logger.log('removed client from queue');
+		if (gamemode != GameMode.CLASSIC && gamemode != GameMode.INVITE) {
+			if (queue?.length == 0)
+				this.queuesByGameMode.delete(gamemode);
+		}
+		// Logger.log('removed client from queue');
 	}
 
 	private matchClientsForGameMode(gamemode: GameMode) {
@@ -323,13 +341,14 @@ export class MatchMakingGateway {
 				this.roomIndex++;
 			else
 				this.roomIndex = 0;
-			this.moveClientsToRoom(client1, client2, this.roomKeyForGameMode(gamemode));
+			if (gamemode.toString().startsWith(GameMode.INVITE))
+				this.moveClientsToRoom(client1, client2, gamemode);
+			else
+				this.moveClientsToRoom(client1, client2, this.roomKeyForGameMode(gamemode));
 		}
 	}
 
 	private async moveClientsToRoom(client1: Socket, client2: Socket | undefined, roomkey: string) {
-
-		
 		if (!this.roomsByKey.has(roomkey)) {
 			const user1id = (await this.userFromSocket(client1)).id;
 			const user2id = client2 ? (await this.userFromSocket(client2)).id : null;
@@ -337,12 +356,12 @@ export class MatchMakingGateway {
 			const newGameRoom = new GameRoom(user1id, user2id, client1, client2, roomkey);
 
 			const gameMode = this.getGameModeForClient(client1);
-			if (!client2) { //added this monstrocity as getGameModeForClient logs as gameMode: null
+			if (!client2) //added this monstrocity as getGameModeForClient logs as gameMode: null
 				newGameRoom.singlemode = true;
-			}
-			this.removeClientFromQueue(client1, gameMode);
-			if (client2) {
-				this.removeClientFromQueue(client2, gameMode);
+			if (gameMode == GameMode.CLASSIC) {
+				this.removeClientFromQueue(client1, gameMode);
+				if (client2)
+					this.removeClientFromQueue(client2, gameMode);
 			}
 
 			this.roomsByKey.set(roomkey, newGameRoom);
@@ -381,6 +400,16 @@ export class MatchMakingGateway {
 
 	private getClientsForGameMode(gamemode: GameMode): Socket[] {
 		return this.queuesByGameMode.get(gamemode) || [];
+	}
+
+	private async isClientInQueue(client: Socket): Promise<boolean> {
+		const userId = ((await this.userFromSocket(client)).id)
+		const userQueue = this.clientsInQueueByUserID.get(userId);
+
+		if (userQueue != undefined) {
+			return true;
+		}
+		return false;
 	}
 
 	private async isClientInGame(client: Socket): Promise<boolean> {

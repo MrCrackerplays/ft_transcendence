@@ -7,6 +7,7 @@ import ChatChannel from "./chatchannel";
 import { Channel } from "./channeltypes";
 import { useStateRef } from "./usestateref";
 import { Constants } from "../../../../../shared/constants";
+import { useNavigate } from "react-router-dom";
 
 function Chat( {
 		sender, sender_id, setStartDM
@@ -29,6 +30,8 @@ function Chat( {
 
 	const [joinedChannels, setJoinedChannels, joinedChannelsRef] = useStateRef<string[]>([]);
 	const [currentChannel, setCurrentChannel, currentChannelRef] = useStateRef<string>("");
+
+	const navigate = useNavigate();
 
 	const ws = useRef<Socket>();
 
@@ -453,8 +456,12 @@ function Chat( {
 					},
 					{
 						label: 'Invite to game', action: (user: string) => {
-							alert("beep boop you totally invited that person yup totally");
-							//TODO: invite to game idk how to yet, depends on game implementation
+							ws.current?.emit("invite", { user: user }, (response: string) => {
+								if (!response || response === "")
+									return;
+								console.log("created an invite for", response);
+								navigate("/private/" + response);
+							});
 						}
 					},
 				]);

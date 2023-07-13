@@ -13,9 +13,11 @@ import Sidebar from './views/sidebar/sidebar';
 import './App.css'
 import Settings from './views/settings/settings';
 import LoggedInMissing, { NotLoggedInMissing } from './views/missing/allmissing';
-import TestMatchMakingConnection from './views/profile/matchMaking/gamequeue';
-import MatchMakingQueue from './views/profile/matchMaking/gamequeue';
+import TestMatchMakingConnection from './views/matchMaking/gamequeue';
+import MatchMakingQueue from './views/matchMaking/gamequeue';
 import PongGame from './hooks/game/pong';
+import GameInvite from './views/matchMaking/invite/gameInvite';
+import { GameMode } from '../../shared/pongTypes';
 
 function App(): React.ReactElement
 {
@@ -60,8 +62,9 @@ function App(): React.ReactElement
 					<Route path="/" element={<HomePage />}/>
 					<Route path="/profile/*" element={<ProfilePage />} />
 					<Route path="/settings" element={<Settings updatescam={updatescam} setupdatescam={setupdatescam}/>}/>
-					<Route path="/classic" element={<MatchMakingQueue gamemode='classic'/>} />
-					<Route path="/solo" element={<MatchMakingQueue gamemode='solo'/>} />
+					<Route path="/classic" element={<MatchMakingQueue gamemode={GameMode.CLASSIC}/>} />
+					<Route path="/solo" element={<MatchMakingQueue gamemode={GameMode.SOLO}/>} />
+					<Route path="/private/*" element={<GameInvite gamemode={GameMode.INVITE}/>} />
 					{/* <Route path="/solo" element={<PongGame gamemode='solo'/>} /> */}
 					<Route path="/*" element={<LoggedInMissing/>}/>
 				</Routes>

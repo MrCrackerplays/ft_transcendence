@@ -19,6 +19,7 @@ import { CreateChannelDTO, Visibility } from '../../../shared/dto/channel.dto';
 import { Channel } from 'src/channel/channel.entity';
 import { genSalt, hash } from 'bcrypt';
 import { Constants } from '../../../shared/constants';
+import { v4 as uuidv4 } from "uuid";
 
 const CHANNEL_PASSWORD_REGEX = /^([a-zA-Z0-9_\-]{3,16})$/;
 
@@ -205,7 +206,7 @@ export class ChatGateway {
 	@SubscribeMessage('start_dm')
 	async startDM(@ConnectedSocket() client: Socket, @MessageBody("user") user_id: string): Promise<string> {
 		const user = await this.userFromSocket(client);
-		if (!user)
+		if (!user || user.id == user_id)
 			return "";
 		const blockableuser = await this.userService.get(user.id, ["blocked"]);
 		const other_user = await this.userService.get(user_id, ["blocked"]);
@@ -392,6 +393,36 @@ export class ChatGateway {
 			this.server.to("user:" + user.id).emit("unblock", target_user_id);
 		});
 		console.log("unblock event end");
+	}
+
+	@UseGuards(WsGuard)
+	@SubscribeMessage('invite')
+	async inviteUser(
+		@ConnectedSocket() client: Socket,
+		@MessageBody("user") target_user_id: string
+	): Promise<string> {
+		const user = await this.userFromSocket(client);
+		if (!user || user.id == target_user_id)
+			return "";
+		const blockableuser = await this.userService.get(user.id, ["blocked"]);
+		const other_user = await this.userService.get(target_user_id, ["blocked"]);
+		if (!other_user)
+			return "";
+		if (blockableuser.blocked?.find(b => b.id == other_user.id) || other_user.blocked?.find(b => b.id == blockableuser.id))
+			return "";
+		const channel = await this.channelService.createDM(user, other_user);
+		if (!channel)
+			return "";
+		console.log("created/found dm channel for game invite", channel);
+		client.join("channel:" + channel.id);
+		const generatedroomid: string = uuidv4();
+		this.messageService.createMessage(channel, null, generatedroomid + ":GAMEINVITE" ).then((m) => {
+			console.log("sending message");
+			this.server.to("channel:" + channel.id).emit("message", { channel: channel.id, sender: m.author?.userName, sender_id: m.author?.id, content: m.content, date: m.date });
+			this.userService.unlockAchievement(user, "Send Message");
+		});
+		return generatedroomid;
+
 	}
 
 	@UseGuards(WsGuard)

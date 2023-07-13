@@ -132,7 +132,7 @@ function updateBall(state: GameState, timeDlta: number) {
 			state.gameOver = true;
 			state.winner = state.leftPaddle.playerID;
 			console.log(`Left paddle wins: ${state.winner}`);
-		} else if (state.rightPaddle.score == 10) {
+		} else if (state.rightPaddle.score == 1) {
 			state.gameOver = true;
 			state.winner = state.rightPaddle.playerID;
 			console.log(`Right paddle wins: ${state.winner}`);
