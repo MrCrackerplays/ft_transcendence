@@ -11,6 +11,8 @@ import AddFriend from './misc/addfriend';
 import SearchBar from './misc/search';
 import MyStats from './misc/stats';
 import SelectBar from './selectbar/selectbar';
+import BlockProfile from './misc/blockprofile';
+import Achievements from './flexbox/achievements/achievements';
 
 function ProfilePage() {
 	const [isLoading, setIsLoading] = useState(true);
@@ -44,9 +46,12 @@ function ProfilePage() {
 					<img src={`${fetchPFP}/${jsonData.userName}/pfp`} className='PFP'/>
 					<div className='PFP-Border'></div>
 				</div>
-				<div className="Add-Friend"><AddFriend UUID={jsonData.id}/></div>
+				<div className="Add-Friend">
+					<AddFriend UUID={jsonData.id}/>
+					<BlockProfile UUID={jsonData.id}/>	
+				</div>
 				<div className="Stats"><MyStats user={jsonData}/></div>
-				<div className="FLEXBOX">{matchhistory ? <MatchHistory username={jsonData.userName}/> : "Achievements go here"}</div>
+				<div className="FLEXBOX">{matchhistory ? <MatchHistory username={jsonData.userName}/> : <Achievements achievements={jsonData.achievements}/>}</div>
 				<div className="Search"><SearchBar /></div>
 				<div className="NA"></div>
 		</div>

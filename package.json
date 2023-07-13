@@ -1,10 +1,13 @@
 {
   "devDependencies": {
+    "@types/cron": "^2.0.1",
+    "eslint-plugin-react-hooks": "^4.6.0",
     "husky": "^8.0.3"
   },
   "scripts": {
-    "postinstall": "npm run postinstall:backend",
+    "postinstall": "npm run postinstall:backend && npm run postinstall:frontend",
     "postinstall:backend": "cd backend && npm install",
+    "postinstall:frontend": "cd frontend && npm install",
     "prepare": "husky install",
     "test": "npm run test:backend",
     "test:backend": "cd backend && npm test"
@@ -16,7 +19,11 @@
     "@nestjs/common": "^9.4.0",
     "@nestjs/config": "^2.3.1",
     "@nestjs/core": "^9.4.0",
+    "@nestjs/schedule": "^3.0.1",
+    "node-cron": "^3.0.2",
+    "react": "^18.2.0",
     "react-query": "^3.39.3",
+    "socket.io": "^4.7.1",
     "typeorm": "^0.3.15"
   }
 }

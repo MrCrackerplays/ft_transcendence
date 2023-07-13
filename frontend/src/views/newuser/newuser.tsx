@@ -1,5 +1,5 @@
 import { Constants } from "../../../../shared/constants";
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import './newuser.css'
 
@@ -32,7 +32,19 @@ function SetUp()
 			return (false);
 		}
 		if (RESPONSE.status == 200)
-			navigate("/profile")
+		{
+			const RESPONSE2 = await fetch(`${Constants.BACKEND_URL}/self/achievements`, {
+				method: 'POST',
+				credentials: 'include',
+				headers: {
+					'content-type': "application/json"
+				},
+				body: JSON.stringify({
+					name: "Created an Account"
+				})
+			});
+			navigate("/")
+		}
 		setShowError(false);
 	}
 	return (

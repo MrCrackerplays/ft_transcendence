@@ -1,0 +1,32 @@
+[
+	{
+	"name": "Send Message",
+	"description": "You sent your very first message!",
+	"imageurl": "https://cdn.discordapp.com/attachments/1094975702861877248/1101206224051118221/send-message.png"
+	},
+	{
+	"name": "Added a Friend",
+	"description": "You added your very first friend!",
+	"imageurl": "https://cdn.discordapp.com/attachments/1094975702861877248/1101206222880907284/friendslist.png"
+	},
+	{
+	"name": "Get a room",
+	"description": "Created a text room to hang out in.",
+	"imageurl": "https://cdn.discordapp.com/attachments/1094975702861877248/1101206223480701029/room-creation.png"
+	},
+	{
+	"name": "2fa Secure",
+	"description": "Enabled 2-factor authentication to be extra safe.",
+	"imageurl": "https://cdn.discordapp.com/attachments/1094975702861877248/1101206222595702905/2fa.png"
+	},
+	{
+	"name": "Played Pong!",
+	"description": "You played your first match of Pong!",
+	"imageurl": "https://cdn.discordapp.com/attachments/1094975702861877248/1101206223195492504/PlayPong.png"
+	},
+	{
+	"name": "Created an Account",
+	"description": "You created an account to Ball Busters!",
+	"imageurl": "https://cdn.discordapp.com/attachments/597032058233290779/1123212734578827274/GuyAccount_001.png"
+	}
+]

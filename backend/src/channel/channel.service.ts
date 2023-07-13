@@ -9,6 +9,7 @@ import { Message } from "src/channel/message/message.entity";
 import { MessageService } from "src/channel/message/message.service";
 import { User } from "src/users/user.entity";
 import { PublicChannel } from "./public-channel.interface";
+import { genSalt, hash } from "bcrypt";
 
 @Injectable()
 export class ChannelService {
@@ -47,7 +48,8 @@ export class ChannelService {
 		channel.name = dto.name;
 		channel.messages = [];
 		channel.visibility = dto.visibility;
-		channel.password = dto.password;
+		channel.password = dto.password ? await hash(dto.password, await genSalt()) : dto.password;
+		console.log("creating channel with hash", channel.password);
 		channel.owner = owner;
 		channel.members = [ owner ];
 		channel.admins = [];
@@ -61,27 +63,34 @@ export class ChannelService {
 	async createDM(userA: User, userB: User): Promise<Channel> {
 
 		// EXISTING DMs
-		const channelAlreadyExist = await this.channelRepository.findOne({
-			relations : ['owner', 'members'],
+		const existingDM: Channel[] = await this.channelRepository.find({
+			relations : ['members'],
 			where: {
 				visibility: Visibility.DM,
-				owner: {
-					id: In([userA.id, userB.id])
-				},
 				members: {
-					id: In([userA.id, userB.id])
+					id: userA.id
 				}
 			}
 		});
-		if (channelAlreadyExist != null)
-			return (channelAlreadyExist);
+
+		for (var c of existingDM) {
+			// reload relation with BOTH participants
+			c = await this.channelRepository.findOne({relations: ['members'], where: {id : c.id }});
+			if (!c)
+				break ;
+			for (var m of c.members) {
+				if (m.id == userB.id) {
+					return c; // channel exists
+				}
+			}
+		}
 
 		// NEW DMs
 		const channel = new Channel();
 		channel.name = `${userA.userName} : ${userB.userName}`;
 		channel.messages = [];
 		channel.visibility = Visibility.DM;
-		channel.owner = userA;
+		channel.owner = null;
 		channel.password = null;
 		channel.members = [ userA, userB ];
 
@@ -194,6 +203,10 @@ export class ChannelService {
 
 	findOne(id: string): Promise<Channel | null> {
 		return this.channelRepository.findOneBy({ id });
+	}
+
+	findOneRelations(id: string, relations: string[] = []): Promise<Channel | null> {
+		return this.channelRepository.findOne({ where: { id }, relations });
 	}
 
 	async removeOne(id: string): Promise<void> {

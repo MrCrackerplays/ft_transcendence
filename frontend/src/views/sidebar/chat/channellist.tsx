@@ -1,17 +1,18 @@
 import { useEffect, useRef, useState } from "react";
 import { Channel } from "./channeltypes";
 import ChannelEditor from "./channeleditor";
+import { Constants } from "../../../../../shared/constants";
 
 function ChannelList(
 	{
-		sender, sender_id, joinChannel, createChannel, isConnectionOpen, channels, setChannels, banned, setOwner, setAdmin, hasloaded, setHasLoaded, hasJoined
-	} : {
+		sender, sender_id, joinChannel, createChannel, isConnectionOpen, channels, setChannels, banned, setOwner, setAdmin, hasloaded, setHasLoaded, hasJoined, refreshBlocked
+	}: {
 		sender: string,
 		sender_id: string,
 		joinChannel: (channel_id: string, password?: string | null) => void,
 		createChannel: (channel_name: string,
-		visibility: number,
-		password: string) => Promise<boolean>,
+			visibility: number,
+			password: string) => Promise<boolean>,
 		isConnectionOpen: boolean,
 		channels: Channel[],
 		setChannels: (value: React.SetStateAction<Channel[]>) => void,
@@ -20,22 +21,21 @@ function ChannelList(
 		setAdmin: (value: React.SetStateAction<string[]>) => void,
 		hasloaded: boolean,
 		setHasLoaded: (value: boolean) => void,
-		hasJoined: (channel_id: string) => boolean
-	} ): JSX.Element {
+		hasJoined: (channel_id: string) => boolean,
+		refreshBlocked: () => void
+	}): JSX.Element {
 	const [refresh, setRefresh] = useState(false);
 	const modal = useRef<HTMLDialogElement>(null);
 
-	const magic_channel = "3e809453-5734-482c-aa2a-8fc311f0cd4e";
-
 	const refreshChannels = () => {
 		setRefresh(true);
-		let joinedchannels = fetch("http://localhost:3000/self/channels/", {credentials: 'include'}).then(res => res.json());
-		let publicchannels = fetch("http://localhost:3000/channels", {credentials: 'include'}).then(res => res.json());
+		let joinedchannels = fetch(`${Constants.BACKEND_URL}/self/channels/`, { credentials: 'include' }).then(res => res.json());
+		let publicchannels = fetch(`${Constants.BACKEND_URL}/channels`, { credentials: 'include' }).then(res => res.json());
 
 		let owner: Set<string> = new Set();
 		let admin: Set<string> = new Set();
 		let combineddata: Channel[] = [];
-		const adder = (dataholder : Channel[], channel) => {
+		const adder = (dataholder: Channel[], channel) => {
 			if (channel.owner && channel.owner.id === sender_id) {
 				owner.add(channel.id);
 			}
@@ -47,21 +47,21 @@ function ChannelList(
 					}
 				}
 			}
-			dataholder.push({id: channel.id, name: channel.name, visibility: channel.visibility, password: channel.password});
+			dataholder.push({ id: channel.id, name: channel.name, visibility: channel.visibility, password: channel.password });
 		}
 		Promise.all([joinedchannels, publicchannels]).then((data) => {
 			console.log("raw channels", data);
-		{
-				let joineddata : Channel[] = [];
-				data[0].forEach((channel) => {adder(joineddata, channel)});
+			{
+				let joineddata: Channel[] = [];
+				data[0].forEach((channel) => { adder(joineddata, channel) });
 				joineddata.sort(function (a, b) {
 					return a.name.toLowerCase().localeCompare(b.name.toLowerCase());
 				});
 				combineddata = joineddata;
 			}
 			{
-				let publicdata : Channel[] = [];
-				data[1].forEach((channel) => {adder(publicdata, channel)});
+				let publicdata: Channel[] = [];
+				data[1].forEach((channel) => { adder(publicdata, channel) });
 				publicdata.sort(function (a, b) {
 					return a.name.toLowerCase().localeCompare(b.name.toLowerCase());
 				});
@@ -71,6 +71,7 @@ function ChannelList(
 			setChannels(combineddata);
 			setOwner(Array.from(owner));
 			setAdmin(Array.from(admin));
+			refreshBlocked();
 			console.log("channels", combineddata);
 			setHasLoaded(true);
 			setRefresh(false);
@@ -85,8 +86,8 @@ function ChannelList(
 	if (!hasloaded) {
 		channelarea = [<div key={0}>Loading...</div>, <i key={1} className="gg-spinner"></i>];
 	} else if (channels.length > 0) {
-		channelarea = channels.map((channel: Channel, index : number) => (
-			<ChannelComponent key={index} channel={channel} joinChannel={joinChannel} canJoin={isConnectionOpen && !banned.includes(channel.id)} hasJoined={hasJoined} />
+		channelarea = channels.map((channel: Channel) => (
+			<ChannelComponent key={channel.id} channel={channel} joinChannel={joinChannel} isConnectionOpen={isConnectionOpen} isBanned={banned.includes(channel.id)} hasJoined={hasJoined} />
 		));
 	} else {
 		channelarea = [<div key={0}>No channels found!</div>];
@@ -94,39 +95,34 @@ function ChannelList(
 
 	return (
 		<>
-		<div>
-			<button
-				aria-label="magic channel"
-				onClick={() => joinChannel(magic_channel)}
-				className="open-button"
-				disabled={!isConnectionOpen || banned.includes(magic_channel)}
-			>magic</button>
-			<button
-				aria-label="create channel"
-				onClick={() => {modal.current?.showModal();}}
-				disabled={!isConnectionOpen}
-			>create</button>
-			<button
-				aria-label="refresh channels"
-				onClick={() => refreshChannels()}
-				disabled={!isConnectionOpen || refresh}
-			>refresh</button>
-			<ChannelEditor
-				ref={modal}
-				currentChannel=""
-				create_or_update_channel={createChannel}
-				defaultvisibility="public"
-			/>
-			<div>you are {sender} </div>
-		</div>
-		<div id="channel-list" className="scrollable">
-			{channelarea}
-		</div>
+			<div>
+				<button
+					aria-label="create channel"
+					onClick={() => { modal.current?.showModal(); }}
+					disabled={!isConnectionOpen}
+				>create</button>
+				<button
+					aria-label="refresh channels"
+					onClick={() => refreshChannels()}
+					disabled={!isConnectionOpen || refresh}
+				>refresh</button>
+				<ChannelEditor
+					ref={modal}
+					currentChannel=""
+					create_or_update_channel={createChannel}
+					defaultvisibility="public"
+					on_success={refreshChannels}
+				/>
+				<div>you are {sender} </div>
+			</div>
+			<div id="channel-list" className="scrollable">
+				{channelarea}
+			</div>
 		</>
 	);
 }
 
-function ChannelComponent({ channel, joinChannel, canJoin, hasJoined } : { channel: Channel, joinChannel: (channel_id: string, password?: string | null) => void, canJoin: boolean, hasJoined: (channel_id: string) => boolean }): JSX.Element {
+function ChannelComponent({ channel, joinChannel, isConnectionOpen, isBanned, hasJoined }: { channel: Channel, joinChannel: (channel_id: string, password?: string | null) => void, isConnectionOpen: boolean, isBanned: boolean, hasJoined: (channel_id: string) => boolean }): JSX.Element {
 	let icon = "";
 	let hover = "";
 	if (channel.visibility == 0 && channel.password) {
@@ -141,7 +137,7 @@ function ChannelComponent({ channel, joinChannel, canJoin, hasJoined } : { chann
 	}
 	return (
 		<div className="channel" onClick={() => {
-			if (canJoin) {
+			if (isConnectionOpen && !isBanned) {
 				if (!hasJoined(channel.id) && channel.visibility == 0 && channel.password) {
 					joinChannel(channel.id, prompt("Enter channel password:"));
 				} else {
@@ -149,15 +145,15 @@ function ChannelComponent({ channel, joinChannel, canJoin, hasJoined } : { chann
 				}
 			}
 		}}>
-			<div style={{overflowWrap:"anywhere"}}>{channel.name}</div>
-			<div style={{display:"flex"}}>
+			<div style={{ overflowWrap: "anywhere" }}>{channel.name}</div>
+			<div style={{ display: "flex" }}>
 				<i title={hover} className={icon}></i>
 				<button
-				aria-label="open channel"
-				onClick={()=>{}}
-				className="open-button"
-				disabled={!canJoin}
-			>open</button>
+					aria-label="open channel"
+					onClick={() => { }}
+					className="open-button"
+					disabled={!isConnectionOpen || isBanned}
+				>{isBanned ? "banned" : "open"}</button>
 			</div>
 		</div>
 	);

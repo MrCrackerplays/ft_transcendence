@@ -6,10 +6,7 @@ async function FetchFriends() {
 		credentials: 'include'
 	});
 	if (!res.ok || res.status == 401) 
-	{
-		console.log("something wrong redirect to login");
 		return false
-	}
 	// console.log(js);
 	const jsonData = await res.json();
 	// console.log(jsonData);

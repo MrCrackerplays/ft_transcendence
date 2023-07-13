@@ -52,9 +52,11 @@
 
 .Add-Friend { 
 	/* align-self: center; */
-	width:80%;
-	justify-self: center;
-	grid-area: Add-Friend; 
+	width:100%;
+	/* justify-self: auto; */
+	grid-area: Add-Friend;
+	/* padding: 0; */
+	/* display:flex; */
 }
 
 .Stats { grid-area: Stats; }

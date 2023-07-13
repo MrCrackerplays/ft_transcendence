@@ -1,5 +1,5 @@
 import './matchhistory.css'
-import React, {useEffect, useState} from "react"
+import {useEffect, useState} from "react"
 import { PublicMatch } from "../../../../../../shared/public-match"
 import { Constants } from '../../../../../../shared/constants';
 import FetchUserMatchHistory from '../../../../hooks/fetch/FetchUserMatchHistory';
@@ -48,7 +48,6 @@ function MatchHistory({username}: {username:string}) {
 	useEffect(() => {
 		async function checkJson() {
 			const value = await FetchUserMatchHistory(username)
-			// console.log(value)
 			if (value)
 				setJsonData(value);
 			setisLoading(false);
@@ -56,9 +55,9 @@ function MatchHistory({username}: {username:string}) {
 		checkJson();
 	}, []);
 	if (isLoading)
-		return (<div style={{color:"white"}}>Matches are loading...</div>)
+		return (<div className="matchesCenter">Matches are loading...</div>)
 	if (jsonData.length == 0)
-		return (<div style={{color:"white"}}>no matches played</div>)
+		return (<div><p className="matchesCenter">No Matches Played Yet</p></div>)
 	// console.log(jsonData)
 	return (
 		<div className="all-matches">

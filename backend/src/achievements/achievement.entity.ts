@@ -17,7 +17,7 @@ export class Achievement extends BaseEntity {
 	@Column()
 	imageURL: string;
 
-	@ManyToMany(type => User, user => user.achievements)
+	@ManyToMany(type => User, user => user.achievements, { onDelete: "CASCADE"})
 	members: User[];
 
 	public static createFromDTO(dto : CreateAchievementDTO) : Achievement {

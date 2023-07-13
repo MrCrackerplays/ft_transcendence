@@ -13,4 +13,8 @@
 	font-size: 1rem;
 	background-color:rgb(10, 103, 143)
   }
+
+  .searchbutton{
+	cursor:pointer;
+  }
   

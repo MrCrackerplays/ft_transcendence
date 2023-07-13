@@ -3,26 +3,37 @@ import FetchFriends from "../../../hooks/fetch/FetchFriends";
 import { useState, useEffect } from "react";
 import { PublicUser } from "../../../../../shared/public-user";
 import { Constants } from "../../../../../shared/constants";
-import { Link, useNavigate } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import { Popover } from '@headlessui/react';
 
 function ProfileLink({label, link}: {label:string, link: string})
 {
+	const navigate = useNavigate();
+	async function handleClick()
+	{
+		navigate(`${link}`)
+	}
 	return (
-		<Link to={link}>{label}</Link>
+		<div className="fmylink" onClick={handleClick}>
+			{label}
+		</div>
 	)
 }
-  
-function MyLinks({username} : {username: string})
+
+function MyLinks({ username, userID, startDM } : { username: string, userID: string, startDM: (id: string) => void })
 {
 	return (
-	  <div className='fpfp-popover-content a'>
-		<ProfileLink label="View Profile" link={`/profile/${username}`} />
-	  </div>
+		<div className='fpfp-popover-content a'>
+			<ProfileLink label="Profile" link={`/profile/${username}`} />
+			<div className="fmylink" onClick={()=>{
+				// alert("temporarily disabled while query is wrong")
+				startDM(userID);
+			}}>Send Message</div>
+		</div>
 	);
 }
 
-function FriendCard({ friend}: {friend: PublicUser})
+function FriendCard({ friend, startDM }: { friend: PublicUser, startDM: (id: string) => void })
 {
 	const fetchPFP = Constants.FETCH_USERS;	
 	return (
@@ -34,18 +45,18 @@ function FriendCard({ friend}: {friend: PublicUser})
 				<p>{friend.userName}</p>
 			</div>
 			<Popover.Panel className="fpfp-popover-content">
-				<MyLinks username={friend.userName}/>
+				<MyLinks username={friend.userName} userID={friend.id} startDM={startDM} />
 			</Popover.Panel>
 		</Popover>
 	  )
 }
 
-function MyFriendsList() {
+function MyFriendsList({ startDM }: { startDM: (id: string) => void }) {
 	const [friendArray, setFriendArray] = useState<PublicUser[]>([]);
 	const [isLoading, setisLoading] = useState(true);
 	
 	async function getFriends() {
-		console.log("fetched some friends");
+		// console.log("fetched some friends");
 		setFriendArray(await FetchFriends());
 		setisLoading(false);
 	}
@@ -64,7 +75,7 @@ function MyFriendsList() {
 		<div className="all-friends scrollable">
 			{
 				friendArray.map((friend) => (
-					<FriendCard key={friend.id} friend={friend}/>
+					<FriendCard key={friend.id} friend={friend} startDM={startDM} />
 				))
 			}
 		</div>

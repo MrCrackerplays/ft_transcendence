@@ -1,7 +1,6 @@
 .add-friend-btn{
 	height:100%;
 	width:100%;
-	/* max-width: 100%; */
 	font-size: 1rem;
 	color: white;
 	text-shadow: 0 1px 0 rgb(0, 0, 0);
@@ -17,4 +16,18 @@
 
   .remove-friend{
 	background-color: rgb(168, 10, 18);
+  }
+
+  .self-friend:hover{
+	background-color: rgb(87, 84, 88);
+	cursor:pointer;
+  }
+  .add-friend:hover{
+	background-color: rgb(44, 180, 210);
+	cursor:pointer;
+  }
+
+  .remove-friend:hover{
+	background-color: rgb(187, 13, 22);
+	cursor:pointer;
   }

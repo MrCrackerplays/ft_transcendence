@@ -5,19 +5,12 @@
 	padding: 1.5px;
 	position: relative;
 	background-color: rgb(38, 37, 37);
+	align-items: center;
 }
 
-/* .friend-card:active
-{
-	background-color:red;
-} */
-
-.greenfriend{
-	background-color:green;
-}
-
-.redfriend{
-	background-color:red;
+.friend-card > p {
+	margin: 0;
+	font-size: 1.5em;
 }
 
 .online {
@@ -36,6 +29,10 @@
 	color: rebeccapurple;
 }
 
+.inqueue {
+	color: rgb(54, 42, 133);
+}
+
 .fpfp-flex-box {
 	display: flex;
 	align-items: center;
@@ -52,19 +49,22 @@
 	background-color: transparent;
 	outline: none;
 	border-radius: 50%;
-	height: 50px;
-	width: 50px;
+	min-height: 50px;
+	min-width: 50px;
 	box-shadow: 0px 0px 10px 0px rgba(0, 0, 0, 0.75);
 
 }
 
 .fpfp-circle-image {
 	position: absolute;
-	top: 48%;
 	transform: translate(-50%, -50%);
 	width: 45px;
 	height: 45px;
 	border-radius: 50%;
+}
+
+.fpfp-circle-image:hover{
+	cursor:pointer;
 }
 
 .fpfp-popover {
@@ -95,4 +95,14 @@
 .fpfp-popover-content a.hovered {
 	text-decoration: underline;
 	border-width: 2px;
+}
+
+.fmylink{
+	font-size:1.5rem;
+	color:black;
+}
+
+.fmylink:hover{
+	cursor:pointer;
+	text-decoration: underline;
 }
