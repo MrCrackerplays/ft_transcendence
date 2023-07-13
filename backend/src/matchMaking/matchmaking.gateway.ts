@@ -208,6 +208,12 @@ export class MatchMakingGateway {
 	}
 
 	private async clearUpPrivateRoom(room: GameRoom) {
+		const gameMode = this.getGameModeForClient(room.playerLeftSocket);
+
+		this.removeClientFromQueue(room.playerLeftSocket, gameMode);
+		this.removeClientFromQueue(room.playerRightSocket, gameMode);
+		this.queuesByGameMode.delete(gameMode);
+		this.clearUpClassicRoom(room);
 	}
 
 	private async clearUpSoloRoom(room: GameRoom) {
@@ -224,8 +230,8 @@ export class MatchMakingGateway {
 			room.winner = room.gameState.winner;
 			if (room.singlemode)
 				this.clearUpSoloRoom(room);
-			else
-				this.clearUpClassicRoom(room);
+			else if (room.roomName.startsWith(GameMode.INVITE))
+				this.clearUpPrivateRoom(room);
 		}
 		else
 			Logger.log(`NO ROOM FOUND`);
@@ -332,7 +338,10 @@ export class MatchMakingGateway {
 				this.roomIndex++;
 			else
 				this.roomIndex = 0;
-			this.moveClientsToRoom(client1, client2, this.roomKeyForGameMode(gamemode));
+			if (gamemode.toString().startsWith(GameMode.INVITE))
+				this.moveClientsToRoom(client1, client2, gamemode);
+			else
+				this.moveClientsToRoom(client1, client2, this.roomKeyForGameMode(gamemode));
 		}
 	}
 
