@@ -16,10 +16,10 @@ export class UserController {
 		) {}
 
 	// !: DEBUG only
-	@Post()
-	async createOne(@Body() createUserDTO: CreateUserDTO) {
-		return this.userService.createOne(createUserDTO);
-	}
+	// @Post()
+	// async createOne(@Body() createUserDTO: CreateUserDTO) {
+	// 	return this.userService.createOne(createUserDTO);
+	// }
 
 	@Get()
 	// Promises a list of users

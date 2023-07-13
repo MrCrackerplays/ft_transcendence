@@ -21,6 +21,20 @@ function NavButton({label}) {
 	)
 }
 
+async function grantPointless()
+{
+	const RESPONSE2 = await fetch(`${Constants.BACKEND_URL}/self/achievements`, {
+		method: 'POST',
+		credentials: 'include',
+		headers: {
+			'content-type': "application/json"
+		},
+		body: JSON.stringify({
+			name: "pointless"
+		})
+	});
+}
+
 const Menu = () => {
 	const [activeMenu, setActiveMenu] = useState('home');
 	
@@ -31,7 +45,7 @@ const Menu = () => {
 				<button className='button' onClick={() =>setActiveMenu('play')}>play</button>
 				<NavButton label={'profile'} />
 				<NavButton label={'settings'} />
-				<button className='button'>pointless</button>
+				<button className='button' onClick={() =>grantPointless()}>pointless</button>
 			</div>
 		)
 	}

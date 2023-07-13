@@ -87,11 +87,11 @@ export class AuthController {
 	}
 
 	// !: DEBUG ONLY
-	@Public()
-	@Get('loginOTP/:code')
-	async signInOTPParam(@Req() req: AuthRequest, @Param('code') code: string, @Res() res: Response): Promise<void> {
-		this.signInOTP(req, code, res);
-	}
+	// @Public()
+	// @Get('loginOTP/:code')
+	// async signInOTPParam(@Req() req: AuthRequest, @Param('code') code: string, @Res() res: Response): Promise<void> {
+	// 	this.signInOTP(req, code, res);
+	// }
 
 	/*
 	@Get('logout')
@@ -109,74 +109,91 @@ export class AuthController {
 	async enableTwoFactor(@Req() req: AuthRequest, @Res() res: Response): Promise<string> {
 		const qrcode = await this.authService.enableTwoFactor(req);
 
-		const conn: Connection = await this.authService.getCurrentConnection(req);
-		// Cookie needs to be updated (otp = false; because with a new OTP it'll never be validated at this point)
-		const cookie: string = this.authService.signAndGetCookie(conn, false, true);
+		if (qrcode == null) {
+			res.status(HttpStatus.CONFLICT).send('2FA already enabled');
+		}
 
-		res.setHeader('Set-Cookie', cookie)
-			.json({ qr: qrcode });
+		const conn: Connection = await this.authService.getCurrentConnection(req);
+		
+		// // Should cookie be updated with otp = false?
+		// const cookie: string = this.authService.signAndGetCookie(conn, false, true);
+
+		res.json({ qr: qrcode });
 		return qrcode;
 	}
 
-	// @Post('2fa/validate')
-	// async validateTwoFactor(@Req() req: AuthRequest, @Body('code') code: string): Promise<string> {
-	// 	return this.authService.validateTwoFactor(req, code);
-	// }
+	@Post('2fa/validate')
+	async validateTwoFactor(@Req() req: AuthRequest, @Body('code') code: string, @Res() res: Response): Promise<void> {
+		var conn: Connection = await this.authService.getCurrentConnection(req);
+		if (!conn)
+			res.status(HttpStatus.FORBIDDEN).send();
+
+		conn = await this.authService.validateTwoFactor(conn.id, code);
+		if (conn != null) {
+			// now build a cookie with 2FA actually enabled
+			const cookie: string = this.authService.signAndGetCookie(conn, true, true);
+			res.setHeader('Set-Cookie', cookie)
+				.status(200)
+				.send();
+			return ;
+		}
+		res.status(HttpStatus.FORBIDDEN).send();
+	}
 
 	@Get('2fa/enabled')
 	async getTwoFactor(@Req() req: AuthRequest): Promise<boolean> {
 		return this.authService.getTwoFactorEnabled(req);
 	}
 
-	// !: FOR DEBUG
-	@Public()
-	@Get('2fa/disable/:id')
-	@HttpCode(200)
-	async disableTwoFactor(@Param('id') _id: number, @Res() res: Response) {
-		const conn: Connection = await this.connectionService.get({id: _id});
+	@Post('2fa/disable')
+	async disable2FA(@Req() req: AuthRequest, @Res() res: Response): Promise<void> {
+		const conn: Connection = await this.authService.getCurrentConnection(req);
 
-		await this.authService.disableTwoFactor(conn);
+		this.authService.disableTwoFactor(conn);
 
 		// Cookie needs to be updated, true because OTP is disabled
 		const cookie: string = this.authService.signAndGetCookie(conn, true, true);
 
 		res.setHeader('Set-Cookie', cookie)
 			.status(200)
-			.send('2fa disabled (DEBUG ONLY)');
+			.send('2fa disabled');
 	}
 
-	@Post('remove')
-	async removeAccount(@Req() req: AuthRequest, @Res() res: Response): Promise<void> {
-		const conn: Connection = await this.authService.getCurrentConnection(req);
+	// !: FOR DEBUG
+	// @Public()
+	// @Get('2fa/disable/:id')
+	// @HttpCode(200)
+	// async disableTwoFactor(@Param('id') _id: number, @Res() res: Response) {
+	// 	const conn: Connection = await this.connectionService.get({id: _id});
 
-		if (conn) {
-			console.log(`removing account with 42ID: ${conn.user42ID}`);
+	// 	await this.authService.disableTwoFactor(conn);
 
-			conn.user.remove();
-			conn.remove();
-		}
+	// 	// Cookie needs to be updated, true because OTP is disabled
+	// 	const cookie: string = this.authService.signAndGetCookie(conn, false, true);
 
-		this.logOut(req, res);
-	}
+	// 	res.setHeader('Set-Cookie', cookie)
+	// 		.status(200)
+	// 		.send('2fa disabled (DEBUG ONLY)');
+	// }
 
 	//! DEBUG ONLY
-	@Public()
-	@Get('remove/:id')
-	async removeAccountID(@Param('id') _id: string): Promise<void> {
+	// @Public()
+	// @Get('remove/:id')
+	// async removeAccountID(@Param('id') _id: string): Promise<void> {
 
-		const conn: Connection = await this.connectionService.get({
-			user: {
-				id: _id
-			}
-		}, ['user']);
+	// 	const conn: Connection = await this.connectionService.get({
+	// 		user: {
+	// 			id: _id
+	// 		}
+	// 	}, ['user']);
 
-		if (conn) {
-			console.log(`removing account with 42ID: ${conn.user42ID}`);
-			conn.user.remove();
-			conn.remove();
-		}
-		else {
-			console.log(`attempting to remove non-existant connection`);
-		}
-	}
+	// 	if (conn) {
+	// 		console.log(`removing account with 42ID: ${conn.user42ID}`);
+	// 		conn.user.remove();
+	// 		conn.remove();
+	// 	}
+	// 	else {
+	// 		console.log(`attempting to remove non-existant connection`);
+	// 	}
+	// }
 }

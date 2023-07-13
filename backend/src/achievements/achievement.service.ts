@@ -27,10 +27,12 @@ export class AchievementService {
 			name: dto.name
 		});
 
-		if (existing != undefined && existing != null)
-			return ;
-
-		return this.achievementRepository.save(Achievement.createFromDTO(dto));
+		if (!existing)
+			return this.achievementRepository.save(Achievement.createFromDTO(dto));
+		existing.description = dto.description;
+		existing.imageURL = dto.imageURL;
+		existing.save();
+		return existing;
 	}
 
 	async getAll(): Promise<Achievement[]> {

@@ -137,7 +137,6 @@ function Chat( {
 
 	const sendMessage = () => {
 
-		//start debug
 		if (messageBody.startsWith("/")) {
 			let message: string[] = messageBody.split(" ");
 			if (message.length == 1) {
@@ -169,8 +168,6 @@ function Chat( {
 				}
 			}
 		}
-		//end debug
-
 
 		if (muted.includes(currentChannel)) {
 			console.log("you are muted");

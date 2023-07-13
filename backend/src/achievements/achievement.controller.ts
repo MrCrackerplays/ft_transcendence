@@ -10,11 +10,11 @@ export class AchievementController {
 	constructor(private readonly achievementService: AchievementService) {}
 
 	// !: DEBUG ONLY
-	@Public()
-	@Post()
-	async create(@Body() dto: CreateAchievementDTO) : Promise<Achievement> {
-		return this.achievementService.create(dto);
-	}
+	// @Public()
+	// @Post()
+	// async create(@Body() dto: CreateAchievementDTO) : Promise<Achievement> {
+	// 	return this.achievementService.create(dto);
+	// }
 
 	// Getting ALL available achievements is a public API call
 	@Public()

@@ -11,12 +11,18 @@ import { MatchModule } from './matches/match.module';
 import { AuthModule } from './auth/auth.module';
 import { ChatModule } from './chat/chat.module';
 import { AchievementModule } from './achievements/achievement.module';
-import { UserStatusModule } from './userStatus/UserStatus.module';
+import { UserStatusModule } from './userStatus/userStatus.module';
 import { MatchMakingModule } from './matchMaking/matchmaking.module';
+import { ServeStaticModule } from '@nestjs/serve-static';
+import { join } from 'path';
 
 @Module({
 
 	imports: [
+		//serving the built frontend
+		ServeStaticModule.forRoot({
+			rootPath: join(__dirname, '..', '..', 'frontend'),
+		}),
 		// Configuration from .env
 		ConfigModule.forRoot({
 			envFilePath: '.env',
