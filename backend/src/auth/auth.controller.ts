@@ -176,20 +176,6 @@ export class AuthController {
 			.send('2fa disabled (DEBUG ONLY)');
 	}
 
-	@Post('remove')
-	async removeAccount(@Req() req: AuthRequest, @Res() res: Response): Promise<void> {
-		const conn: Connection = await this.authService.getCurrentConnection(req);
-
-		if (conn) {
-			console.log(`removing account with 42ID: ${conn.user42ID}`);
-
-			conn.user.remove();
-			conn.remove();
-		}
-
-		this.logOut(req, res);
-	}
-
 	//! DEBUG ONLY
 	@Public()
 	@Get('remove/:id')

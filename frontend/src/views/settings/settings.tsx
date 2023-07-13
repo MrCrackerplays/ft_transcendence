@@ -23,33 +23,6 @@ async function disable2FA() {
 	window.location.reload();
 }
 
-function ModalDelete({ onClose }) {
-	return (
-		<div className="modaldelete">
-			<div className="modaldelete-content">
-				<h2>Delete Account</h2>
-				<p>Are you sure you wish you delete your account?</p>
-				<div className="modaldelete-buttons">
-					{/* <button onClick={deleteAccount} className="deletebutton">Delete Account!</button> */}
-					<form action={`${Constants.BACKEND_URL}/remove`} method='POST'>
-						<button type="submit" className="deletebutton">Delete</button>
-					</form>
-					<button onClick={onClose} className="cancelbutton">Cancel</button>
-				</div>
-			</div>
-		</div>
-	);
-}
-
-function DeleteAccountButton({ setTrue, setFalse, showDelete }) {
-	return (
-		<div>
-			<button className="setShowDelete size" onClick={setTrue} >Delete Account</button>
-			{showDelete && <ModalDelete onClose={(setFalse)} />}
-		</div>
-	)
-}
-
 function Modal2fa({ onDisable, onClose }) {
 	return (
 		<div className="modaldelete">
@@ -110,7 +83,6 @@ function QRButton({ buttontype, setenabled2fa }) {
 }
 
 function Settings({ updatescam, setupdatescam }) {
-	const [showDelete, setshowDelete] = useState(false);
 	const [showerror, setshowerror] = useState(false);
 	const [errorText, seterrorText] = useState("");
 	const [newusername, setnewusername] = useState("");
@@ -196,9 +168,6 @@ function Settings({ updatescam, setupdatescam }) {
 	}
 	return (
 		<div className="setting-container">
-			<div className="Delete-Button">
-				<div className="SettingsDeleteButtonSubmit"><DeleteAccountButton setTrue={() => setshowDelete(true)} setFalse={() => setshowDelete(false)} showDelete={showDelete} /></div>
-			</div>
 			<div className="SettingsPFP">
 				<div className="SettingsPFPImage">
 					<img key={updatescam} className="SPFPSize" src={`${Constants.FETCH_SELF_PFP}`} alt="" />
@@ -234,12 +203,14 @@ function Settings({ updatescam, setupdatescam }) {
 				<div className="SettingsEnableQR">
 					<QRButton buttontype={enabled2fa} setenabled2fa={() => setenabled2faimg(true)} />
 				</div>
+				{enabled2fa == "Disabled" && <div>
 				<div className="SettingsQRInput">
 					<input type="text" placeholder="Validate 2fa..." onChange={(e) => setcoda2fa(e.target.value)} value={code2fa} />
 				</div>
 				<div className="SettingsQRSubmission">
 					<button onClick={submitQR} className="QRSubmitButton">Submit</button>
 				</div>
+				</div>}
 			</div>
 		</div>
 	)
