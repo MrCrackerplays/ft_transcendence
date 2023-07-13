@@ -52,6 +52,7 @@ export class GameRoom {
 			},
 			time: startGameState.time,
 			gameOver: startGameState.gameOver,
+			gameClosing: startGameState.gameClosing,
 			winner: startGameState.winner,
 			singlemode: startGameState.singlemode,
 		}

@@ -1,11 +1,11 @@
 export class Constants {
 
 	public static BACKEND_HOST_PREFIX = 'http://';
-	public static BACKEND_HOST = 'f1r4s20.codam.nl';
+	public static BACKEND_HOST = 'localhost';
 	public static BACKEND_PORT = '3000';
 
 	public static FRONTEND_HOST_PREFIX = 'http://';
-	public static FRONTEND_HOST = 'f1r4s20.codam.nl';
+	public static FRONTEND_HOST = 'localhost';
 	public static FRONTEND_PORT = '3000';
 
 	public static BACKEND_URL = `${Constants.BACKEND_HOST_PREFIX}${Constants.BACKEND_HOST}:${Constants.BACKEND_PORT}`;

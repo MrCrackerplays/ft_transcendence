@@ -159,14 +159,14 @@ export class MatchMakingGateway {
 	@SubscribeMessage('playerMovement')
 	async handlePlayerMovement(client: Socket, data: { movement: PaddleAction }) : Promise<void> {
 		const { movement } = data;
-		Logger.log('Received player movement:', movement);
+		// Logger.log('Received player movement:', movement);
 		const user = await this.userFromSocket(client);
 		const room = this.clientsInGameByUserID.get(user.id);
 
 		if (room) {
 			room.handleMessage(client, movement);
 		} else {
-			Logger.log('no room for user', this.clientsInGameByUserID.get(user.id));
+			// Logger.log('no room for user', this.clientsInGameByUserID.get(user.id));
 		}
 	}
 
@@ -176,20 +176,22 @@ export class MatchMakingGateway {
 
 		this.userService.unlockAchievement(user1, "Played Pong!");
 		this.userService.unlockAchievement(user2, "Played Pong!");
-		Logger.log(`${room.roomName}`)
+		user1.gamesPlayed++;
+		user2.gamesPlayed++;
+		// Logger.log(`${room.roomName}`)
 		if (room.winner == user1.id) {
 			user1.gamesWon++;
 			this.matchService.createMatch(user1, user2, room.gameState.leftPaddle.score, room.gameState.rightPaddle.score);
 			room.playerLeftSocket.emit('victory');
 			room.playerRightSocket.emit('defeat');
-			Logger.log(`winner: ${user1.userName}`);
+			// Logger.log(`winner: ${user1.userName}`);
 		}
 		else if(room.winner == user2.id) {
 			user2.gamesWon++;
 			this.matchService.createMatch(user2, user1, room.gameState.rightPaddle.score, room.gameState.leftPaddle.score);
 			room.playerLeftSocket.emit('defeat');
 			room.playerRightSocket.emit('victory');
-			Logger.log(`winner: ${user2.userName}`); 
+			// Logger.log(`winner: ${user2.userName}`); 
 		}
 		else
 			Logger.log(`NO WINNER FOUND`);
@@ -198,10 +200,9 @@ export class MatchMakingGateway {
 		
 		this.roomsByKey.delete(room.roomName);
 		this.clientsInGameByUserID.delete(user1.id);
-		Logger.log(`${user1.userName} is no longer in a game room`);
+		// Logger.log(`${user1.userName} is no longer in a game room`);
 		this.clientsInGameByUserID.delete(user2.id);
-		Logger.log(`${user2.userName} is no longer in a game room`);
-		// this.server.to(room.roomName).emit('end_game');
+		// Logger.log(`${user2.userName} is no longer in a game room`);
 		room.playerLeftSocket.emit('end_game');
 		room.playerRightSocket.emit('end_game');
 		room.playerLeftSocket.disconnect();
@@ -263,10 +264,15 @@ export class MatchMakingGateway {
 		// Logger.log(`CHECK PLAYER 2 IN SOLO: ${room.playerRightSocket}`);
 		// Logger.log(`Check gamestate in room updates: ${newGameState.gameOver}`);
 		room.gameState = newGameState;
-		if (room.gameState.gameOver)
-			this.handleGameOver(room);
-		else
-			this.emitGameStateToPlayers(room);
+		if (!room.gameState.gameClosing)
+		{
+			if (room.gameState.gameOver) {
+				room.gameState.gameClosing = true;
+				this.handleGameOver(room);
+			}
+			else
+				this.emitGameStateToPlayers(room);
+			}
 		});
 	}
 
@@ -333,7 +339,7 @@ export class MatchMakingGateway {
 	private matchClientsForGameMode(gamemode: GameMode) {
 		const clients = this.getClientsForGameMode(gamemode);
 
-		Logger.log('Check for matches');
+		// Logger.log('Check for matches');
 
 		if (clients && clients.length >= 2) {
 			const client1 = clients[0];
@@ -404,7 +410,7 @@ export class MatchMakingGateway {
 	}
 
 	private async isClientInQueue(client: Socket): Promise<boolean> {
-		Logger.log("is Client in Queue?")
+		// Logger.log("is Client in Queue?")
 		const userId = ((await this.userFromSocket(client)).id)
 		const userQueue = this.clientsInQueueByUserID.get(userId);
 
@@ -418,9 +424,9 @@ export class MatchMakingGateway {
 		const userId = (await this.userFromSocket(client)).id;
 		const userGame = this.clientsInGameByUserID.get(userId);
 
-		Logger.log('Check for reconnecting client');
+		// Logger.log('Check for reconnecting client');
 		if (userGame != undefined) {
-			Logger.log('The client is reconnecting');
+			// Logger.log('The client is reconnecting');
 			client.join(userGame.roomName);
 			if (userId == userGame.playerLeft)
 				userGame.playerLeftSocket = client;
@@ -429,7 +435,7 @@ export class MatchMakingGateway {
 			this.setStatus(client, UserStatus.INGAME);
 			return true;
 		}
-		Logger.log('The client is connecting fresh');
+		// Logger.log('The client is connecting fresh');
 		return false;
 	}
 };

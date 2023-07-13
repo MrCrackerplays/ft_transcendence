@@ -150,6 +150,7 @@ const PongGame = (props: { webSocketRef: MutableRefObject<Socket | undefined>;  
 			position: startGameState.ball.position },
 		time: startGameState.time,
 		gameOver: startGameState.gameOver,
+		gameClosing: startGameState.gameClosing,
 		winner: startGameState.winner,
 		singlemode: mode,
 	};
