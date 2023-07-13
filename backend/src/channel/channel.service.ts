@@ -16,12 +16,13 @@ export class ChannelService {
 	constructor(
 		@InjectRepository(Channel) private channelRepository: Repository<Channel>,
 		private readonly messageService: MessageService
-		) {
-			// Spawn global public channel
-			this.init();
-		}
+	) { }
+	static firsttime: boolean = true;
 	
-	async init() {
+	async onApplicationBootstrap() {
+		if (!ChannelService.firsttime)
+			return ;
+		ChannelService.firsttime = false;
 		const globalChannel = await this.get({ name: 'Codam'});
 		if (!globalChannel) {
 			console.log('Creating Codam channel');

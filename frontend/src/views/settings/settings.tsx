@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import './settings.css'
 import { Constants } from '../../../../shared/constants';
 import FetchQREnabled from '../../hooks/fetch/FetchQREnabled';
+import { useNavigate } from 'react-router-dom';
 
 
 // async function deleteAccount() {
@@ -12,6 +13,15 @@ import FetchQREnabled from '../../hooks/fetch/FetchQREnabled';
 // 		credentials: 'include'
 // 	});
 // }
+
+async function disable2FA() {
+	console.log('disabling 2FA');
+	const RESPONSE = await fetch(`${Constants.BACKEND_URL}/2fa/disable`, {
+		method: 'POST',
+		credentials: 'include'
+	});
+	window.location.reload();
+}
 
 function ModalDelete({ onClose }) {
 	return (
@@ -40,14 +50,14 @@ function DeleteAccountButton({ setTrue, setFalse, showDelete }) {
 	)
 }
 
-function Modal2fa({ onClose }) {
+function Modal2fa({ onDisable, onClose }) {
 	return (
 		<div className="modaldelete">
 			<div className="modaldelete-content">
 				<h2>Disable Two-factor authentication</h2>
 				<p>Are you sure you wish you disable your Two-factor authentication?</p>
 				<div className="modaldelete-buttons">
-					<button className="deletebutton">Disable</button>
+					<button onClick={onDisable} className="deletebutton">Disable</button>
 					<button onClick={onClose} className="cancelbutton">Cancel</button>
 				</div>
 			</div>
@@ -88,7 +98,7 @@ function QRButton({ buttontype, setenabled2fa }) {
 		return (
 			<div>
 				<button className="disable2fa" onClick={() => setshowdisable(true)}>Disable 2fa</button>
-				{showdisable && <Modal2fa onClose={() => setshowdisable(false)} />}
+				{showdisable && <Modal2fa onDisable={() => { disable2FA(); setshowdisable(false)}} onClose={() => setshowdisable(false)} />}
 			</div>
 		)
 	}
@@ -153,8 +163,35 @@ function Settings({ updatescam, setupdatescam }) {
 		}
 	}
 	const submitQR = async () => {
-		//POST TO SUBMT QR GOES HERE LATER IDK
-		//PROBABLY SET ERROR HERE IF 2FA CODE WRONG
+		setshowerror(false)
+		const RESPONSE = await fetch(`${Constants.BACKEND_URL}/2fa/validate`, {
+			method: 'POST',
+			credentials: 'include',
+			headers: {
+				'content-type': "application/json"
+			},
+			body: JSON.stringify({
+				code: code2fa
+			})
+		});
+		if (!RESPONSE.ok)
+		{
+			setshowerror(true)
+			seterrorText("QR Input Incorrect")
+			console.log(RESPONSE)
+		} else {
+			const RESPONSE2 = await fetch(`${Constants.BACKEND_URL}/self/achievements`, {
+				method: 'POST',
+				credentials: 'include',
+				headers: {
+					'content-type': "application/json"
+				},
+				body: JSON.stringify({
+					name: "2fa Secure"
+				})
+			});
+			window.location.reload();
+		}
 		return;
 	}
 	return (

@@ -1,7 +1,7 @@
 import { PublicAchievements } from "./public-achievement";
 
 // PublicUser is what the backend sends to the frontend. It's what's supposed to be public to the users
-export class PublicUser {
+export interface PublicUser {
 	id: string;
 	userName: string;
 	score: number;
@@ -15,15 +15,17 @@ export class PublicUser {
 
 function DefaultProfile()
 {
-	let retValue : PublicUser = new PublicUser;
-	retValue.id = "";
-	retValue.userName = "N/A";
-	retValue.gamesPlayed = 0;
-	retValue.gamesWon = 0;
-	retValue.active = false;
-	retValue.status = 'OFFLINE';
-	retValue.imageURL = "N/A";
-	retValue.achievements = [];
+	let retValue : PublicUser = {
+		id : "",
+		userName : "N/A",
+		gamesPlayed : 0,
+		gamesWon : 0,
+		score : 0,
+		active : false,
+		status : 'OFFLINE',
+		imageURL : "N/A",
+		achievements : [],
+	}
 	return (retValue);
 }
 

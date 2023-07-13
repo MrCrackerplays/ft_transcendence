@@ -82,7 +82,19 @@ function AddFriend( {UUID} : {UUID:string}) {
 		});
 		console.log(RESPONSE.status);
 		if (RESPONSE.status >= 200 && RESPONSE.status <= 299)
+		{
+			const RESPONSE2 = await fetch(`${Constants.BACKEND_URL}/self/achievements`, {
+				method: 'POST',
+				credentials: 'include',
+				headers: {
+					'content-type': "application/json"
+				},
+				body: JSON.stringify({
+					name: "Added a Friend"
+				})
+			});
 			setfriendState('Remove');
+		}
 	}
 
 	if (friendState == "Loading"){
