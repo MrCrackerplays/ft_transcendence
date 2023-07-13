@@ -22,5 +22,4 @@ COPY ./tools ./
 RUN chmod +x ./entrypoint.sh
 
 EXPOSE 3000
-EXPOSE 5173
 ENTRYPOINT ["./entrypoint.sh"]

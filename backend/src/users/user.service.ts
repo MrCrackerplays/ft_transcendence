@@ -317,15 +317,7 @@ export class UserService {
 		});
 
 		if (!ach)
-			return;
-		
-		const userAlreadyHas = await this.getOne({
-			id: user.id,
-			achievements {
-
-			}
-		}, ['achievements'] );
-
+			return ;
 		user.achievements.push(ach);
 		user.save();
 	}
