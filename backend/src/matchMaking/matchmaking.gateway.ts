@@ -207,6 +207,9 @@ export class MatchMakingGateway {
 		room.playerRightSocket.disconnect();
 	}
 
+	private async clearUpPrivateRoom(room: GameRoom) {
+	}
+
 	private async clearUpSoloRoom(room: GameRoom) {
 		const user = await this.userFromSocket(room.playerLeftSocket);
 	
@@ -288,27 +291,33 @@ export class MatchMakingGateway {
 			await this.moveClientsToRoom(client, undefined, roomKey);
 			return;
 		}
-
+		
 		if (!this.queuesByGameMode.has(gamemode))
-			this.queuesByGameMode.set(gamemode, []);
-		this.queuesByGameMode.get(gamemode).push(client)
+		this.queuesByGameMode.set(gamemode, []);
+		if (gamemode.toString().startsWith(GameMode.INVITE) && this.queuesByGameMode.get(gamemode).length >= 2)
+			client.emit('room_full');
 
-		await this.setStatus(client, UserStatus.INQUEUE)
+		this.queuesByGameMode.get(gamemode).push(client);
+		await this.setStatus(client, UserStatus.INQUEUE);
 		this.matchClientsForGameMode(gamemode);
 	}
 
 	private removeClientFromQueue(client: Socket, gamemode: GameMode) {
-		Logger.log(`remove client ${client.id} from queue ${gamemode}`)
+		// Logger.log(`remove client ${client.id} from queue ${gamemode}`)
 		const queue = this.queuesByGameMode.get(gamemode);
 		if (queue) {
 			const index = queue.indexOf(client);
-			Logger.log(`client index to remove: ${index}`);
+			// Logger.log(`client index to remove: ${index}`);
 			if (index != -1)
 				queue.splice(index, 1);
-			Logger.log(`queue length after removal: ${queue.length}`)
+			// Logger.log(`queue length after removal: ${queue.length}`)
 		} 
 		client.leave(gamemode);
-		Logger.log('removed client from queue');
+		if (gamemode != GameMode.CLASSIC && gamemode != GameMode.INVITE) {
+			if (queue.length == 0)
+				this.queuesByGameMode.delete(gamemode);
+		}
+		// Logger.log('removed client from queue');
 	}
 
 	private matchClientsForGameMode(gamemode: GameMode) {
@@ -328,8 +337,6 @@ export class MatchMakingGateway {
 	}
 
 	private async moveClientsToRoom(client1: Socket, client2: Socket | undefined, roomkey: string) {
-
-		
 		if (!this.roomsByKey.has(roomkey)) {
 			const user1id = (await this.userFromSocket(client1)).id;
 			const user2id = client2 ? (await this.userFromSocket(client2)).id : null;
@@ -337,12 +344,12 @@ export class MatchMakingGateway {
 			const newGameRoom = new GameRoom(user1id, user2id, client1, client2, roomkey);
 
 			const gameMode = this.getGameModeForClient(client1);
-			if (!client2) { //added this monstrocity as getGameModeForClient logs as gameMode: null
+			if (!client2) //added this monstrocity as getGameModeForClient logs as gameMode: null
 				newGameRoom.singlemode = true;
-			}
-			this.removeClientFromQueue(client1, gameMode);
-			if (client2) {
-				this.removeClientFromQueue(client2, gameMode);
+			if (gameMode == GameMode.CLASSIC) {
+				this.removeClientFromQueue(client1, gameMode);
+				if (client2)
+					this.removeClientFromQueue(client2, gameMode);
 			}
 
 			this.roomsByKey.set(roomkey, newGameRoom);

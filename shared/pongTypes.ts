@@ -75,4 +75,5 @@ export const startGameState = {
 export enum GameMode {
 	CLASSIC = "classic",
 	SOLO = "solo",
+	INVITE = "private",
 };
