@@ -1,5 +1,4 @@
-
-# FT_Transcendence
+# ft_transcendence by ft_ball_busters
 This is a 42 School project completed by a group of 5 students. Listed in alphabetical order are.
 
 Michiel([mteerlin](https://www.github.com/ArgentumLunae)), Nick([ngerrets](https://www.github.com/nickgerrets)), Patrick([pdruart](https://www.github.com/MrCrackerplays)), Yuliia([ydemura](https://www.github.com/ydemura)), Zach ([znajda](https://www.github.com/ZachRN))
@@ -8,24 +7,25 @@ This project is about connecting both a frontend and backend created from scratc
 
 # Compilation
 
-This project is still currently in development.
+After cloning the project you must first complete additonal steps before the project compiles.
 
-To start clone the project and open a terminal to the directory
+First add a `.env` file into the `/backend` folder. This `.env` should be as follows.
 
 ```
-npm install
+POSTGRES_HOST=#HOST NAME
+POSTGRES_PORT=#PORT
+POSTGRES_USER=#USER
+POSTGRES_PASSWORD=#PASSWORD
+POSTGRES_DB=#DATABASE NAME
+
+JWT_SECRET=#JWT SECRET KEY
+ID42= #INTRA 42 PUBLIC KEY
+SECRET42= #INTRA 42 SECRET KEY
+CALLBACK42= #THE CALL BACK LINK FROM INTRA 42
 ```
 
-It is important to open Docker before launching the application as this stores our backend database.
+After the `.env` has been updated to include all required components open a terminal and run
 
-Once docker has started and is running you may proceed.
+`docker-compose up --build`
 
-In the top directory
-```make dev``` and in a seperate terminal from the top of the directory ```cd frontend/ && npm run dev```
-
-After both projects have finished launching,  the `make dev` terminal will have a lot of green logs and the `npm run dev` terminal will have a link to the localhost.
-
-You may now proceed to link from `npm run dev` terminal and proceed with the frontend, or checking the localhost of the backend through the webpage with the correct endpoints.
-
-(This readme is subject to change closer to release of the project, this is just temporary to have the steps needed in order to launch the project at a minimum)
-
+Then you should be all ready to access the website hosted on your machine. Enjoy playing pong!
