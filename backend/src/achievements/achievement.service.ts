@@ -9,17 +9,24 @@ import achievements = require('../../../shared/achievements.json');
 
 @Injectable()
 export class AchievementService {
+	static firstTime: boolean = true;
+
 	constructor(
 		@InjectRepository(Achievement) private achievementRepository: Repository<Achievement>,
-		) {
-			for (const ach of achievements) {
-				this.create({
-					name : ach.name,
-					description : ach.description,
-					imageURL : ach.imageurl
-				});
-			}
+		) {}
+
+	async onApplicationBootstrap() {
+		if (!AchievementService.firstTime)
+			return;
+		AchievementService.firstTime = false;
+		for (const ach of achievements) {
+			this.create({
+				name : ach.name,
+				description : ach.description,
+				imageURL : ach.imageurl
+			});
 		}
+	}
 
 	async create(dto: CreateAchievementDTO) : Promise<Achievement> {
 
@@ -29,6 +36,7 @@ export class AchievementService {
 
 		if (!existing)
 			return this.achievementRepository.save(Achievement.createFromDTO(dto));
+		console.log("if database is clean this shouldn't be here");
 		existing.description = dto.description;
 		existing.imageURL = dto.imageURL;
 		existing.save();

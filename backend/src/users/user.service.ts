@@ -49,6 +49,8 @@ export class UserService {
 	async getCurrentUser(req: AuthRequest): Promise<User> {
 		// Get the connection from the Request payload and attatch the 'user' relation, then return that user
 		const connection: Connection = await this.connectionService.get({ id: req.user.id }, ['user']);
+		if (!connection)
+			return (null);
 		return (connection.user);
 	}
 
@@ -320,10 +322,14 @@ export class UserService {
 			return;
 
 		// user already has achievement
-		if (user.achievements.find((value) => {
-			return ach.id == value.id;
-		})) {
-			return;
+		// if (user.achievements.find((value) => {
+		// 	return ach.id == value.id;
+		// })) {
+		// 	return;
+		// }
+		if (user.achievements.includes(ach)){
+			console.log("User already has achievement");
+			return ;
 		}
 
 		user.achievements.push(ach);

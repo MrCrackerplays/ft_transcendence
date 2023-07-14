@@ -33,11 +33,11 @@ export class ChannelService {
 			})
 			if (newGlobalChannel) {
 				console.log('Adding initial Codam welcome message');
-				const msg = new Message();
-				msg.author = null;
-				msg.channel = newGlobalChannel;
-				msg.content = 'Welcome to Codam!';
-				msg.save();
+				// const msg = new Message();
+				// msg.author = null;
+				// msg.channel = newGlobalChannel;
+				// msg.content = 'Welcome to Codam!';
+				// msg.save();
 				// newGlobalChannel.messages.push(msg);
 				// newGlobalChannel.save();
 			}

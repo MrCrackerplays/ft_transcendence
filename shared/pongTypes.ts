@@ -48,6 +48,7 @@ export type GameState = {
 	ball: BallState,
 	time: number,
 	gameOver: boolean,
+	gameClosing: boolean,
 	winner: string,
 	singlemode: boolean,
 };
@@ -79,6 +80,7 @@ export const startGameState = {
 		position: { x: 0, y: 0 } },
 	time: 0,
 	gameOver: false,
+	gameClosing: false,
 	winner: "",
 	singlemode: true,
 };
