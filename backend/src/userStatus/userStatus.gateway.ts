@@ -77,7 +77,7 @@ export class UserStatusGateway implements OnGatewayConnection, OnGatewayDisconne
 			if (!result)
 				throw new Error('Invalid Token');
 		} catch (e) {
-			client.disconnect();
+			try {client.disconnect();} catch { return; }
 			return ;
 		}
 		this.userFromSocket(client, result).then(user => {
