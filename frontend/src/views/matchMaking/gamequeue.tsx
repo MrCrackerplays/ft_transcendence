@@ -45,9 +45,7 @@ function MatchMakingQueue(gamemode: {gamemode: string}) {
 		ws.current.on('disconnect', () => {
 			console.log(`Disconnected from pong`);
 			setActiveGame(false);
-			// setGameOver(true);
 			setIsConnectionOpen(false);
-			//after disconnect does not allow to play further, cleanup still in need
 		});
 
 		ws.current.on('joined_queue', () => {

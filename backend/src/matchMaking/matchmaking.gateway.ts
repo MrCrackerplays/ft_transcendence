@@ -35,7 +35,7 @@ import { number } from '@hapi/joi';
 		origin: Constants.FRONTEND_URL,
 		credentials: true
 	},
-	namespace: 'matchMakingGateway',
+	namespace: 'api/matchMakingGateway',
 })
 
 
@@ -106,7 +106,7 @@ export class MatchMakingGateway {
 	}
 
 	afterInit(server: Server) {
-		Logger.log('waitlist');
+		// Logger.log('waitlist');
 		this.server = server;
 		this.startRoomUpdates();
 	}

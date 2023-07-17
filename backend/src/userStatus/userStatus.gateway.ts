@@ -18,7 +18,7 @@ import { parse } from 'cookie'
 		origin: Constants.FRONTEND_URL,
 		credentials: true
 	},
-	namespace: 'userStatusGateway',
+	namespace: 'api/userStatusGateway',
 })
 export class UserStatusGateway implements OnGatewayConnection, OnGatewayDisconnect {
 	@WebSocketServer()
