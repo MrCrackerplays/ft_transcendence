@@ -36,7 +36,6 @@ export class AchievementService {
 
 		if (!existing)
 			return this.achievementRepository.save(Achievement.createFromDTO(dto));
-		console.log("if database is clean this shouldn't be here");
 		existing.description = dto.description;
 		existing.imageURL = dto.imageURL;
 		existing.save();

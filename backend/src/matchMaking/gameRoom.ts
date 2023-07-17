@@ -74,7 +74,7 @@ export class GameRoom {
 			//socket doesn't belong to players - possible?
 			return;
 		}
-		Logger.log('movement: ', movement, 'currentPlayer: ', currentPlayer);
+		// Logger.log('movement: ', movement, 'currentPlayer: ', currentPlayer);
 		const reducer = makeReducer(currentPlayer);
 		if ( movement == "up" ) {
 			const newGameState: GameState = reducer(this.gameState, {
