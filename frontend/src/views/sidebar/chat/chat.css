@@ -3,6 +3,10 @@
 	overflow: auto;
 }
 
+.channel-invite {
+	color: aqua;
+}
+
 #chat-history {
 	min-height: 3rem;
 

@@ -150,8 +150,9 @@ function MessageComponent({ message }: { message: Message }): JSX.Element {
 function channelOptions(role: role, isConnectionOpen: boolean, currentChannel: string, setCurrentChannel: (channel: string) => void, deleteChannel: (channel: string) => Promise<boolean>, leaveChannel: (channel: string) => Promise<boolean>, makeModalVisible: () => void): JSX.Element {
 	const [showLink, setShowLink] = useState(false);
 	let link = <></>;
+	const linkurl = Constants.BACKEND_URL + "/chat-invite/" + currentChannel;
 	if (showLink)
-		link =  <div>`${Constants.BACKEND_URL}/chat-invite/${currentChannel}`</div>;
+		link =  <a className="channel-invite" href={linkurl}>{linkurl}</a>;
 	let extraoptions = <></>;
 	if (role == "owner") {
 		extraoptions = (
