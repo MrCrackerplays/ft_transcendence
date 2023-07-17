@@ -56,9 +56,8 @@ export class ChannelService {
 		channel.admins = [];
 		channel.banned = [];
 		channel.muted = [];
-		channel.save();
 
-		return channel;
+		return channel.save();
 	}
 
 	async createDM(userA: User, userB: User): Promise<Channel> {
