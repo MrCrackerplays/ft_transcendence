@@ -22,6 +22,10 @@ export class AuthService {
 	async signIn(payload: any): Promise<Connection> {
 		console.log(`attempting signin for 42-user: ${payload.id}`);
 
+		if (payload == null || payload == undefined || payload.id == undefined) {
+			return null;
+		}
+
 		// Get existing connection from the provided user42
 		let con = await this.connectionService.get({ user42ID: payload.id }, ['user']);
 

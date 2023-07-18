@@ -22,6 +22,11 @@ export class AuthController {
 	async signIn(@Req() req: any, @Res() res: Response): Promise<void> {
 		const conn: Connection = await this.authService.signIn(req.user as any);
 
+		if (conn == null) {
+			console.log('Bad payload, unauthorized user!');
+			res.status(HttpStatus.FORBIDDEN).send();
+		}
+
 		// Check if 2FA is enabled, if so the redirect is different
 		let otp : boolean = true;
 		let redirectURL = Constants.FRONTEND_LOGIN_REDIRECT;
