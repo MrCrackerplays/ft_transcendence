@@ -143,6 +143,7 @@ export class ChatGateway {
 		let dto: CreateChannelDTO = { name: name, visibility: visibility, password: password };
 		const channel = await this.channelService.create(user, dto);
 		this.userService.unlockAchievement(user, "Get a room");
+		this.server.to("user:" + user.id).socketsJoin("channel:" + channel.id);
 		this.server.to("user:" + user.id).emit("join", channel.id);
 		return true;
 	}
