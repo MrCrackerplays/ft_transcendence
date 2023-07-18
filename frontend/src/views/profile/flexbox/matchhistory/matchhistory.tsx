@@ -8,12 +8,10 @@ import { PublicUser } from '../../../../../../shared/public-user';
 
 function MatchCard({ match, username } : {match:PublicMatch, username:string}) {
 	const leftside: PublicUser = (match.winner.userName === username) ? match.winner : match.loser;
-	// console.log(leftside, username);
 	const leftsideScore: number = (match.winner.userName === username) ? match.winnerScore : match.loserScore; 
 	const rightside: PublicUser = (match.winner.userName !== username) ? match.winner : match.loser;
 	const rightsideScore: number = (match.winner.userName !== username) ? match.winnerScore : match.loserScore;
 	
-	// console.log(leftside)
 	const textcolor = (match.winner.userName == username) ? "green" : "red";
 	const display = (match.winner.userName == username) ? "Victory" : "Defeat";
 	const fetchPFP = Constants.FETCH_USERS;
@@ -58,7 +56,6 @@ function MatchHistory({username}: {username:string}) {
 		return (<div className="matchesCenter">Matches are loading...</div>)
 	if (jsonData.length == 0)
 		return (<div><p className="matchesCenter">No Matches Played Yet</p></div>)
-	// console.log(jsonData)
 	return (
 		<div className="all-matches">
 			{ 
@@ -71,32 +68,3 @@ function MatchHistory({username}: {username:string}) {
 }
 
 export default MatchHistory
-
-// import { useEffect, useState } from "react";
-// import { PublicMatch } from "../../../../../../shared/public-match";
-// import FetchMatchHistory from "../../../../hooks/fetch/FetchMatchHistory";
-
-// function MatchHistory()
-// {
-// 	const [matcharray, setmatcharray] = useState<Array<PublicMatch>>([]);
-// 	const [isLoading, setisLoading] = useState(false);
-// 	useEffect(() => {
-// 		async function fetchdata()
-// 		{
-// 			setmatcharray(await FetchMatchHistory());
-// 			setisLoading(false);
-// 		}
-// 		fetchdata();
-// 	}, []);
-
-// 	if (isLoading)
-// 		return (<div style={{color:"white"}}>Matches are loading...</div>)
-// 	console.log(matcharray);
-// 	return (
-// 		<div>
-
-// 		</div>
-// 	)
-// }
-
-// export default MatchHistory

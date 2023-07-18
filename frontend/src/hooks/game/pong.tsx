@@ -24,73 +24,16 @@ const SocketMagic: (input: SocketMagicInput) => SocketMagicOutput | undefined = 
 	let reconnectAttempts = 0;
 
 	if (!socket) {
-		console.log('socket is undefined');
 		return undefined;
 	}
-	console.log('socket is defined');
 
 	socket.on('pong_state', (newState: GameState) => {
-		//console.log(`backend time: ${JSON.stringify(newState.time)}`);
 		input.overrideState(newState);
-		//console.log('player latest movements from backend: left and right', newState.leftPaddle.paddlePosition, newState.rightPaddle.paddlePosition);
 	});
 
-	// socket.on('end_game', () => {
-	// 	if (wbSocket.current) {
-	// 		wbSocket.current.disconnect();
-	// 	}
-	// })
 
-	// const connectWebSocket = () => { //not used as socket from tempgame is sent as input (ref)
-	// 	console.log('connectWebSocket');
-	// 	if (!input.wbSocket.current) {
-	// 		console.log(`connectWebSocket: ${Constants.BACKEND_URL}/matchMakingGateway`);
-	// 		input.wbSocket.current = io(`${Constants.BACKEND_URL}/matchMakingGateway`, {withCredentials: true});
-	// 		input.wbSocket.current.on('connect', () => {
-	// 			console.log('WebSocket connection established');
-	// 			reconnectAttempts = 0;
-	// 		});
-
-	// 		// input.wbSocket.current.on('message', (data) => {
-	// 		// 	const newState = JSON.parse(data) as GameState;
-	// 		// 	console.log('upd gameState');
-	// 		// 	input.overrideState(newState);
-
-	// 		// 	if (newState.gameOver) {
-	// 		// 		if (input.wbSocket.current) {
-	// 		// 			input.wbSocket.current.disconnect();
-	// 		// 		}
-	// 		// 	}
-	// 		// });
-
-	// 		input.wbSocket.current.on('disconnect', (reason) => {
-	// 			console.log('WebSocket connection closed:', reason);
-	// 			if (reconnectAttempts < maxReconnectAttempts) {
-	// 				reconnectAttempts++;
-	// 				reconnectTimer = setTimeout(() => {
-	// 					connectWebSocket();
-	// 				}, reconnectDelay);
-	// 				console.log(
-	// 					`Reconnecting in ${reconnectDelay / 1000} seconds (Attempt ${reconnectAttempts}/${maxReconnectAttempts})`
-	// 				);
-	// 				reconnectDelay *= 2;
-	// 			} else {
-	// 				console.log('Max reconnect attempts reached. Connection could not be established.');
-	// 				sendGameOverSignal();
-	// 				cleanup();
-	// 			}
-	// 		});
-
-	// 		input.wbSocket.current.on('error', (error) => {
-	// 			console.error('WebSocket connection error:', error);
-	// 			sendGameOverSignal();
-	// 			cleanup();
-	// 		});
-	// 	}
-	// };
 
 	const sendGameOverSignal = () => {
-		console.log('sendGameOverSignal: engaged');
 		if (input.wbSocket.current) {
 			const toSend = {
 				// event: 'gameOver',
@@ -104,13 +47,11 @@ const SocketMagic: (input: SocketMagicInput) => SocketMagicOutput | undefined = 
 
 	const playerMovement: (movement: PaddleAction) => void = (movement) => {
 		if (input.wbSocket.current) {
-			console.log(`front message sent: ${JSON.stringify(movement)}`);
 			input.wbSocket.current.emit('playerMovement', {movement});
 		}
 	};
 
 	const cleanup = () => {
-		console.log('cleanup: engaged');
 		if (input.wbSocket.current) {
 			input.wbSocket.current.disconnect();
 		}
@@ -155,7 +96,6 @@ const PongGame = (props: { webSocketRef: MutableRefObject<Socket | undefined>;  
 		singlemode: mode,
 	};
 
-	//console.log(`initialState PongGame: ${JSON.stringify(initialState)}`);
 	const [state, dispatch] = useReducer(makeReducer(playerID), initialState);
 	//const wbSocket = useRef<Socket | null>(null);
 	const wbSocket = props.webSocketRef;
@@ -172,7 +112,6 @@ const PongGame = (props: { webSocketRef: MutableRefObject<Socket | undefined>;  
 		const output = SocketMagic(input);
 
 		// wbSocket.current?.emit('game_started');
-		// console.log('Onward with the game.');
 
 		//KEYBOARD INPUT 
 		const handleKeyDown = (event) => {
@@ -211,7 +150,6 @@ const PongGame = (props: { webSocketRef: MutableRefObject<Socket | undefined>;  
 	useEffect(() => {
 		
 		const interval = setInterval(() => {
-			// console.log(`frontend time: ${JSON.stringify(state.time)}`);
 			dispatch({ kind: GameActionKind.updateTime, value: null });
 		}, pongConstants.timeDlta * 1000);
 		return () => clearInterval(interval);

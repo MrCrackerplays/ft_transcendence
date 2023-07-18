@@ -7,10 +7,7 @@ async function FetchFriends() {
 	});
 	if (!res.ok || res.status == 401) 
 		return false
-	// console.log(js);
 	const jsonData = await res.json();
-	// console.log(jsonData);
-	// console.log(`User Score: ${jsonData.score}, User active: ${jsonData.active}`);
 	return jsonData;
 }
 

@@ -51,7 +51,6 @@ function UserMenuComponent({ channel, menusettings, setMenu, items }: { channel:
 						key={i}
 						className="testmenu-item"
 						onClick={() => {
-							console.log(item.label);
 							if (item.label == "Invite to game" || item.label == "Block" || item.label == "Unblock")
 								item.action(menusettings.target);
 							else
@@ -77,9 +76,7 @@ function UserMessageComponent({ message, sender, setMenu, blocked }: { message: 
 		}}
 		onContextMenu={(e) => {
 			e.preventDefault();
-			console.log(e);
 			if (e.ctrlKey) {
-				console.log("copied user id to clipboard");
 				navigator.clipboard.writeText(message.sender_id);
 				return;
 			}
