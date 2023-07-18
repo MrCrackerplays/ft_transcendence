@@ -46,7 +46,7 @@ export class AuthController {
 
 	@Get('logout')
 	async logOut(@Req() req: AuthRequest, @Res() res: Response): Promise<void> {
-		res.clearCookie('Authentication', {domain: 'localhost', httpOnly: true, path: '/' })
+		res.clearCookie('Authentication', {domain: Constants.FRONTEND_HOST, httpOnly: true, path: '/' })
 			.status(200)
 			.redirect(`${Constants.FRONTEND_URL}/login`);
 	}

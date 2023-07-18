@@ -28,7 +28,7 @@ const CHANNEL_PASSWORD_REGEX = /^([a-zA-Z0-9_\-]{3,16})$/;
 		origin: `${Constants.FRONTEND_URL}`,
 		credentials: true
 	},
-	namespace: 'chat',
+	namespace: 'api/chat',
 })
 export class ChatGateway {
 	@WebSocketServer()
