@@ -50,7 +50,6 @@ function ChannelList(
 			dataholder.push({ id: channel.id, name: channel.name, visibility: channel.visibility, password: channel.password });
 		}
 		Promise.all([joinedchannels, publicchannels]).then((data) => {
-			console.log("raw channels", data);
 			{
 				let joineddata: Channel[] = [];
 				data[0].forEach((channel) => { adder(joineddata, channel) });
@@ -72,7 +71,6 @@ function ChannelList(
 			setOwner(Array.from(owner));
 			setAdmin(Array.from(admin));
 			refreshBlocked();
-			console.log("channels", combineddata);
 			setHasLoaded(true);
 			setRefresh(false);
 		});

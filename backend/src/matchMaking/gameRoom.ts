@@ -70,7 +70,6 @@ export class GameRoom {
 		} else if (socket === this.playerRightSocket) {
 			currentPlayer = this.playerRight;
 		} else {
-			console.log('socket not found');
 			//socket doesn't belong to players - possible?
 			return;
 		}

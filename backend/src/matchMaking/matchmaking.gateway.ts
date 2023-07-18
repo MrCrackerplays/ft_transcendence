@@ -73,9 +73,9 @@ export class MatchMakingGateway {
 					if (!isClientInQueue)
 					client.emit('new_connection');
 					Logger.log(`new queue connection ${client.id}`);
-				}).catch(e => console.error(e))
+				}).catch(e => {})
 			}
-		}).catch(e => console.error(e));
+		}).catch(e => {});
 	}
 	
 	async handleDisconnect(client: Socket) {
@@ -175,7 +175,6 @@ export class MatchMakingGateway {
 		if (!this.roomsByKey.has(roomkey)) {
 			const user1id = (await this.userFromSocket(client1)).id;
 			const user2id = client2 ? (await this.userFromSocket(client2)).id : null;
-			console.log(`moveClientsToRoom ${roomkey}`, 'client1', user1id, 'client2', user2id);
 			const newGameRoom = new GameRoom(user1id, user2id, client1, client2, roomkey);
 	
 			const gameMode = this.getGameModeForClient(client1);

@@ -27,29 +27,23 @@ function MatchMakingQueue(gamemode: {gamemode: string}) {
 
 	useEffect(() => {
 		if (!ws.current) {
-			// console.log(`${Constants.BACKEND_URL}/matchMakingGateway`);
 			ws.current = io(`${Constants.BACKEND_URL}/matchMakingGateway`, {withCredentials: true});
-			console.log('new socket established');
 		}
 		else if (ws.current.disconnected) {
 			ws.current.connect();
-			console.log('connect with current socket');
 		}
 
 		ws.current.on('new_connection', () => {
-			console.log(`connection established ${ws.current?.id}`);
 			ws.current?.emit("join_queue", gamemode.gamemode); //was gamemode as object, needed as string
 			setIsConnectionOpen(true);
 		});
 
 		ws.current.on('disconnect', () => {
-			console.log(`Disconnected from pong`);
 			setActiveGame(false);
 			setIsConnectionOpen(false);
 		});
 
 		ws.current.on('joined_queue', () => {
-			console.log("joined queue");
 		});
 
 		ws.current.on('start_game', () => {
@@ -57,24 +51,20 @@ function MatchMakingQueue(gamemode: {gamemode: string}) {
 		});
 
 		ws.current.on('victory', () => {
-			console.log("VICTORY");
 			setVictory('victory');
 		});
 
 		ws.current.on('defeat', () => {
-			console.log("DEFEAT");
 			setVictory('defeat');
 		});
 		
 		ws.current.on('end_game', (victory: Boolean) => {
-			console.log('game has ended');
 			setActiveGame(false);
 			setGameOver(true);
 		});
 
 		return () => {
 			ws.current?.close();
-			console.log("cleaning queue");
 		}
 	}, []);
 

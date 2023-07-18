@@ -56,7 +56,6 @@ function MyFriendsList({ startDM }: { startDM: (id: string) => void }) {
 	const [isLoading, setisLoading] = useState(true);
 	
 	async function getFriends() {
-		// console.log("fetched some friends");
 		setFriendArray(await FetchFriends());
 		setisLoading(false);
 	}

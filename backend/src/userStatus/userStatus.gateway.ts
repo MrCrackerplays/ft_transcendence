@@ -84,7 +84,6 @@ export class UserStatusGateway implements OnGatewayConnection, OnGatewayDisconne
 			if (!user)
 				return ;
 			this.setStatus(user, UserStatus.IDLE);
-			// console.log(`${user.userName}: ${user.status}`);
 		})
 	}
 
@@ -93,7 +92,6 @@ export class UserStatusGateway implements OnGatewayConnection, OnGatewayDisconne
 			if (!user)
 				return ;
 			this.setStatus(user, UserStatus.OFFLINE)
-			// console.log(`${user.status}`);
 		})
 		Logger.log(`user status disconnected ${client.id}`)
 	}

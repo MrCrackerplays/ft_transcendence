@@ -26,7 +26,6 @@ function SetUp()
 		});
 		if (!RESPONSE.ok)
 		{
-			console.log(RESPONSE)
 			setErrorName(RESPONSE.statusText)
 			setShowError(true);
 			return (false);

@@ -65,7 +65,6 @@ const Menu = () => {
 	}
 
 	const matchQueue = (gamemode: string) => {
-		console.log(`gamemode = ${gamemode}`);
 		return (
 			<div className='menu'>
 				<MatchMakingQueue gamemode={gamemode}/>

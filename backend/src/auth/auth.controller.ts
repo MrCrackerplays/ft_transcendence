@@ -36,7 +36,6 @@ export class AuthController {
 		}
 
 		let finished = true;
-		console.log(`username: ${conn.user.userName}`);
 		if (!conn.user.userName) {
 			redirectURL = Constants.FRONTEND_SETUP_REDIRECT;
 			finished = false;
@@ -90,23 +89,6 @@ export class AuthController {
 			.status(200)
 			.send();
 	}
-
-	// !: DEBUG ONLY
-	// @Public()
-	// @Get('loginOTP/:code')
-	// async signInOTPParam(@Req() req: AuthRequest, @Param('code') code: string, @Res() res: Response): Promise<void> {
-	// 	this.signInOTP(req, code, res);
-	// }
-
-	/*
-	@Get('logout')
-	async signOut(@Req() req: AuthRequest, @Res() res: Response): Promise<void> {
-		this.authService.signOut(req);
-
-		res.setHeader('Set-Cookie', ''); // Remove cookie
-		res.status(302).redirect(Constants.FRONTEND_LOGIN_REDIRECT);
-	}
-	*/
 
 	@Get('2fa')
 	// Returns an QRcode image code thingy and enables 2FA
@@ -163,42 +145,4 @@ export class AuthController {
 			.status(200)
 			.send('2fa disabled');
 	}
-
-	// !: FOR DEBUG
-	// @Public()
-	// @Get('2fa/disable/:id')
-	// @HttpCode(200)
-	// async disableTwoFactor(@Param('id') _id: number, @Res() res: Response) {
-	// 	const conn: Connection = await this.connectionService.get({id: _id});
-
-	// 	await this.authService.disableTwoFactor(conn);
-
-	// 	// Cookie needs to be updated, true because OTP is disabled
-	// 	const cookie: string = this.authService.signAndGetCookie(conn, false, true);
-
-	// 	res.setHeader('Set-Cookie', cookie)
-	// 		.status(200)
-	// 		.send('2fa disabled (DEBUG ONLY)');
-	// }
-
-	//! DEBUG ONLY
-	// @Public()
-	// @Get('remove/:id')
-	// async removeAccountID(@Param('id') _id: string): Promise<void> {
-
-	// 	const conn: Connection = await this.connectionService.get({
-	// 		user: {
-	// 			id: _id
-	// 		}
-	// 	}, ['user']);
-
-	// 	if (conn) {
-	// 		console.log(`removing account with 42ID: ${conn.user42ID}`);
-	// 		conn.user.remove();
-	// 		conn.remove();
-	// 	}
-	// 	else {
-	// 		console.log(`attempting to remove non-existant connection`);
-	// 	}
-	// }
 }

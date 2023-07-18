@@ -28,10 +28,9 @@ export class ConnectionService {
 			con.user = _user;
 			con.user42ID = _user42ID;
 			await con.save();
-			console.log(`Connection created between 42: (${con.user42ID}), User: (${con.user.id})`);
 			return (con);
 		}
-		catch (error) { console.log(error); }
+		catch (error) { }
 		return (null);
 	}
 
@@ -46,8 +45,6 @@ export class ConnectionService {
 	}
 
 	async removeOne(conn: Connection): Promise<void> {
-		console.log("removing connection from database");
-
 		this.connectionRepository.remove(conn);
 	}
 
