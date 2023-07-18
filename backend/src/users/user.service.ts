@@ -61,8 +61,6 @@ export class UserService {
 	}
 
 	setProfilePicture(_user: User, file: Express.Multer.File): Promise<User> {
-		if (_user.imageURL)
-
 		_user.imageURL = file.filename;
 		return _user.save();
 	}
