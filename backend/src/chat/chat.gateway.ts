@@ -183,7 +183,6 @@ export class ChatGateway {
 		const channel = await this.getChannel(channel_id);
 		if (!channel || (channel.owner && channel.owner.id != user.id))
 			return false;
-		// console.log("no deletion allowed yet, will crash")
 		this.server.to("channel:" + channel.id).emit("kick", channel.id);
 		this.server.to("channel:" + channel.id).socketsLeave("channel:" + channel.id);
 		this.channelService.removeOne(channel.id);
@@ -217,7 +216,6 @@ export class ChatGateway {
 		const channel = await this.channelService.createDM(user, other_user);
 		if (!channel)
 			return "";
-		console.log("created/found dm channel", channel);
 		client.join("channel:" + channel.id);
 		return channel.id;
 	}
@@ -228,12 +226,10 @@ export class ChatGateway {
 		@ConnectedSocket() client: Socket,
 		@MessageBody("channel") channel_id: string
 	): Promise<{ channel_id: string, success: boolean, reason: string }> {
-		console.log("join channel event", channel_id);
 		const user = await this.userFromSocket(client);
 		if (!user) {
 			return { channel_id: channel_id, success: false, reason: "user not found" };
 		}
-		console.log("user:", user);
 		const channel = await this.channelService.findOne(channel_id);
 		if (!channel) {
 			return { channel_id: channel_id, success: false, reason: "channel not found" };
@@ -241,13 +237,11 @@ export class ChatGateway {
 
 		const is_subscribed = (await this.userService.getChannels(user)).find(ch => ch.id == channel_id);
 		if (!is_subscribed) {
-			console.log("user is not subscribed");
 			return { channel_id: channel_id, success: false, reason: "not subscribed" };
 		}
 
 		const is_banned = channel.banned.find(banned => banned.id == user.id);
 		if (is_banned) {
-			console.log("user is banned");
 			return { channel_id: channel_id, success: false, reason: "banned" };
 		}
 
@@ -271,7 +265,6 @@ export class ChatGateway {
 			this.getChannel(channel_id, ['members']).then(channel => {
 				if (!channel)
 					return;
-				console.log("kick event");
 				if (this.canDoAction(user, channel, "kick") && channel.owner.id != target_user_id) {
 					const is_owner = channel.owner.id == user.id;
 					const is_admin = channel.admins.find(admin => admin.id == user.id) != undefined;
@@ -295,7 +288,6 @@ export class ChatGateway {
 						});
 					}
 				}
-				console.log("kick event end");
 			});
 		});
 	}
@@ -308,7 +300,6 @@ export class ChatGateway {
 	): void {
 		this.userFromSocket(client).then(user => {
 			this.getChannel(channel_id, ['members']).then(channel => {
-				console.log("leave event", channel, user);
 				if (!channel)
 					return;
 				if (!channel.members) {
@@ -344,7 +335,6 @@ export class ChatGateway {
 			if (!basicuser)
 				return;
 			let user = await this.userService.get(basicuser.id, ['blocked']);
-			console.log("get_blocked event", user);
 			if (user.blocked === undefined)
 				user.blocked = [];
 			client.emit("total_blocked", user.blocked.map(bu => bu.id));
@@ -361,7 +351,6 @@ export class ChatGateway {
 			if (!basicuser)
 				return;
 			let user = await this.userService.get(basicuser.id, ['blocked']);
-			console.log("block event");
 			this.userService.get(target_user_id).then(target_user => {
 				if (!target_user)
 					return;
@@ -372,7 +361,6 @@ export class ChatGateway {
 				this.server.to("user:" + user.id).emit("block", target_user_id);
 			});
 		});
-		console.log("block event end");
 	}
 
 	@UseGuards(WsGuard)
@@ -385,14 +373,12 @@ export class ChatGateway {
 			if (!basicuser)
 				return;
 			let user = await this.userService.get(basicuser.id, ['blocked']);
-			console.log("unblock event");
 			if (user.blocked === undefined)
 				user.blocked = [];
 			user.blocked = user.blocked.filter(blocked => blocked.id != target_user_id);
 			user.save();
 			this.server.to("user:" + user.id).emit("unblock", target_user_id);
 		});
-		console.log("unblock event end");
 	}
 
 	@UseGuards(WsGuard)
@@ -413,11 +399,9 @@ export class ChatGateway {
 		const channel = await this.channelService.createDM(user, other_user);
 		if (!channel)
 			return "";
-		console.log("created/found dm channel for game invite", channel);
 		client.join("channel:" + channel.id);
 		const generatedroomid: string = uuidv4();
 		this.messageService.createMessage(channel, null, generatedroomid + ":GAMEINVITE" ).then((m) => {
-			console.log("sending message");
 			this.server.to("channel:" + channel.id).emit("message", { channel: channel.id, sender: m.author?.userName, sender_id: m.author?.id, content: m.content, date: m.date });
 			this.userService.unlockAchievement(user, "Send Message");
 		});
@@ -438,7 +422,6 @@ export class ChatGateway {
 			this.getChannel(channel_id, ['members']).then(channel => {
 				if (!channel)
 					return;
-				console.log("ban event");
 				if (this.canDoAction(user, channel, "ban") && channel.owner.id != target_user_id) {
 					const is_owner = channel.owner.id == user.id;
 					const is_admin = channel.admins.find(admin => admin.id == user.id) != undefined;
@@ -463,7 +446,6 @@ export class ChatGateway {
 						});
 					}
 				}
-				console.log("ban event end");
 			});
 		});
 	}
@@ -481,7 +463,6 @@ export class ChatGateway {
 			this.getChannel(channel_id).then(async channel => {
 				if (!channel)
 					return;
-				console.log("unban event");
 				if (this.canDoAction(user, channel, "unban") && channel.owner.id != target_user_id) {
 					const is_owner = channel.owner.id == user.id;
 					const is_admin = channel.admins.find(admin => admin.id == user.id) != undefined;
@@ -501,7 +482,6 @@ export class ChatGateway {
 						});
 					}
 				}
-				console.log("unban event end");
 			});
 		});
 	}
@@ -519,7 +499,6 @@ export class ChatGateway {
 			this.getChannel(channel_id, ['members']).then(async channel => {
 				if (!channel)
 					return;
-				console.log("mute event");
 				if (this.canDoAction(user, channel, "mute") && channel.owner.id != target_user_id) {
 					const is_owner = channel.owner.id == user.id;
 					const is_admin = channel.admins.find(admin => admin.id == user.id) != undefined;
@@ -544,7 +523,6 @@ export class ChatGateway {
 						});
 					}
 				}
-				console.log("mute event end");
 			});
 		});
 	}
@@ -562,7 +540,6 @@ export class ChatGateway {
 			this.getChannel(channel_id).then(async channel => {
 				if (!channel)
 					return;
-				console.log("unmute event");
 				if (this.canDoAction(user, channel, "unmute") && channel.owner.id != target_user_id) {
 					const is_owner = channel.owner.id == user.id;
 					const is_admin = channel.admins.find(admin => admin.id == user.id) != undefined;
@@ -582,7 +559,6 @@ export class ChatGateway {
 						});
 					}
 				}
-				console.log("unmute event end");
 			});
 		});
 	}
@@ -600,7 +576,6 @@ export class ChatGateway {
 			this.getChannel(channel_id, ['members']).then(async channel => {
 				if (!channel)
 					return;
-				console.log("promote event");
 				if (this.canDoAction(user, channel, "promote") && channel.owner.id != target_user_id) {
 					if (!channel.members) {
 						Logger.error("channel has no members", "promoteUser");
@@ -623,7 +598,6 @@ export class ChatGateway {
 						this.server.to("user:" + target_user_id).emit("promote", channel_id);
 					}
 				}
-				console.log("promote event end");
 			});
 		});
 	}
@@ -641,7 +615,6 @@ export class ChatGateway {
 			this.getChannel(channel_id).then(channel => {
 				if (!channel)
 					return;
-				console.log("demote event");
 				if (this.canDoAction(user, channel, "demote") && channel.owner.id != target_user_id) {
 					let targetindex = channel.admins.findIndex(admin => admin.id == target_user_id);
 					if (targetindex == -1)
@@ -650,7 +623,6 @@ export class ChatGateway {
 					channel.save();
 					this.server.to("user:" + target_user_id).emit("demote", channel_id);
 				}
-				console.log("demote event end");
 			});
 		});
 	}
@@ -674,7 +646,6 @@ export class ChatGateway {
 						return;
 
 					this.messageService.createMessage(channel, user, message).then((m) => {
-						console.log("sending message");
 						this.server.to("channel:" + channel_id).emit("message", { channel: channel_id, sender: m.author?.userName, sender_id: m.author?.id, content: m.content, date: m.date });
 						this.userService.unlockAchievement(user, "Send Message");
 					});

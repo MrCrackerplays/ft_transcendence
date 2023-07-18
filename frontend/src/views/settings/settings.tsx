@@ -5,17 +5,8 @@ import FetchQREnabled from '../../hooks/fetch/FetchQREnabled';
 import { useNavigate } from 'react-router-dom';
 
 
-// async function deleteAccount() {
-// 	console.log("remove")
-// 	window.event?.preventDefault();
-// 	const RESPONSE = await fetch(`${Constants.BACKEND_URL}/remove`, {
-// 		method: 'POST',
-// 		credentials: 'include'
-// 	});
-// }
 
 async function disable2FA() {
-	console.log('disabling 2FA');
 	const RESPONSE = await fetch(`${Constants.BACKEND_URL}/2fa/disable`, {
 		method: 'POST',
 		credentials: 'include'
@@ -111,7 +102,6 @@ function Settings({ updatescam, setupdatescam }) {
 			body: formData
 		});
 		setupdatescam(updatescam + 1)
-		console.log(RESPONSE.ok);
 	}
 	const handleUserNamesubmit = async () => {
 		setshowerror(false)
@@ -150,7 +140,6 @@ function Settings({ updatescam, setupdatescam }) {
 		{
 			setshowerror(true)
 			seterrorText("QR Input Incorrect")
-			console.log(RESPONSE)
 		} else {
 			const RESPONSE2 = await fetch(`${Constants.BACKEND_URL}/self/achievements`, {
 				method: 'POST',

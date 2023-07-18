@@ -30,7 +30,6 @@ export class UserService {
 	) { }
 
 	async createOne(createUserDTO: CreateUserDTO) {
-		console.log(`UserService: creating new user (${createUserDTO.userName})`);
 		const user = this.usersRepository.create();
 		user.userName = createUserDTO.userName;
 		try { await this.usersRepository.save(user); }
@@ -63,7 +62,6 @@ export class UserService {
 
 	setProfilePicture(_user: User, file: Express.Multer.File): Promise<User> {
 		if (_user.imageURL)
-			console.log("User already has image (PROBABLY SHOULD DELETE?)");
 
 		_user.imageURL = file.filename;
 		return _user.save();
@@ -89,7 +87,6 @@ export class UserService {
 
 		try { await this.usersRepository.save(user); }
 		catch (error) { throw new HttpException(error.message, HttpStatus.BAD_REQUEST); }
-		console.log(`UserService: created new user (${user.id})`);
 		return user;
 	}
 
@@ -328,7 +325,6 @@ export class UserService {
 		// 	return;
 		// }
 		if (user.achievements.includes(ach)){
-			console.log("User already has achievement");
 			return ;
 		}
 

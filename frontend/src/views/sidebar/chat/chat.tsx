@@ -39,16 +39,6 @@ function Chat( {
 		return joinedChannels.includes(channel_id);
 	}
 
-	// const block_filter = (message: UserMessage | Message): UserMessage | Message => {
-	// 	if (isUserMessage(message)) {
-	// 		const should_block = blocked.includes(message.sender_id);
-	// 		console.log("should block: " + should_block + " " + message.sender_id + " " + message.sender, blocked)
-	// 		if (should_block)
-	// 			message.content = "<blocked message>";
-	// 	}
-	// 	return message;
-	// }
-
 	const getMessageHistory = (channel_id: string) => {
 		return fetch(`${Constants.BACKEND_URL}/self/channels/` + channel_id + "/messages", {
 			credentials: 'include'
@@ -93,7 +83,6 @@ function Chat( {
 
 	const joinResponse = ({ channel_id, success, reason }: { channel_id: string, success: boolean, reason: string }) => {
 		if (!success) {
-			console.log("join failed", reason);
 			if (reason === "not subscribed" && joinedChannels.includes(channel_id)) {
 				setJoinedChannels(joined => joined.filter((channel) => channel !== channel_id));
 			}
@@ -122,7 +111,6 @@ function Chat( {
 
 	const joinChannel = (channel_id: string, password: string | null = null) => {
 		if (banned.includes(channel_id)) {
-			console.log("you are banned from this channel");
 			return;
 		}
 		if (joinedChannels.includes(channel_id)) {
@@ -130,7 +118,6 @@ function Chat( {
 			return;
 		}
 		ws.current?.emit("subscribe", { channel: channel_id, password: password }, (response: boolean) => {
-			console.log("emitting join");
 			ws.current?.emit("join", { channel: channel_id }, joinResponse);
 		});
 	};
@@ -170,10 +157,8 @@ function Chat( {
 		}
 
 		if (muted.includes(currentChannel)) {
-			console.log("you are muted");
 			return;
 		}
-		console.log("sendmessage")
 		// ws.current?.emit("create", {channel: "another-channel"});
 		if (messageBody?.trim()) {
 			ws.current?.emit("message", { channel: currentChannel, message: messageBody.trim() });
@@ -183,7 +168,6 @@ function Chat( {
 
 	const updateHistory = (channel: string, message: UserMessage | Message) => {
 		// setHistory(his => new Map(his.set(channel, messages)));
-		// console.log("updating history for", channel, "with", message);
 		setHistory(
 			hist => new Map(hist.set(
 				channel,
@@ -195,7 +179,6 @@ function Chat( {
 
 	function openDMChannel(id:string) {
 		ws.current?.emit("start_dm", {user: id}, (response: string) => {
-			console.log("start dm response", response);
 			if (response !== "") {
 				setCurrentChannel(response);
 				setJoinedChannels(joined => [...joined, response]);
@@ -205,7 +188,6 @@ function Chat( {
 
 	useEffect(() => {
 		setStartDM(()=>openDMChannel);
-		console.log("subscribed to events?")
 		if (!ws.current)
 			ws.current = io(`${Constants.BACKEND_URL}/chat`, { withCredentials: true });
 		else if (ws.current.disconnected)
@@ -213,27 +195,23 @@ function Chat( {
 		// ws.current.emit("create", {channel: "coolerchannel"});
 		if (!ws.current.hasListeners("connect")) {
 			ws.current.on("connect", () => {
-				console.log("Connected to server");
 				setIsConnectionOpen(true);
 			});
 		}
 
 		if (!ws.current.hasListeners("disconnect")) {
 			ws.current.on("disconnect", () => {
-				console.log("Disconnected from server");
 				setIsConnectionOpen(false);
 			});
 		}
 
 		if (!ws.current.hasListeners("test")) {
 			ws.current.on("test", (message) => {
-				console.log("Received test:", message);
 			});
 		}
 
 		if (!ws.current.hasListeners("message")) {
 			ws.current.on("message", (message) => {
-				console.log("Received message:", message);
 				updateHistory(message.channel, message);
 			});
 		}
@@ -260,7 +238,6 @@ function Chat( {
 
 		if (!ws.current.hasListeners("leave")) {
 			ws.current.on("leave", (channel: string) => {
-				console.log("Received leave from:", channel);
 				if (currentChannelRef.current === channel)
 					setCurrentChannel("");
 				if (joinedChannelsRef.current.includes(channel))
@@ -270,13 +247,11 @@ function Chat( {
 						hist.delete(channel);
 						return hist;
 					});
-				console.log("finished leaving");
 			});
 		}
 
 		if (!ws.current.hasListeners("kick")) {
 			ws.current.on("kick", (channel: string) => {
-				console.log("Received kick from:", channel);
 				if (currentChannelRef.current === channel)
 					setCurrentChannel("");
 				if (joinedChannelsRef.current.includes(channel))
@@ -286,13 +261,11 @@ function Chat( {
 						hist.delete(channel);
 						return hist;
 					});
-				console.log("finished getting kicked");
 			});
 		}
 
 		if (!ws.current.hasListeners("ban")) {
 			ws.current.on("ban", (channel) => {
-				console.log("Received ban from:", channel);
 				if (currentChannelRef.current === channel)
 					setCurrentChannel("");
 				if (joinedChannelsRef.current.includes(channel))
@@ -303,76 +276,58 @@ function Chat( {
 						return hist;
 					});
 				setBanned(banned => [...banned, channel]);
-				console.log("finished getting banned");
 			});
 		}
 
 		if (!ws.current.hasListeners("unban")) {
 			ws.current.on("unban", (channel) => {
-				console.log("Received unban from:", channel);
 				setBanned(banned => banned.filter((id) => id !== channel));
-				console.log("finished getting unbanned");
 			});
 		}
 
 		if (!ws.current.hasListeners("mute")) {
 			ws.current.on("mute", (channel) => {
-				console.log("Received mute from:", channel);
 				setMuted(muted => [...muted, channel]);
-				console.log("finished getting muted");
 			});
 		}
 
 		if (!ws.current.hasListeners("unmute")) {
 			ws.current.on("unmute", (channel) => {
-				console.log("Received unmute from:", channel);
 				setMuted(muted => muted.filter((id) => id !== channel));
-				console.log("finished getting unmuted");
 			});
 		}
 
 		if (!ws.current.hasListeners("promote")) {
 			ws.current.on("promote", (channel) => {
-				console.log("Received promote from:", channel);
 				setAdmin(admins => [...admins, channel]);
-				console.log("finished getting promoted");
 			});
 		}
 
 		if (!ws.current.hasListeners("demote")) {
 			ws.current.on("demote", (channel) => {
-				console.log("Received demote from:", channel);
 				setAdmin(admins => admins.filter((id) => id !== channel));
-				console.log("finished getting demoted");
 			});
 		}
 
 		if (!ws.current.hasListeners("total_blocked")) {
 			ws.current.on("total_blocked", (blocked_users) => {
-				console.log("Received total_blocked", blocked_users);
 				setBlocked(blocked_users);
-				console.log("finished blocking user");
 			});
 		}
 
 		if (!ws.current.hasListeners("block")) {
 			ws.current.on("block", (user_id) => {
-				console.log("Received block for:", user_id);
 				setBlocked(blocked => [...blocked, user_id]);
-				console.log("finished blocking user");
 			});
 		}
 
 		if (!ws.current.hasListeners("unblock")) {
 			ws.current.on("unblock", (user_id) => {
-				console.log("Received unblock for:", user_id);
 				setBlocked(blocked => blocked.filter((id) => id !== user_id));
-				console.log("finished unblocking user");
 			});
 		}
 
 		return () => {
-			console.log("Cleaning up...");
 			ws.current?.close();
 		}
 	}, []);
@@ -459,7 +414,6 @@ function Chat( {
 							ws.current?.emit("invite", { user: user }, (response: string) => {
 								if (!response || response === "")
 									return;
-								console.log("created an invite for", response);
 								navigate("/private/" + response);
 							});
 						}

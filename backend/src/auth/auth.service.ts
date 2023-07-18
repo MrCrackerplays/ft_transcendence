@@ -20,7 +20,6 @@ export class AuthService {
 	static otpMap: Map<number, string> = new Map<number, string>;
 
 	async signIn(payload: any): Promise<Connection> {
-		console.log(`attempting signin for 42-user: ${payload.id}`);
 
 		// Get existing connection from the provided user42
 		let con = await this.connectionService.get({ user42ID: payload.id }, ['user']);
@@ -29,10 +28,6 @@ export class AuthService {
 		if (!con) {
 			const user = await this.userService.create();					// New user
 			con = await this.connectionService.create(user, payload.id);	// Make a new connection for this user
-		}
-		else
-		{
-			console.log(`Connection exists for 42: ${payload.id}`);
 		}
 
 		// Return Connection
@@ -44,14 +39,11 @@ export class AuthService {
 		let jwt = null;
 		try {jwt = this.jwtService.verify(req?.cookies?.Authentication);}
 		catch (err) {
-			console.log(err);
 			return null;
 		}
 		if (!jwt)
 			throw new HttpException('Invalid JWT', HttpStatus.FORBIDDEN);
 		
-		console.log(`Attempting signin with setup username: ${name}`);
-
 		const conn = await this.connectionService.get({id: jwt.id});
 		if (await this.validateName(conn, name) == true)
 			return conn;
@@ -63,7 +55,6 @@ export class AuthService {
 		let jwt = null;
 		try {jwt = this.jwtService.verify(req?.cookies?.Authentication);}
 		catch (err) {
-			console.log(err);
 			return null;
 		}
 		if (!jwt)
@@ -117,23 +108,19 @@ export class AuthService {
 			const entry = AuthService.otpMap.get(connection.id);
 			if (entry == undefined) {
 				// you're not in the map! begone!
-				console.log('validator is not in OTP map')
 				return null;
 			}
 			if (this.validateOTP(entry, code)) {
 				// congrats youve now enabled Two Factor
-				console.log('validator validated QR, enabling otp')
 				connection.otpSecret = entry;
 				AuthService.otpMap.delete(connection.id);
 				return connection.save();
 			}
 			// not validated
-			console.log(`validator tried to validate incorrect code (${code})`)
 			return null;
 		}
 
 		// This happens when you've already enabled 2FA
-		console.log('validator already has 2FA enabled, attempting validation')
 		const secret = connection.otpSecret;
 		const validated : boolean = this.validateOTP(secret, code);
 		if (!validated)
@@ -162,13 +149,11 @@ export class AuthService {
 	}
 
 	signPayload(conn: Connection, _otp: boolean, _finished : boolean) : string {
-		console.log(`Signing payload with id: ${conn.id}`);
 		return this.jwtService.sign({ id: conn.id, otp: _otp, finished: _finished });
 	}
 
 	signAndGetCookie(conn: Connection, otp : boolean, finished : boolean) : string {
 		const token = this.signPayload(conn, otp, finished);
-		console.log(`Building cookie with signed-token(42ID: ${conn.user42ID}, otp: ${otp}, finished: ${finished}`);
 		return (`Authentication=${token}; HttpOnly; Path=/; Max-Age=100000`);
 	}
 

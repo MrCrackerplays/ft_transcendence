@@ -6,7 +6,6 @@ async function FetchUserMatchHistory(username) {
 	});
 	if (!res.ok || res.status == 401)
 	{
-		console.log("something wrong redirect to login");
 		return false;
 	}
 	const jsonData = await res.json();

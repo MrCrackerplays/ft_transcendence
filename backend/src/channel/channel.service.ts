@@ -25,21 +25,19 @@ export class ChannelService {
 		ChannelService.firsttime = false;
 		const globalChannel = await this.get({ name: 'Codam'});
 		if (!globalChannel) {
-			console.log('Creating Codam channel');
 			const newGlobalChannel = await this.create(null, {
 				name: 'Codam',
 				visibility: Visibility.PUBLIC,
 				password: null
 			})
 			if (newGlobalChannel) {
-				console.log('Adding initial Codam welcome message');
-				// const msg = new Message();
-				// msg.author = null;
-				// msg.channel = newGlobalChannel;
-				// msg.content = 'Welcome to Codam!';
-				// msg.save();
-				// newGlobalChannel.messages.push(msg);
-				// newGlobalChannel.save();
+				const msg = new Message();
+				msg.author = null;
+				msg.channel = newGlobalChannel;
+				msg.content = 'Welcome to Codam!';
+				msg.save();
+				newGlobalChannel.messages.push(msg);
+				newGlobalChannel.save();
 			}
 		}
 	}
@@ -50,7 +48,6 @@ export class ChannelService {
 		channel.messages = [];
 		channel.visibility = dto.visibility;
 		channel.password = dto.password ? await hash(dto.password, await genSalt()) : dto.password;
-		console.log("creating channel with hash", channel.password);
 		channel.owner = owner;
 		channel.members = [ owner ];
 		channel.admins = [];

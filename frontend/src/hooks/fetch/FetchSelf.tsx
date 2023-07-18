@@ -7,12 +7,9 @@ async function FetchSelf() {
 	});
 	if (!res.ok || res.status == 401) 
 	{
-		console.log("something wrong redirect to login");
 		return false
 	}
 	const jsonData = await res.json();
-	// console.log(`User Score: ${jsonData.score}, User active: ${jsonData.active}`);
-	// console.log(jsonData);
 	return jsonData;
 }
 

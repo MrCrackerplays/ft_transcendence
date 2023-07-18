@@ -80,7 +80,6 @@ function AddFriend( {UUID} : {UUID:string}) {
 				id : UUID
 			})
 		});
-		console.log(RESPONSE.status);
 		if (RESPONSE.status >= 200 && RESPONSE.status <= 299)
 		{
 			const RESPONSE2 = await fetch(`${Constants.BACKEND_URL}/self/achievements`, {
