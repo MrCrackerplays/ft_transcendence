@@ -17,11 +17,11 @@ export class AuthService {
 		private jwtService: JwtService
 		) { }
 	
-	static otpMap: Map<number, string> = new Map<number, string>;
+	static otpMap: Map<string, string> = new Map<string, string>;
 
 	async signIn(payload: any): Promise<Connection> {
 
-		if (payload == null || payload == undefined || payload.id == undefined) {
+		if (!payload || payload.id == undefined) {
 			return null;
 		}
 
@@ -47,8 +47,8 @@ export class AuthService {
 		}
 		if (!jwt)
 			throw new HttpException('Invalid JWT', HttpStatus.FORBIDDEN);
-		
-		const conn = await this.connectionService.get({id: jwt.id});
+
+			const conn = await this.connectionService.get({id: jwt.id});
 		if (await this.validateName(conn, name) == true)
 			return conn;
 		return null;
@@ -104,7 +104,7 @@ export class AuthService {
 		return toDataURL(data.otpURL);
 	}
 
-	async validateTwoFactor(_id: number, code: string): Promise<Connection> {
+	async validateTwoFactor(_id: string, code: string): Promise<Connection> {
 		const connection = await this.connectionService.get({id: _id});
 
 		if (connection.otpSecret == null) {

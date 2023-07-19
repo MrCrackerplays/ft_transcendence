@@ -353,7 +353,7 @@ export class MatchMakingGateway {
 
 	/*---------------------------------------------------------------------------*/
 
-	private userFromSocket(socket: Socket, result?: any): Promise<User> | undefined {
+	private userFromSocket(socket: Socket, result?: any): Promise<User> | Promise<undefined> {
 		try {
 			if (!result) {
 				if (!socket.handshake.headers.cookie) {
@@ -364,7 +364,7 @@ export class MatchMakingGateway {
 				result = this.jwtService.verify(auth_cookie, { secret: process.env.JWT_SECRET })
 			}
 			return this.connectionService.get({ id: result.id }, ['user']).then(connection => {
-				return connection.user;
+				return connection?.user;
 			});
 		}
 		catch (e) {
