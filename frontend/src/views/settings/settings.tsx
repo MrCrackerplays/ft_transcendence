@@ -123,6 +123,7 @@ function Settings({ updatescam, setupdatescam }) {
 			setnewusername("")
 			setupdatescam(updatescam + 1)
 		}
+		window.location.reload();
 	}
 	const submitQR = async () => {
 		setshowerror(false)
