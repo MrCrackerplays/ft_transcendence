@@ -13,10 +13,14 @@ export class ConnectionService {
 	) {}
 	
 	async get(where: any, relations = [] as string[]) : Promise<Connection> {
-		const con = await this.connectionRepository.findOne({ where, relations });
-		// if (!con)
-		// 	throw new HttpException('User Connection not found', HttpStatus.NOT_FOUND);
-		return (con);
+		try {
+			const con = await this.connectionRepository.findOne({ where, relations });
+			// if (!con)
+			// 	throw new HttpException('User Connection not found', HttpStatus.NOT_FOUND);
+			return (con);
+		} catch(e) {
+			return (null);
+		}
 	}
 
 	async create(_user: User, _user42ID: number): Promise<Connection> {

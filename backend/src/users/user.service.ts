@@ -47,6 +47,8 @@ export class UserService {
 
 	async getCurrentUser(req: AuthRequest): Promise<User> {
 		// Get the connection from the Request payload and attatch the 'user' relation, then return that user
+		if (!req || !req.user || !req.user.id)
+			return (null);
 		const connection: Connection = await this.connectionService.get({ id: req.user.id }, ['user']);
 		if (!connection)
 			return (null);

@@ -3,8 +3,8 @@ import { BaseEntity, Column, Entity, JoinColumn, OneToOne, PrimaryGeneratedColum
 
 @Entity()
 export class Connection extends BaseEntity {
-	@PrimaryGeneratedColumn()
-	id: number;
+	@PrimaryGeneratedColumn("uuid")
+	id: string;
 
 	@OneToOne(type => User, { onDelete: "CASCADE", eager: true, cascade: true })
 	@JoinColumn()

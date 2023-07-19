@@ -30,15 +30,15 @@ export class ChannelService {
 				visibility: Visibility.PUBLIC,
 				password: null
 			})
-			if (newGlobalChannel) {
-				const msg = new Message();
-				msg.author = null;
-				msg.channel = newGlobalChannel;
-				msg.content = 'Welcome to Codam!';
-				msg.save();
-				newGlobalChannel.messages.push(msg);
-				newGlobalChannel.save();
-			}
+			// if (newGlobalChannel) {
+			// 	const msg = new Message();
+			// 	msg.author = null;
+			// 	msg.channel = newGlobalChannel;
+			// 	msg.content = 'Welcome to Codam!';
+			// 	msg.save();
+			// 	newGlobalChannel.messages.push(msg);
+			// }
+			newGlobalChannel.save();
 		}
 	}
 

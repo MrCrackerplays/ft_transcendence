@@ -20,11 +20,13 @@ export class AuthController {
 	@Get('login')
 	// SignIn is the process of logging in and getting the JWT token (in a cookie)
 	async signIn(@Req() req: any, @Res() res: Response): Promise<void> {
-		const conn: Connection = await this.authService.signIn(req.user as any);
+		const conn: Connection = await this.authService.signIn(req.user);
 
-		if (conn == null) {
+		if (!conn) {
 			console.log('Bad payload, unauthorized user!');
 			res.status(HttpStatus.FORBIDDEN).send();
+			req.redirect(`${Constants.FRONTEND_URL}/login`);
+			return ;
 		}
 
 		// Check if 2FA is enabled, if so the redirect is different

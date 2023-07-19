@@ -41,13 +41,13 @@ export class ChatGateway {
 		private userService: UserService,
 	) { }
 
-	private userFromSocket(socket: Socket, result?: any): Promise<User> | undefined {
+	private userFromSocket(socket: Socket, result?: any): Promise<User> | Promise<undefined> {
 		try {
 			if (!result) {
 				result = this.jwtService.verify(parse(socket.handshake.headers.cookie).Authentication, { secret: process.env.JWT_SECRET })
 			}
 			return this.connectionService.get({ id: result.id }).then(connection => {
-				return connection.user;
+				return connection?.user;
 			});
 		} catch (e) {
 		}

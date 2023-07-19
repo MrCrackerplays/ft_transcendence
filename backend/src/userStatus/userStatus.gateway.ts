@@ -30,7 +30,7 @@ export class UserStatusGateway implements OnGatewayConnection, OnGatewayDisconne
 		private userService: UserService
 	) {}
 
-	private userFromSocket(socket: Socket, result?: any): Promise<User> | undefined {
+	private userFromSocket(socket: Socket, result?: any): Promise<User> | Promise<undefined> {
 		try {
 			if (!result) {
 				if (!socket.handshake.headers.cookie)
@@ -41,11 +41,11 @@ export class UserStatusGateway implements OnGatewayConnection, OnGatewayDisconne
 				const auth_cookie = parse(socket.handshake.headers.cookie).Authentication;
 				result = this.jwtService.verify(auth_cookie, { secret: process.env.JWT_SECRET })
 			}
-			return this.connectionService.get({ id: result.id }, ['user']).then(connection => {
+			return this.connectionService.get({ id: result.id }, ['user'])?.then(connection => {
 				if (connection == null) {
 					return undefined;
 				}
-				return connection.user;
+				return connection?.user;
 			});
 		}
 		catch (e){
@@ -80,7 +80,7 @@ export class UserStatusGateway implements OnGatewayConnection, OnGatewayDisconne
 			try {client.disconnect();} catch { return; }
 			return ;
 		}
-		this.userFromSocket(client, result).then(user => {
+		this.userFromSocket(client, result)?.then(user => {
 			if (!user)
 				return ;
 			this.setStatus(user, UserStatus.IDLE);
@@ -88,7 +88,7 @@ export class UserStatusGateway implements OnGatewayConnection, OnGatewayDisconne
 	}
 
 	handleDisconnect(client: Socket) {
-		this.userFromSocket(client).then(user => {
+		this.userFromSocket(client)?.then(user => {
 			if (!user)
 				return ;
 			this.setStatus(user, UserStatus.OFFLINE)
