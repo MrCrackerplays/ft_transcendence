@@ -305,8 +305,6 @@ export class MatchMakingGateway {
 		const user1 = await this.userFromSocket(room.playerLeftSocket);
 		const user2 = await this.userFromSocket(room.playerRightSocket);
 
-		this.userService.unlockAchievement(user1, "Played Pong!");
-		this.userService.unlockAchievement(user2, "Played Pong!");
 		user1.gamesPlayed++;
 		user2.gamesPlayed++;
 		if (room.winner == user1.id) {
