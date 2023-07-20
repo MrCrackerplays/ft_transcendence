@@ -50,19 +50,19 @@ function modifyBallMovement(ball: BallState, paddlePosition: number) {
 
 
 function updateBall(state: GameState, timeDlta: number) {
-	const ball = state.ball;
 	const leftPaddle = state.leftPaddle;
 	const rightPaddle = state.rightPaddle;
 	const maxBallPosition = 1 - pongConstants.ballHeight / 2;
 	const minBallPosition = -1 + pongConstants.ballHeight / 2;
+	//up and down wall collision
+	if (state.ball.position.y >= maxBallPosition || state.ball.position.y <= minBallPosition) {
+		state.ball.velocity = { x: state.ball.velocity.x, y: (state.ball.velocity.y * -1) };
+		state.ball.position.y = state.ball.position.y >= maxBallPosition ? maxBallPosition : minBallPosition;
+	}
+	const ball = state.ball;
 	const previousBallPosition = ball.position;
 	updateBallPosition(state, timeDlta);
 
-	//up and down wall collision
-	if (ball.position.y >= maxBallPosition || ball.position.y <= minBallPosition) {
-		state.ball.velocity = { x: ball.velocity.x, y: (ball.velocity.y * -1) };
-		return;
-	}
 
 	const padX = pongConstants.paddleWidth + pongConstants.framePaddleGap * 2;//why * 2? dunno, math magic
 
