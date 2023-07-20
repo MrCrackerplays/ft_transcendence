@@ -55,6 +55,7 @@ function updateBall(state: GameState, timeDlta: number) {
 	const rightPaddle = state.rightPaddle;
 	const maxBallPosition = 1 - pongConstants.ballHeight / 2;
 	const minBallPosition = -1 + pongConstants.ballHeight / 2;
+	const previousBallPosition = ball.position;
 	updateBallPosition(state, timeDlta);
 
 	//up and down wall collision
@@ -94,6 +95,7 @@ function updateBall(state: GameState, timeDlta: number) {
 				//if Left paddle is moving add move changes for ball
 				modifyBallMovement(state.ball, state.leftPaddle.paddlePosition);
 			}
+			ball.position = previousBallPosition;
 			updateBallPosition(state, timeDlta);
 		} else {
 			//missed ball for left paddle -> right paddle scores up
@@ -104,6 +106,7 @@ function updateBall(state: GameState, timeDlta: number) {
 		//SINGLE MODE
 		if (state.singlemode) {
 			state.ball.velocity = { x: -ball.velocity.x, y: ball.velocity.y };
+			ball.position = previousBallPosition;
 			updateBallPosition(state, timeDlta);
 		}
 		//CLASSIC MODE
@@ -119,6 +122,7 @@ function updateBall(state: GameState, timeDlta: number) {
 				//if Right paddle is moving add move changes for ball
 				modifyBallMovement(state.ball, state.rightPaddle.paddlePosition);
 			}
+			ball.position = previousBallPosition;
 			updateBallPosition(state, timeDlta);
 			} else {
 				//missed ball for right paddle -> left paddle scores up
