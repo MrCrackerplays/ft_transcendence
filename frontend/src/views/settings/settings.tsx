@@ -122,8 +122,8 @@ function Settings({ updatescam, setupdatescam }) {
 		else {
 			setnewusername("")
 			setupdatescam(updatescam + 1)
+			window.location.reload();
 		}
-		window.location.reload();
 	}
 	const submitQR = async () => {
 		setshowerror(false)
